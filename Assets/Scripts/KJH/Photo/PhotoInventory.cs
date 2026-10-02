@@ -49,8 +49,12 @@ public class PhotoInventory : MonoBehaviour
     private readonly List<GameObject> spawnedThumbnails = new List<GameObject>();
     private bool isEnlargedViewOpen;
 
+    // 같은 Player 오브젝트의 InteractionController. 살펴보기 중인지 확인하는 용도.
+    private InteractionController interactionController;
+
     private void Awake()
     {
+        interactionController = GetComponent<InteractionController>();
         if (inventoryPanel != null) inventoryPanel.SetActive(false);
         if (enlargedViewPanel != null) enlargedViewPanel.SetActive(false);
         UpdateRemainingCountText();
@@ -80,6 +84,8 @@ public class PhotoInventory : MonoBehaviour
     {
         // 촬영 모드 중엔 인벤토리를 열지 못하게 막는다 (뷰파인더 화면 위에 인벤토리가 겹치면 혼란스러움).
         if (photoCaptureSystem != null && photoCaptureSystem.IsBusy) return;
+        // 단서 살펴보기 중에도 열지 못하게 막는다 (커서 잠금/시점 회전 상태가 서로 꼬이는 것을 방지).
+        if (interactionController != null && interactionController.IsModalActive) return;
 
         if (IsOpen) CloseInventory();
         else OpenInventory();

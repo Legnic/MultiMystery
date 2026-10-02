@@ -1,0 +1,17 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a7384fdae22764b468db77260006ce64, type: 3}
+  m_Name: Clue_Parchment_01
+  m_EditorClassIdentifier: Assembly-CSharp::ClueData
+  clueId: parchment_01
+  displayName: "\uB0A1\uC740 \uC591\uD53C\uC9C0"
+  description: "(\uC784\uC2DC) \uB0B4\uC6A9 \uBBF8\uC815"

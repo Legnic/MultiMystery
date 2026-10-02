@@ -25,9 +25,15 @@ public class PhotoAcquiredToast : MonoBehaviour
     // PhotoCaptureSystem이 촬영에 성공했을 때 호출한다.
     public void Show(PhotoItemData item)
     {
+        ShowMessage($"과거 사진을 얻었다: {item.title}");
+    }
+
+    // 사진 외의 기능(예: 단서 획득)에서도 같은 토스트를 쓰기 위한 범용 버전. 원하는 문구를 그대로 띄운다.
+    public void ShowMessage(string message)
+    {
         if (messageText != null)
         {
-            messageText.text = $"과거 사진을 얻었다: {item.title}";
+            messageText.text = message;
         }
 
         if (routine != null) StopCoroutine(routine);
