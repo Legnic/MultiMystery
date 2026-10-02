@@ -14,7 +14,7 @@ git에 커밋되어 팀원 전원이 같은 내용을 공유합니다. 개인적
 - Unity **6000.6.0f1**, Universal Render Pipeline (URP) 17.6.0
 - Input System(신규) 사용, 기본 InputSystem_Actions 자산 포함
 - 현재 패키지: AI Navigation, Timeline, Visual Scripting, UGUI, Test Framework 등 기본 템플릿 구성 그대로
-- **아직 설치 안 됨**: 온라인 2인 협동에 필요한 네트워킹 패키지(Netcode for GameObjects vs Unity Multiplayer Services 중 미결정). 이 결정이 나기 전까지 네트워크 코드를 임의로 추가하지 말고, 필요하면 먼저 질문할 것.
+- **네트워킹 확정(2026-10-02)**: 중계 호스트(Relay) 방식, `com.unity.netcode.gameobjects@2.13.3` + `com.unity.services.multiplayer@2.3.3`(Sessions API) 조합. Sessions API가 Relay 할당/참가 코드/NGO 연결을 한 번에 처리하며, `NetworkManager.StartHost/StartClient`는 직접 호출하지 않음. (단, 이번 세팅은 KSM 개인 작업 공간에만 반영됨 — 아래 "네트워킹 세팅 현황" 참고. 설계 근거는 Artifact "릴레이 호스트 아키텍처" 참고)
 - `Assets/Scripts` 등 폴더는 만들어졌지만 실제 게임플레이 코드는 아직 없는 초기 상태(3D 코어 템플릿 잔재인 `TutorialInfo`, `Readme.asset` 포함, 정리 필요 시 팀 논의 후 삭제)
 
 ## 팀 구성 (6명)
@@ -52,10 +52,22 @@ git에 커밋되어 팀원 전원이 같은 내용을 공유합니다. 개인적
 
 새 에셋/스크립트를 만들 때는 공용 코드가 아닌 이상 해당 담당자의 이니셜 폴더 아래에 배치하세요. 공용(팀 전체가 쓰는) 스크립트나 에셋을 어디에 둘지는 아직 미정이니, 애매하면 먼저 질문할 것.
 
+## 네트워킹 세팅 현황
+- 패키지: `com.unity.netcode.gameobjects@2.13.3`, `com.unity.services.multiplayer@2.3.3` 설치 완료 (프로젝트 전역 적용)
+- **현재는 `KSM` 씬(`Assets/Scenes/KSM.unity`)에만 세팅이 있음**: `SessionManager`(`CoopSessionManager`), `NetworkManager`(`NetworkManager`+`UnityTransport`, 연결 완료), `Ground`(Plane, 바닥), UI `Canvas`(호스트/참가 버튼 + `EventSystem`의 `InputSystemUIInputModule`)
+- 스크립트: `Assets/Scripts/KSM/Networking/CoopSessionManager.cs`, `Assets/Scripts/KSM/Player/PlayerMovement.cs`, `Assets/Scripts/KSM/UI/MultiplayerMenuUI.cs` (네임스페이스 `CoopDemo`)
+- 프리팹: `Assets/Prefabs/KSM/Player.prefab` (`NetworkObject` + `NetworkTransform(AuthorityMode=Owner)` + `PlayerMovement`), `NetworkManager.NetworkConfig.PlayerPrefab`과 `DefaultNetworkPrefabs.asset`에 등록됨
+- **`PlayerMovement.OnNetworkSpawn`의 스폰 위치 적용 주의사항**: `transform.position` 직접 대입은 `NetworkTransform`이 되돌리고, `NetworkTransform.Teleport()`만으로도 `CharacterController`가 다음 `Move()`에서 캐시된 위치로 되돌림 → `m_Controller.enabled = false` → `Teleport()` → `enabled = true` 순서로 처리해야 함(이미 반영됨)
+- 에디터 Play 모드에서 `CoopSessionManager.HostGame()`을 직접 호출해 실제 Relay 세션 생성/플레이어 스폰(정상 위치, 바닥에 착지)까지 재확인함 — 콘솔 에러 없음
+- UI는 좌측 하단 패널(어두운 반투명 배경)에 제목/호스트·참가 버튼/참가 코드 입력란/상태 텍스트를 그룹화한 형태로 재구성, 실제 플레이 테스트에서 사용자가 최종 확인함(2026-10-02, "특이사항 없음")
+- 테스트 빌드: `C:\Users\mbc\Desktop\MultiTestBuild\MultiMystery.exe` (StandaloneWindows64, KSM 씬만 포함, 2026-10-02 빌드, 0 에러)
+- **다른 팀원 씬/폴더에는 아직 반영 안 됨** — 공용 위치로 옮길지, 각자 씬에 똑같이 복제할지는 팀 논의 필요. 테스트 방법은 빌드 1개 + 에디터 Play 1개로 2개 프로세스를 띄워야 함(에디터는 동시에 Play 2번 불가).
+- 참고 자료: claude.ai Artifact "릴레이 호스트 아키텍처"(연결 흐름 시퀀스 다이어그램, 씬 구성요소 책임 분리, 현재 한계와 다음 단계 정리), `C:\Users\mbc\Desktop\TestMulti\MULTIPLAYER_SETUP.md`(패키지 버전 함정/Unity MCP 자동화 트랩)
+
 ## 사용 가능한 Unity 전용 스킬
 이 환경에는 `unity:` 접두사의 스킬들(unity-cli, ui, urp-postprocessing, physics-3d-collision 등)이 이미 연결되어 있습니다. 관련 작업을 할 때는 먼저 해당 스킬을 확인하세요.
 
 ## 다음에 결정해야 할 것
-1. 네트워킹 방식(로컬 2인 vs 온라인, 온라인이면 어떤 패키지)
+1. 네트워킹 세팅(현재 KSM 씬에만 있음)을 공용 위치로 옮길지, 팀 전체 적용 방식/일정
 2. 캐릭터 조작 방식 vs 디오라마 고정 시점 (프로토타입 필요)
 3. 팀 공통 코딩 컨벤션, 공용 에셋/스크립트 배치 규칙
