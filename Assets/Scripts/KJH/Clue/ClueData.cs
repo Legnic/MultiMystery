@@ -12,9 +12,13 @@ public class ClueData : ScriptableObject
     [Tooltip("화면에 보여줄 단서 이름 (예: 낡은 양피지). 획득 알림에 쓰인다.")]
     public string displayName;
 
-    [Tooltip("단서 설명. 여러 줄 입력 가능. 나중에 단서 목록 화면에서 쓸 예정.")]
+    [Tooltip("단서 설명. 여러 줄 입력 가능. 일반 단서(ViewableClue)는 살펴볼 때 화면 오른쪽에 이 글을 보여준다.")]
     [TextArea(3, 10)]
     public string description;
+
+    [Tooltip("단서 이미지. 일반 단서(ViewableClue)는 살펴볼 때 화면 가운데에 이 이미지를 보여준다. " +
+             "비워두면 이미지 없이 글만 보여준다. 텍스처 Import 설정의 Texture Type을 'Sprite (2D and UI)'로 해야 여기에 넣을 수 있다.")]
+    public Sprite image;
 
 #if UNITY_EDITOR
     // Inspector에서 값을 바꿀 때마다, 프로젝트 안의 다른 ClueData와 clueId가 겹치는지 검사해서 경고를 띄운다.

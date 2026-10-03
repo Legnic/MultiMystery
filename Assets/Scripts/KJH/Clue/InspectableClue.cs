@@ -69,13 +69,6 @@ public class InspectableClue : MonoBehaviour, IInteractable, IFocusable, IModalI
     [Tooltip("마우스 이동량을 읽을 액션 (Player/Look). 살펴보는 동안 오브젝트 회전에 쓴다.")]
     [SerializeField] private InputActionReference lookAction;
 
-    [Header("강조 표시 (조준됐을 때)")]
-    [Tooltip("조준됐을 때 기본 색에 곱할 밝기 배율. 1.15 = 15% 밝게.")]
-    [SerializeField] private float highlightMultiplier = 1.15f;
-
-    [Tooltip("강조가 서서히 켜지고 꺼지는 시간 (초). 번쩍이지 않게 짧고 부드럽게.")]
-    [SerializeField] private float highlightFadeDuration = 0.15f;
-
     [Header("배경 연출")]
     [Tooltip("살펴보는 동안 배경을 흐리게 하는 Volume (Inspect_Volume). weight가 0 → 1로 바뀐다. 비워두면 연출 없이 동작한다.")]
     [SerializeField] private Volume inspectVolume;
@@ -105,12 +98,11 @@ public class InspectableClue : MonoBehaviour, IInteractable, IFocusable, IModalI
     // 이 단서에 붙은 펼침 연출들 (ParchmentRoller 등). 하나도 없으면 빈 배열.
     private IRevealAnimation[] revealAnimations;
 
-    // 강조 표시용
+    // 조준 강조 표시 (일반 단서와 공용 컴포넌트). 밝기 배율·시간은 ClueHighlighter Inspector에서 조절한다.
+    private ClueHighlighter highlighter;
+
+    // 화면 중앙 맞추기·크기 계산에 쓰는 렌더러 목록
     private Renderer[] renderers;
-    private MaterialPropertyBlock propertyBlock;
-    private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor"); // URP Lit의 기본 색 속성
-    private float highlightCurrent;  // 0 = 강조 없음, 1 = 완전 강조
-    private float highlightTarget;
 
     // 원래 자리 복원용 (로컬 값으로 저장해야 부모가 있어도 정확히 돌아간다)
     private Transform originalParent;
@@ -142,7 +134,9 @@ public class InspectableClue : MonoBehaviour, IInteractable, IFocusable, IModalI
         // 인터페이스 타입으로도 컴포넌트를 찾을 수 있다. 어떤 종류의 펼침 연출이든 IRevealAnimation이면 다 모인다.
         revealAnimations = GetComponentsInChildren<IRevealAnimation>(true);
         body = GetComponent<Rigidbody>();
-        propertyBlock = new MaterialPropertyBlock();
+        // 강조 컴포넌트가 없으면(예전에 설정한 단서) 실행 중에 붙여서 그대로 동작하게 한다.
+        highlighter = GetComponent<ClueHighlighter>();
+        if (highlighter == null) highlighter = gameObject.AddComponent<ClueHighlighter>();
 
         if (clueJournal == null) clueJournal = FindAnyObjectByType<ClueJournal>();
         if (acquiredToast == null) acquiredToast = FindAnyObjectByType<PhotoAcquiredToast>(FindObjectsInactive.Include);
@@ -156,8 +150,6 @@ public class InspectableClue : MonoBehaviour, IInteractable, IFocusable, IModalI
 
     private void Update()
     {
-        UpdateHighlight();
-
         if (CurrentState == State.Inspecting) UpdateInspectRotation();
     }
 
@@ -188,14 +180,14 @@ public class InspectableClue : MonoBehaviour, IInteractable, IFocusable, IModalI
     {
         if (CurrentState != State.Idle) return;
         CurrentState = State.Focused;
-        highlightTarget = 1f;
+        highlighter.SetHighlighted(true);
     }
 
     public void OnFocusExit()
     {
         // 살펴보기 시작으로 조준이 풀린 경우에는 상태를 Idle로 되돌리면 안 된다 (Focused일 때만 되돌림).
         if (CurrentState == State.Focused) CurrentState = State.Idle;
-        highlightTarget = 0f;
+        highlighter.SetHighlighted(false);
     }
 
     // ── IModalInteraction (살펴보기 중 E / Esc) ────────────
@@ -214,7 +206,7 @@ public class InspectableClue : MonoBehaviour, IInteractable, IFocusable, IModalI
     private void BeginInspect()
     {
         CurrentState = State.MovingIn;
-        highlightTarget = 0f;
+        highlighter.SetHighlighted(false);
 
         // 1) 원래 자리를 기억한다 (돌아올 때 이 값으로 정확히 복원).
         originalParent = transform.parent;
@@ -425,42 +417,6 @@ public class InspectableClue : MonoBehaviour, IInteractable, IFocusable, IModalI
         inspectYaw += yawDegrees;
         inspectPitch = Mathf.Clamp(inspectPitch + pitchDegrees, -pitchLimit, pitchLimit);
         ApplyInspectPose();
-    }
-
-    // ── 강조 표시 ──────────────────────────────────────────
-
-    // highlightCurrent를 highlightTarget 쪽으로 천천히 옮기고, 그만큼 기본 색을 밝게 한다.
-    // MaterialPropertyBlock을 쓰는 이유: 머티리얼을 복제(인스턴스)하지 않고 이 렌더러만 색을 바꿀 수 있어서.
-    private void UpdateHighlight()
-    {
-        if (Mathf.Approximately(highlightCurrent, highlightTarget)) return;
-
-        float step = highlightFadeDuration > 0f ? Time.unscaledDeltaTime / highlightFadeDuration : 1f;
-        highlightCurrent = Mathf.MoveTowards(highlightCurrent, highlightTarget, step);
-        float multiplier = Mathf.Lerp(1f, highlightMultiplier, Mathf.SmoothStep(0f, 1f, highlightCurrent));
-
-        foreach (Renderer r in renderers)
-        {
-            if (r == null) continue;
-            Material[] mats = r.sharedMaterials;
-            for (int i = 0; i < mats.Length; i++)
-            {
-                if (highlightCurrent <= 0f)
-                {
-                    // 완전히 꺼지면 블록을 비워서 원래 머티리얼 색으로 완전히 돌아가게 한다.
-                    r.SetPropertyBlock(null, i);
-                    continue;
-                }
-                if (mats[i] == null || !mats[i].HasProperty(BaseColorId)) continue;
-
-                Color baseColor = mats[i].GetColor(BaseColorId);
-                Color lit = baseColor * multiplier;
-                lit.a = baseColor.a; // 투명도는 바꾸지 않는다
-                r.GetPropertyBlock(propertyBlock, i);
-                propertyBlock.SetColor(BaseColorId, lit);
-                r.SetPropertyBlock(propertyBlock, i);
-            }
-        }
     }
 
     // ── 보조 함수 ──────────────────────────────────────────

@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a7384fdae22764b468db77260006ce64, type: 3}
+  m_Name: Clue_ViewableClue_Sample
+  m_EditorClassIdentifier: Assembly-CSharp::ClueData
+  clueId: viewableclue_sample
+  displayName: "\uD14C\uC2A4\uD2B8 \uB2E8\uC11C"
+  description: "\uCC45\uC0C1 \uC704\uC5D0 \uB193\uC5EC \uC788\uB358 \uC624\uB798\uB41C \uC0AC\uC9C4 \uD55C \uC7A5.\n\n\uB4B7\uBA74\uC5D0\uB294 \uD76C\uBBF8\uD558\uAC8C \uB0A0\uC9DC\uAC00 \uC801\uD600 \uC788\uB2E4. \uB204\uAD70\uAC00 \uC77C\uBD80\uB7EC \uC774 \uC790\uB9AC\uC5D0 \uB0A8\uACA8 \uB454 \uAC83 \uAC19\uB2E4.\n\n(\uC77C\uBC18 \uB2E8\uC11C \uD45C\uC2DC \uD14C\uC2A4\uD2B8\uC6A9 \uBB38\uAD6C)"
+  image: {fileID: 21300000, guid: 346707b4937fb6545adb25d78169bed8, type: 3}
