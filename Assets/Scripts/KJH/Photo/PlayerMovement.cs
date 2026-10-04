@@ -33,6 +33,20 @@ public class PlayerMovement : MonoBehaviour
     // 인벤토리 UI가 열려있을 때 PhotoInventory가 이 값을 꺼서 시점 회전을 멈춘다.
     public bool LookEnabled { get; set; } = true;
 
+    // 현재 좌우(yaw, 몸통 회전) / 위아래(pitch, 카메라 기울기) 시점 각도 (도). 연출이 "지금 어디를 보고 있는지" 읽을 때 쓴다.
+    public float Yaw => transform.eulerAngles.y;
+    public float Pitch => pitch;
+
+    // 연출(ObjectEcho 등)이 시점을 특정 방향으로 돌릴 때 쓴다.
+    // 카메라를 직접 돌리면 다음 프레임에 HandleLook이 저장된 pitch 값으로 되돌려 버리므로,
+    // 반드시 이 함수로 내부 값까지 함께 바꿔야 연출이 끝난 뒤에도 그 방향을 계속 보고 있게 된다.
+    public void SetLookAngles(float yaw, float newPitch)
+    {
+        transform.rotation = Quaternion.Euler(0f, yaw, 0f);
+        pitch = Mathf.Clamp(newPitch, minPitch, maxPitch);
+        if (cameraTransform != null) cameraTransform.localEulerAngles = new Vector3(pitch, 0f, 0f);
+    }
+
     private CharacterController characterController;
     private float verticalVelocity; // 중력에 의해 누적되는 수직 낙하 속도
     private float pitch; // 현재 위아래 시점 각도 (카메라에만 적용, 몸통은 좌우로만 회전)
