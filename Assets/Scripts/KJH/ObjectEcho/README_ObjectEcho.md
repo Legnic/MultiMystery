@@ -69,6 +69,8 @@
 3. HandTarget / FocusPoint 위치·회전을 위 1-5 요령대로 다듬습니다.
 4. ObjectEchoTarget Inspector:
    - **Echo Clip** 에 소리 연결, Volume, Spectrum Intensity(선 출렁임 배율)
+   - **Spectrum Response** 에 반응 프리셋 연결 (선택): `SoundCue/Presets/` 의 Calm(잔잔) / Normal(보통) / Sensitive(예민).
+     비우면 SpectrumOverlay의 기본 반응(= Normal과 같은 값)을 씁니다. 새 프리셋은 Create > KJH > Spectrum Response Profile.
    - **Repeatable** (기본 꺼짐 = 1회만), **Prompt Text** (기본 "손을 얹는다")
    - **On Echo Completed** 에 퍼즐 로직 연결 (예: 서랍 열기, 단서 획득 등). 중간에 중단되면 호출되지 않습니다.
 5. 콜라이더가 **Default 레이어**에 있는지, 플레이어 조준 거리(InteractionController > Max Look Distance, 기본 2m) 안에서 닿는지 확인합니다.

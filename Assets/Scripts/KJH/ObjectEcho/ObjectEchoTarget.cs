@@ -33,6 +33,10 @@ public class ObjectEchoTarget : MonoBehaviour, IInteractable, IFocusable
     [Range(0f, 3f)]
     [SerializeField] private float spectrumIntensity = 1f;
 
+    [Tooltip("스펙트럼이 소리에 반응하는 방식 프리셋 (Calm=잔잔 / Normal=보통 / Sensitive=예민). " +
+             "비워두면 SpectrumOverlay의 기본 반응을 쓴다. 프리셋 위치: Assets/Scripts/KJH/SoundCue/Presets/")]
+    [SerializeField] private SpectrumResponseProfile spectrumResponse;
+
     [Header("사용 규칙")]
     [Tooltip("여러 번 손을 얹을 수 있는지. 끄면(기본) 한 번 듣고 나면 다시 안내가 뜨지 않는다.")]
     [SerializeField] private bool repeatable = false;
@@ -59,6 +63,7 @@ public class ObjectEchoTarget : MonoBehaviour, IInteractable, IFocusable
     public AudioClip EchoClip => echoClip;
     public float Volume => volume;
     public float SpectrumIntensity => spectrumIntensity;
+    public SpectrumResponseProfile SpectrumResponse => spectrumResponse;
 
     // 코드에서 AddListener로 구독할 수 있게 공개 (Inspector 연결과 함께 쓸 수 있음).
     public UnityEvent OnEchoCompleted => onEchoCompleted;

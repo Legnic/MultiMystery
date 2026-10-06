@@ -42,7 +42,8 @@ public class SoundCue : MonoBehaviour
     }
 
     // 클립을 재생하고 스펙트럼을 띄운다. 이미 재생 중이면 앞의 소리는 끊고 새로 시작한다.
-    public void Play(AudioClip clip, float volume = 1f, float spectrumIntensity = 1f)
+    // responseProfile: 스펙트럼 반응 프리셋(잔잔/보통/예민 등). 비우면 SpectrumOverlay의 기본 반응을 쓴다.
+    public void Play(AudioClip clip, float volume = 1f, float spectrumIntensity = 1f, SpectrumResponseProfile responseProfile = null)
     {
         if (clip == null)
         {
@@ -57,7 +58,7 @@ public class SoundCue : MonoBehaviour
         audioSource.Play();
         IsPlaying = true;
 
-        if (spectrumOverlay != null) spectrumOverlay.Show(audioSource, spectrumIntensity);
+        if (spectrumOverlay != null) spectrumOverlay.Show(audioSource, spectrumIntensity, responseProfile);
         watchRoutine = StartCoroutine(WatchRoutine());
     }
 

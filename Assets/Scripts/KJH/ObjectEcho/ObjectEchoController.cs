@@ -234,7 +234,7 @@ public class ObjectEchoController : MonoBehaviour, IModalInteraction
 
         if (soundCue != null && target.EchoClip != null)
         {
-            soundCue.Play(target.EchoClip, target.Volume, target.SpectrumIntensity);
+            soundCue.Play(target.EchoClip, target.Volume, target.SpectrumIntensity, target.SpectrumResponse);
             while (soundCue.IsPlaying) yield return null; // 소리가 끝나면 SoundCue가 스펙트럼 1초 페이드아웃을 시작한다
         }
         else
