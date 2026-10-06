@@ -13,7 +13,8 @@ using UnityEngine.UI;
 // 메뉴 1) Tools/KJH/ObjectEcho/Setup Player And UI
 //   - AudioMixer(Master > Ambient, Echo 그룹, AmbientVolume 파라미터 Expose)를 없으면 만든다.
 //   - Player에 ObjectEchoController, 자식 SoundCue, 카메라 아래 임시 손(PlaceholderHand)을 만든다.
-//   - 상호작용 안내 UI가 있는 Canvas에 하단 중앙 스펙트럼 표시(SpectrumOverlay)를 만든다.
+//   - 상호작용 안내 UI가 있는 Canvas에 화면 암전 덮개(EchoBlackout)와 화면 가운데 스펙트럼 표시(SpectrumOverlay)를 만든다.
+//     그리는 순서: 게임 화면 < 암전 덮개 < 안내 문구 < 스펙트럼 (암전 위에서도 안내 문구와 파형은 보여야 하므로).
 //   - 이미 있는 것은 건드리지 않고 빠진 것만 채운다 (여러 번 눌러도 안전).
 //
 // 메뉴 2) Tools/KJH/ObjectEcho/Make Object Echo Target (Top Surface / Front Surface)
@@ -27,6 +28,9 @@ public static class ObjectEchoSetupMenu
     private const string MixerPath = "Assets/Sounds/KJH/KJH_AudioMixer.mixer";
     private const string HandMaterialPath = "Assets/Scripts/KJH/ObjectEcho/PlaceholderHand_Mat.mat";
     private const string AmbientParam = "AmbientVolume";
+    private const string BlackoutName = "EchoBlackout";
+    // 화면 가운데 파형 영역 크기 (Canvas 기준 해상도 1920×1080에서의 픽셀).
+    public static readonly Vector2 SpectrumCenterSize = new Vector2(1000f, 260f);
 
     // ── 메뉴 1: 플레이어 / UI / 믹서 ────────────────────────
 
@@ -71,6 +75,17 @@ public static class ObjectEchoSetupMenu
         SpectrumOverlay overlay = UnityEngine.Object.FindAnyObjectByType<SpectrumOverlay>(FindObjectsInactive.Include);
         if (overlay == null && ic.PromptUI != null) overlay = CreateSpectrumOverlay(ic.PromptUI.GetComponentInParent<Canvas>());
         SetRef(cue, "spectrumOverlay", overlay);
+
+        // 4-1) 화면 암전 덮개 (안내 문구 바로 아래 순서에 둔다)
+        CanvasGroup blackout = null;
+        if (ic.PromptUI != null)
+        {
+            Canvas canvas = ic.PromptUI.GetComponentInParent<Canvas>();
+            Transform existing = canvas != null ? canvas.transform.Find(BlackoutName) : null;
+            blackout = existing != null ? existing.GetComponent<CanvasGroup>() : CreateBlackout(canvas, ic.PromptUI.transform);
+        }
+        if (overlay != null) overlay.transform.SetAsLastSibling(); // 파형은 항상 맨 위에 그린다
+        SetRef(controller, "blackoutOverlay", blackout);
 
         // 5) 컨트롤러 참조 연결
         SetRef(controller, "interactionController", ic);
@@ -143,7 +158,33 @@ public static class ObjectEchoSetupMenu
         return mat;
     }
 
-    // 하단 중앙의 스펙트럼 표시 UI.
+    // 화면 전체를 덮는 어두운 덮개. 평소엔 투명(alpha 0)이고, 연출 중에만 ObjectEchoController가 짙게 만든다.
+    private static CanvasGroup CreateBlackout(Canvas canvas, Transform drawBefore)
+    {
+        if (canvas == null) return null;
+        GameObject go = new GameObject(BlackoutName, typeof(RectTransform), typeof(CanvasGroup), typeof(Image));
+        Undo.RegisterCreatedObjectUndo(go, "Create Echo Blackout");
+        RectTransform rt = go.GetComponent<RectTransform>();
+        rt.SetParent(canvas.transform, false);
+        rt.anchorMin = Vector2.zero;
+        rt.anchorMax = Vector2.one;
+        rt.offsetMin = rt.offsetMax = Vector2.zero;
+        // 안내 문구보다 먼저(=아래에) 그려지도록 순서를 맞춘다.
+        if (drawBefore != null && drawBefore.parent == canvas.transform) rt.SetSiblingIndex(drawBefore.GetSiblingIndex());
+
+        Image image = go.GetComponent<Image>();
+        // 완전한 검정보다 아주 짙은 갈색이 비네팅 색(먹색)과 자연스럽게 이어진다.
+        image.color = new Color(0.03f, 0.02f, 0.015f, 1f);
+        image.raycastTarget = false;
+
+        CanvasGroup group = go.GetComponent<CanvasGroup>();
+        group.alpha = 0f;
+        group.blocksRaycasts = false;
+        group.interactable = false;
+        return group;
+    }
+
+    // 화면 가운데의 스펙트럼 표시 UI.
     private static SpectrumOverlay CreateSpectrumOverlay(Canvas canvas)
     {
         if (canvas == null) return null;
@@ -151,11 +192,11 @@ public static class ObjectEchoSetupMenu
         Undo.RegisterCreatedObjectUndo(root, "Create Spectrum Overlay");
         RectTransform rt = root.GetComponent<RectTransform>();
         rt.SetParent(canvas.transform, false);
-        // 화면 하단 중앙. 상호작용 안내 문구(y=160)보다 아래에 둔다.
-        rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0f);
+        // 화면 정가운데. 암전된 화면 한가운데에 파형만 남도록 크게 둔다.
+        rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0.5f);
         rt.pivot = new Vector2(0.5f, 0.5f);
-        rt.anchoredPosition = new Vector2(0f, 90f);
-        rt.sizeDelta = new Vector2(620f, 110f);
+        rt.anchoredPosition = Vector2.zero;
+        rt.sizeDelta = new Vector2(SpectrumCenterSize.x, SpectrumCenterSize.y);
 
         GameObject line = new GameObject("InkLine", typeof(RectTransform));
         RectTransform lrt = line.GetComponent<RectTransform>();

@@ -433,10 +433,10 @@ RectTransform:
   - {fileID: 615906026}
   m_Father: {fileID: 1483906089}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0}
-  m_AnchorMax: {x: 0.5, y: 0}
-  m_AnchoredPosition: {x: 0, y: 90}
-  m_SizeDelta: {x: 620, y: 110}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 1000, y: 260}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &61533827
 MonoBehaviour:
@@ -456,14 +456,26 @@ MonoBehaviour:
   fadeOutDuration: 1
   pointCount: 96
   spectrumSize: 512
+  waveformSampleSize: 1024
   minFrequency: 60
   maxFrequency: 6000
-  gain: 14
-  riseSpeed: 8
-  fallSpeed: 3
-  waveCycles: 7
-  waveFlowSpeed: 1.2
   idleWobble: 0.02
+  defaultResponse:
+    gain: 14
+    useDecibelScale: 1
+    decibelFloor: -30
+    highFrequencyTilt: 2
+    autoNormalize: 1
+    normalizeTarget: 0.85
+    normalizeRelease: 1.5
+    minReference: 0.12
+    riseSpeed: 16
+    fallSpeed: 6
+    waveCycles: 9
+    waveFlowSpeed: 1.4
+    edgeFalloff: 0.2
+    waveformBlend: 0.3
+    waveformSmoothing: 20
 --- !u!225 &61533828
 CanvasGroup:
   m_ObjectHideFlags: 0
@@ -1253,7 +1265,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  lineWidth: 2.4
+  lineWidth: 3
   pressureVariation: 0.35
   edgeTaper: 0.12
   bleedWidthMultiplier: 3.2
@@ -2816,6 +2828,7 @@ MonoBehaviour:
   echoClip: {fileID: 8300000, guid: d9b6c29e4aed2e44aaa526fc43715b60, type: 3}
   volume: 1
   spectrumIntensity: 1.3
+  spectrumResponse: {fileID: 0}
   repeatable: 0
   promptText: "\uC190\uC744 \uC5B9\uB294\uB2E4"
   highlightOnFocus: 0
@@ -3903,6 +3916,7 @@ RectTransform:
   - {fileID: 1473204566}
   - {fileID: 434007117}
   - {fileID: 791098527}
+  - {fileID: 1851087349}
   - {fileID: 1426527271}
   - {fileID: 910070220}
   - {fileID: 61533826}
@@ -5198,6 +5212,11 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+  darkenScreen: 1
+  blackoutOverlay: {fileID: 1851087352}
+  blackoutDuration: 1.2
+  blackoutAlpha: 0.9
+  blackoutRestoreDuration: 1.2
   delayBeforeSound: 0.4
   delayAfterSound: 0.5
   restoreDuration: 1.6
@@ -5205,6 +5224,94 @@ MonoBehaviour:
   handRetractDuration: 1.1
   allowInterrupt: 0
   interruptPrompt: "[E] \uC190\uC744 \uB5C0\uB2E4"
+--- !u!1 &1851087348
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1851087349}
+  - component: {fileID: 1851087352}
+  - component: {fileID: 1851087351}
+  - component: {fileID: 1851087350}
+  m_Layer: 0
+  m_Name: EchoBlackout
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1851087349
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1851087348}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1483906089}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1851087350
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1851087348}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+  m_Material: {fileID: 0}
+  m_Color: {r: 0.03, g: 0.02, b: 0.015, a: 1}
+  m_RaycastTarget: 0
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 0}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &1851087351
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1851087348}
+  m_CullTransparentMesh: 1
+--- !u!225 &1851087352
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1851087348}
+  m_Enabled: 1
+  m_Alpha: 0
+  m_Interactable: 0
+  m_BlocksRaycasts: 0
+  m_IgnoreParentGroups: 0
 --- !u!1 &1929025880
 GameObject:
   m_ObjectHideFlags: 0
@@ -5439,9 +5546,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ObjectEchoTarget
   handTarget: {fileID: 1446568655}
   focusPoint: {fileID: 1344741958}
-  echoClip: {fileID: 8300000, guid: 6afe45b194eef8140acad353e707e88a, type: 3}
+  echoClip: {fileID: 8300000, guid: e0f0d95eccca56143844198bdbc6443d, type: 3}
   volume: 1
   spectrumIntensity: 1
+  spectrumResponse: {fileID: 11400000, guid: d3c13b36c62978a4ebdb77c2286a435a, type: 2}
   repeatable: 0
   promptText: "\uC190\uC744 \uC5B9\uB294\uB2E4"
   highlightOnFocus: 0

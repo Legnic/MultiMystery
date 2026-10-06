@@ -1,7 +1,8 @@
 using System.Collections;
 using UnityEngine;
 
-// 연출용 "소리 스펙트럼" 표시. 화면 하단 중앙에 잉크 펜 선 하나가 소리에 맞춰 일렁인다.
+// 연출용 "소리 스펙트럼" 표시. 화면에 잉크 펜 선 하나가 소리에 맞춰 일렁인다.
+// (ObjectEcho에서는 암전된 화면 정가운데에 둔다. 위치·크기는 이 오브젝트의 RectTransform으로 정한다)
 // 재생 중인 AudioSource를 넘겨받아 매 프레임 소리를 분석하고,
 // 그 결과를 "선의 출렁임 크기"로 바꿔 InkWaveformGraphic에 넘긴다.
 //   - 나타날 때 0.5초 페이드인, 사라질 때 1초 페이드아웃 (갑툭튀 없이)
@@ -17,7 +18,7 @@ using UnityEngine;
 //   4) 실제 파형 섞기: 소리의 실제 진동 모양을 조금 섞어 두드림 같은 순간 반응을 살린다.
 // 반응 방식(2~4와 속도)은 SpectrumResponse 값 묶음으로 정하고, 사물마다 프리셋으로 바꿀 수 있다.
 //
-// 사용법: Canvas 아래, CanvasGroup이 붙은 오브젝트(하단 중앙 배치)에 붙이고 자식 InkWaveformGraphic을 연결한다.
+// 사용법: Canvas 아래, CanvasGroup이 붙은 오브젝트에 붙이고 자식 InkWaveformGraphic을 연결한다.
 //         보통 직접 호출하지 않고 SoundCue가 Show/Hide를 대신 불러준다.
 public class SpectrumOverlay : MonoBehaviour
 {

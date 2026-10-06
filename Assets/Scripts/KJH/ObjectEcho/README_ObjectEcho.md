@@ -1,7 +1,8 @@
 # ObjectEcho (임시 이름) — 사물에 손을 얹으면 소리가 들리는 능력
 
 플레이어가 사물을 바라보고 **E**를 누르면 → 시점이 사물 쪽으로 돌아가고 손이 얹힘 → 시야가 좁아짐(비네팅·FOV·채도·환경음)
-→ 그 사물의 소리 + 하단 중앙 잉크 펜 스펙트럼 → 모든 것이 원래대로 돌아오고 완료 이벤트 발생.
+→ 화면이 완전히 어두워짐(시각 정보 차단) → 그 사물의 소리 + 화면 정가운데 잉크 펜 파형(청각에 집중)
+→ 어둠이 걷히고 모든 것이 원래대로 돌아오며 완료 이벤트 발생.
 
 ## 파일 구성
 
@@ -13,7 +14,7 @@
 | `ObjectEcho/PlaceholderHandReach.cs` | 임시 손 (카메라 아래 단순 도형, 베지어 곡선 이동) |
 | `ObjectEcho/Editor/ObjectEchoSetupMenu.cs` | `Tools/KJH/ObjectEcho/...` 설정 메뉴 |
 | `SoundCue/SoundCue.cs` | 연출용 소리 재생 + 스펙트럼 표시 묶음 (다른 연출에서도 재사용 가능) |
-| `SoundCue/SpectrumOverlay.cs` | 하단 중앙 스펙트럼 (0.5초 페이드인 / 소리 끝난 뒤 1초 페이드아웃) |
+| `SoundCue/SpectrumOverlay.cs` | 스펙트럼 파형 (0.5초 페이드인 / 소리 끝난 뒤 1초 페이드아웃). 위치는 RectTransform으로 정함 (ObjectEcho는 화면 정가운데) |
 | `SoundCue/InkWaveformGraphic.cs` | 잉크 펜 선 그리기 (번짐·펜 압력·끝 가늘어짐) |
 
 기존 공용 코드 재사용: `IInteractable`, `IFocusable`, `IModalInteraction`, `InteractionController`(조준 감지·E/Esc·차단), `InteractionPromptUI`(안내 문구).
@@ -47,7 +48,9 @@
 
 ### 1-4. 손 / 스펙트럼 UI
 - `Player/Main Camera/PlaceholderHand` : PlaceholderHandReach + 단순 도형 손. 처음 놓인 위치(화면 밖 오른쪽 아래)가 대기 자리입니다.
-- `PhotoUICanvas/SpectrumOverlay` : 하단 중앙(안내 문구 아래). 선 색은 자식 `InkLine` 의 Color에서 바꿉니다.
+- `PhotoUICanvas/EchoBlackout` : 화면 전체를 덮는 암전 덮개(평소 투명). 그리는 순서가 **게임 화면 < EchoBlackout < InteractionPrompt < SpectrumOverlay** 여야 암전 위에 안내 문구와 파형이 보입니다.
+  컨트롤러의 `Darken Screen`(켜기/끄기), `Blackout Duration`(1.2초), `Blackout Alpha`(1 = 완전 암전), `Blackout Restore Duration`(1.2초)으로 조절합니다.
+- `PhotoUICanvas/SpectrumOverlay` : 화면 정가운데, 1000×260. 선 색은 자식 `InkLine` 의 Color에서 바꿉니다.
 - Player의 ObjectEchoController에 Hand Reach / Sound Cue 가 연결되어 있는지 확인합니다.
 
 ### 1-5. HandTarget / FocusPoint 배치 요령
