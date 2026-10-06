@@ -11,8 +11,11 @@ using UnityEngine.Events;
 // 사용법: 사물의 최상위에 붙이고, 자식으로 HandTarget / FocusPoint 빈 오브젝트를 만들어 연결한다.
 //         (Tools/KJH/ObjectEcho/Make Object Echo Target 메뉴를 쓰면 자식까지 한 번에 만들어진다)
 //         콜라이더는 이 오브젝트나 자식 어디에 있어도 된다 (조준 레이가 부모 쪽으로 찾아 올라옴).
-public class ObjectEchoTarget : MonoBehaviour, IInteractable, IFocusable
+public class ObjectEchoTarget : MonoBehaviour, IInteractable, IFocusable, IRequiresAbility
 {
+    // 소리 듣기는 플레이어 A(SoundEcho 능력)만 할 수 있다. 다른 플레이어에게는 안내·강조가 뜨지 않는다.
+    public PlayerAbility RequiredAbility => PlayerAbility.SoundEcho;
+
     [Header("위치")]
     [Tooltip("손바닥이 닿을 위치/방향. 파란 Z축 = 손가락 끝 방향, 초록 Y축 = 손등 방향(사물 표면 바깥쪽). " +
              "비워두면 이 오브젝트의 위치를 쓴다.")]

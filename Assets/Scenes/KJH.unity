@@ -4868,6 +4868,7 @@ GameObject:
   - component: {fileID: 1827518820}
   - component: {fileID: 1827518821}
   - component: {fileID: 1827518822}
+  - component: {fileID: 1827518823}
   m_Layer: 8
   m_Name: Player
   m_TagString: Player
@@ -5224,6 +5225,19 @@ MonoBehaviour:
   handRetractDuration: 1.1
   allowInterrupt: 0
   interruptPrompt: "[E] \uC190\uC744 \uB5C0\uB2E4"
+--- !u!114 &1827518823
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1827518812}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d7d754815e2c2db4c81f66a19483e0b7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerAbilities
+  abilities: 3
 --- !u!1 &1851087348
 GameObject:
   m_ObjectHideFlags: 0

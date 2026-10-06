@@ -63,6 +63,13 @@
 - 대상 오브젝트를 선택하면 씬 뷰에 손바닥 크기 상자(손 자리)와 하늘색 구(응시 지점)가 그려지니 보면서 맞추면 됩니다.
 - Scene 뷰 툴바의 회전 기준을 **Local** 로 바꾸면 축 방향 확인이 쉽습니다.
 
+### 1-5. 플레이어 능력 (PlayerAbilities)
+- 소리 듣기는 **플레이어 A(SoundEcho 능력)** 전용입니다. Player의 `PlayerAbilities` → Abilities에 SoundEcho가 있어야 합니다.
+- 능력이 없는 플레이어에게는 대상의 안내 문구·강조가 뜨지 않고 E에도 반응하지 않습니다 (`ObjectEchoTarget`이 `IRequiresAbility`로 SoundEcho를 요구).
+- 같은 방식으로 사진 촬영 지점·Tab 사진 인벤토리는 플레이어 B(PastPhoto) 전용입니다. 단서는 누구나 쓸 수 있습니다.
+- 혼자 테스트하는 KJH 씬의 Player는 두 능력(SoundEcho, PastPhoto)을 모두 켜 두었습니다.
+- 코드 위치: `Assets/Scripts/KJH/Common/` (`PlayerAbility`, `PlayerAbilities`, `IRequiresAbility`). 공용 폴더 규칙이 정해지면 옮길 예정.
+
 ## 2. 새 능력 대상 오브젝트 추가하기
 
 1. 씬에서 사물(모델의 최상위)을 선택합니다.

@@ -226,6 +226,8 @@ public class ObjectEchoController : MonoBehaviour, IModalInteraction
     public bool TryBegin(ObjectEchoTarget target)
     {
         if (target == null || IsBusy) return false;
+        // 이중 안전장치: 능력 필터를 거치지 않고 호출되더라도 SoundEcho 능력이 없으면 시작하지 않는다.
+        if (!PlayerAbilities.Has(gameObject, PlayerAbility.SoundEcho)) return false;
         // 이미 다른 독점 상호작용(살펴보기 등)이 진행 중이면 시작하지 않는다.
         if (interactionController != null && interactionController.IsModalActive) return false;
         if (viewCamera == null)

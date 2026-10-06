@@ -37,6 +37,8 @@ public class PhotoCaptureSystem : MonoBehaviour
     public void BeginCapture(PhotoSpot spot)
     {
         if (IsBusy) return; // 이미 다른 지점을 촬영 중이면 무시 (이론상 거의 발생하지 않음)
+        // 이중 안전장치: 상호작용 필터를 거치지 않고 호출되더라도 PastPhoto 능력이 없으면 촬영하지 않는다.
+        if (!PlayerAbilities.Has(gameObject, PlayerAbility.PastPhoto)) return;
         if (spot.CameraAnchor == null)
         {
             Debug.LogWarning("[PhotoCaptureSystem] PhotoSpot에 CameraAnchor가 연결되어 있지 않습니다.", spot);

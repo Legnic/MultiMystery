@@ -9,8 +9,11 @@ using UnityEngine;
 // Rigidbody가 없으므로, 트리거 쪽인 PhotoSpot이 Kinematic Rigidbody를 들고 있어야 한다.
 [RequireComponent(typeof(Collider))]
 [RequireComponent(typeof(Rigidbody))]
-public class PhotoSpot : MonoBehaviour, IInteractable
+public class PhotoSpot : MonoBehaviour, IInteractable, IRequiresAbility
 {
+    // 과거 사진 촬영은 플레이어 B(PastPhoto 능력)만 할 수 있다. 다른 플레이어에게는 안내도 뜨지 않는다.
+    public PlayerAbility RequiredAbility => PlayerAbility.PastPhoto;
+
     [Header("참조")]
     [Tooltip("촬영 시 카메라가 이동해서 고정될 위치/각도. 보통 이 PhotoSpot의 자식으로 빈 오브젝트를 만들어 연결한다.")]
     [SerializeField] private Transform cameraAnchor;

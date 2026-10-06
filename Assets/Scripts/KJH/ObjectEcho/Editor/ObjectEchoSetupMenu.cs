@@ -53,6 +53,14 @@ public static class ObjectEchoSetupMenu
         ObjectEchoController controller = player.GetComponent<ObjectEchoController>();
         if (controller == null) controller = Undo.AddComponent<ObjectEchoController>(player);
 
+        // 1-1) 능력: 이 Player가 SoundEcho(소리 듣기) 능력을 갖도록 한다. 이미 있는 능력(예: PastPhoto)은 유지한다.
+        PlayerAbilities abilities = player.GetComponent<PlayerAbilities>();
+        if (abilities == null) abilities = Undo.AddComponent<PlayerAbilities>(player);
+        SerializedObject abilitySo = new SerializedObject(abilities);
+        SerializedProperty abilityProp = abilitySo.FindProperty("abilities");
+        abilityProp.intValue |= (int)PlayerAbility.SoundEcho;
+        abilitySo.ApplyModifiedProperties();
+
         // 2) SoundCue (Echo 그룹으로 출력 → 환경음 줄이기에 같이 줄지 않음)
         SoundCue cue = player.GetComponentInChildren<SoundCue>(true);
         if (cue == null)
