@@ -6,8 +6,11 @@ using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 
 // 사물에 손을 얹으면 시야가 좁아지고 그 사물의 소리가 들리는 능력(임시 이름: ObjectEcho)의 연출 전체를 지휘한다.
-// 흐름(상태): Idle → Reaching(시점 회전 + 손 뻗기) → Narrowing(시야 좁아짐) → Listening(소리 + 스펙트럼)
-//            → Returning(시야 복구 + 손 거두기) → Idle(입력 잠금 해제, 완료 이벤트)
+// 흐름(상태): Idle → Reaching(시점 회전 + 손 뻗기) → Narrowing(시야 좁아짐) → Darkening(화면 암전)
+//            → Listening(화면 가운데 소리 파형) → Returning(암전 해제 → 시야 복구 + 손 거두기)
+//            → Idle(입력 잠금 해제, 완료 이벤트)
+// 암전 이유: 시각 정보를 거의 차단해서 플레이어가 소리(청각 정보)에만 집중하게 하기 위함.
+//            비네팅으로 좁아지던 시야가 그대로 어둠까지 이어지고, 그 어둠 한가운데에 파형만 남는다.
 //
 // ── 왜 코루틴인가 (Awaitable 대신) ──────────────────────────────────────────
 //  1) 중단이 쉽다: "연출 도중 중단" 옵션을 켜면 StopCoroutine 한 줄로 진행 중인 단계를 멈추고 복귀 단계로 넘어갈 수 있다.
@@ -29,7 +32,7 @@ using UnityEngine.Rendering.Universal;
 //         Hand Reach 칸에 손 동작(PlaceholderHandReach 등 IHandReach 구현)을, Sound Cue 칸에 SoundCue를 연결한다.
 public class ObjectEchoController : MonoBehaviour, IModalInteraction
 {
-    public enum State { Idle, Reaching, Narrowing, Listening, Returning }
+    public enum State { Idle, Reaching, Narrowing, Darkening, Listening, Returning }
 
     [Header("참조 (비워두면 자동으로 찾음)")]
     [Tooltip("공용 상호작용 컨트롤러. 연출 중 다른 상호작용/인벤토리/촬영을 막는 데 쓴다. 비워두면 같은 오브젝트에서 찾는다.")]
@@ -108,6 +111,25 @@ public class ObjectEchoController : MonoBehaviour, IModalInteraction
     [Tooltip("시야 좁아짐/복구에 쓰는 곡선.")]
     [SerializeField] private AnimationCurve blendCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
 
+    [Header("2-1. 화면 암전")]
+    [Tooltip("시야가 좁아진 뒤 화면을 거의 검게 덮을지. 끄면 예전처럼 비네팅까지만 진행한다.")]
+    [SerializeField] private bool darkenScreen = true;
+
+    [Tooltip("화면 전체를 덮는 어두운 UI (CanvasGroup + 전체 화면 Image). 스펙트럼보다 아래, 안내 문구보다 아래에 있어야 한다. " +
+             "Tools/KJH/ObjectEcho/Setup Player And UI 메뉴가 만들어 준다.")]
+    [SerializeField] private CanvasGroup blackoutOverlay;
+
+    [Tooltip("비네팅이 다 좁아진 뒤 어둠으로 덮이는 시간 (초).")]
+    [SerializeField] private float blackoutDuration = 1.2f;
+
+    [Tooltip("암전의 진하기 (0~1). 1이면 완전히 검게. 이 프로젝트는 Linear 색 공간이라 0.97만 돼도 방이 꽤 보이므로, " +
+             "형체를 희미하게 남기고 싶을 때만 0.99 정도로 낮춘다.")]
+    [Range(0f, 1f)]
+    [SerializeField] private float blackoutAlpha = 1f;
+
+    [Tooltip("소리가 끝난 뒤 어둠이 걷히는 시간 (초).")]
+    [SerializeField] private float blackoutRestoreDuration = 1.2f;
+
     [Header("3. 소리 + 스펙트럼")]
     [Tooltip("시야가 다 좁아진 뒤 소리가 나기까지의 정적 (초). 잠깐의 침묵이 긴장감을 만든다.")]
     [SerializeField] private float delayBeforeSound = 0.4f;
@@ -165,6 +187,9 @@ public class ObjectEchoController : MonoBehaviour, IModalInteraction
     // 값 하나로 묶어 두면, 중간에 중단돼도 "지금 값에서" 그대로 되돌리면 되어 꼬이지 않는다.
     private float narrowBlend;
 
+    // 0 = 밝음, blackoutAlpha = 완전히 암전. 중단돼도 "지금 값에서" 되돌린다.
+    private float blackoutAmount;
+
     private void Awake()
     {
         if (interactionController == null) interactionController = GetComponent<InteractionController>();
@@ -180,6 +205,16 @@ public class ObjectEchoController : MonoBehaviour, IModalInteraction
         if (playerLock == null) playerLock = GetComponent<IPlayerLock>();
 
         SetupVolume();
+        if (blackoutOverlay != null)
+        {
+            blackoutOverlay.alpha = 0f;
+            blackoutOverlay.blocksRaycasts = false; // 연출용 덮개일 뿐이니 입력을 막지 않는다
+            blackoutOverlay.interactable = false;
+        }
+        else if (darkenScreen)
+        {
+            Debug.LogWarning("[ObjectEchoController] Blackout Overlay가 비어 있어 화면 암전 없이 진행합니다. Setup Player And UI 메뉴로 만들 수 있습니다.", this);
+        }
     }
 
     private void OnValidate()
@@ -204,6 +239,8 @@ public class ObjectEchoController : MonoBehaviour, IModalInteraction
     public bool TryBegin(ObjectEchoTarget target)
     {
         if (target == null || IsBusy) return false;
+        // 이중 안전장치: 능력 필터를 거치지 않고 호출되더라도 SoundEcho 능력이 없으면 시작하지 않는다.
+        if (!PlayerAbilities.Has(gameObject, PlayerAbility.SoundEcho)) return false;
         // 이미 다른 독점 상호작용(살펴보기 등)이 진행 중이면 시작하지 않는다.
         if (interactionController != null && interactionController.IsModalActive) return false;
         if (viewCamera == null)
@@ -240,14 +277,21 @@ public class ObjectEchoController : MonoBehaviour, IModalInteraction
         CurrentState = State.Narrowing;
         yield return AnimateBlend(1f, narrowDuration);
 
-        // ── 4단계: 소리 + 스펙트럼 ──
+        // ── 3-1단계: 화면 암전 (좁아진 시야가 그대로 어둠으로 이어진다) ──
+        if (UseBlackout)
+        {
+            CurrentState = State.Darkening;
+            yield return AnimateBlackout(blackoutAlpha, blackoutDuration);
+        }
+
+        // ── 4단계: 소리 + 화면 가운데 파형 ──
         CurrentState = State.Listening;
         if (allowInterrupt) ShowPrompt(interruptPrompt);
         yield return WaitUnscaled(delayBeforeSound);
 
         if (soundCue != null && target.EchoClip != null)
         {
-            soundCue.Play(target.EchoClip, target.Volume, target.SpectrumIntensity);
+            soundCue.Play(target.EchoClip, target.Volume, target.SpectrumIntensity, target.SpectrumResponse);
             while (soundCue.IsPlaying) yield return null; // 소리가 끝나면 SoundCue가 스펙트럼 1초 페이드아웃을 시작한다
         }
         else
@@ -267,7 +311,10 @@ public class ObjectEchoController : MonoBehaviour, IModalInteraction
         CurrentState = State.Returning;
         HidePrompt();
 
-        // 시야 복구와 손 거두기를 함께 진행한다 (따로 순서대로 하면 너무 길게 늘어진다).
+        // 먼저 어둠을 걷는다. 파형은 소리가 끝나는 순간부터 1초 동안 사라지고 있으므로, 어둠이 걷히는 동안 함께 사라진다.
+        if (blackoutAmount > 0f) yield return AnimateBlackout(0f, blackoutRestoreDuration);
+
+        // 그다음 시야 복구와 손 거두기를 함께 진행한다 (따로 순서대로 하면 너무 길게 늘어진다).
         bool handReturned = hand == null || !hand.IsExtended;
         StartCoroutine(RetractHandAfterDelay(() => handReturned = true));
         yield return AnimateBlend(0f, restoreDuration);
@@ -275,6 +322,7 @@ public class ObjectEchoController : MonoBehaviour, IModalInteraction
 
         // 혹시 남아 있을 효과를 정확히 0으로 맞추고 잠금 해제.
         ApplyBlend(0f);
+        ApplyBlackout(0f);
         UnlockPlayer();
         CurrentState = State.Idle;
         CurrentTarget = null;
@@ -345,6 +393,30 @@ public class ObjectEchoController : MonoBehaviour, IModalInteraction
     // ── 효과 적용 ──────────────────────────────────────────
 
     // 0~1 값 하나로 비네팅·채도(Volume weight), FOV, 환경음을 한꺼번에 맞춘다.
+    // 암전을 쓸 수 있는 상태인지 (옵션이 켜져 있고 덮개 UI가 연결돼 있을 때만).
+    private bool UseBlackout => darkenScreen && blackoutOverlay != null && blackoutAlpha > 0f;
+
+    // 암전 정도를 지금 값에서 target까지 duration초 동안 곡선으로 바꾼다.
+    // 들어갈 때 처음은 느리게(EaseIn 느낌) 시작해야 비네팅에서 어둠으로 "이어지는" 느낌이 나므로 같은 blendCurve를 쓴다.
+    private IEnumerator AnimateBlackout(float target, float duration)
+    {
+        float start = blackoutAmount;
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            ApplyBlackout(Mathf.Lerp(start, target, blendCurve.Evaluate(Mathf.Clamp01(elapsed / duration))));
+            yield return null;
+        }
+        ApplyBlackout(target);
+    }
+
+    private void ApplyBlackout(float amount)
+    {
+        blackoutAmount = amount;
+        if (blackoutOverlay != null) blackoutOverlay.alpha = amount;
+    }
+
     private void ApplyBlend(float blend)
     {
         narrowBlend = blend;
@@ -485,6 +557,7 @@ public class ObjectEchoController : MonoBehaviour, IModalInteraction
         if (soundCue != null) soundCue.Stop();
         if (hand != null) hand.SnapToRest();
         ApplyBlend(0f);
+        ApplyBlackout(0f);
         HidePrompt();
         UnlockPlayer();
         ObjectEchoTarget target = CurrentTarget;

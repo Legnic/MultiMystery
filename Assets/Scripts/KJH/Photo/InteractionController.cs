@@ -8,6 +8,9 @@ using UnityEngine.InputSystem;
 //   1) 트리거 방식: PhotoSpot처럼 범위에 들어오면 대상이 스스로 RegisterInteractable을 호출한다.
 //   2) 바라보기 방식: 매 프레임 화면 가운데(조준점)에서 레이를 쏴서 맞은 IInteractable을 찾는다 (단서 등).
 // 둘 다 해당되면 "조준점이 가리키는 대상"을 우선한다 (PhotoSpot 안에서 단서를 바라보면 단서 우선).
+// 능력 필터: 대상이 IRequiresAbility로 "필요한 능력"을 밝혔는데 이 플레이어(PlayerAbilities)에게 그 능력이 없으면,
+// 그 대상은 이 플레이어에게 "없는 것"으로 취급한다 (안내 문구·강조·E 반응 모두 없음).
+// 예: 플레이어 A(SoundEcho)에게는 사진 촬영 지점이, 플레이어 B(PastPhoto)에게는 소리 듣기 사물이 반응하지 않는다.
 // 사용법: Player 오브젝트에 붙인다 (같은 오브젝트에 PhotoCaptureSystem도 있어야 한다).
 public class InteractionController : MonoBehaviour
 {
@@ -129,7 +132,7 @@ public class InteractionController : MonoBehaviour
     // 조준 대상이 바뀌었을 때만 강조 알림과 안내 문구를 갱신한다 (매 프레임 갱신하면 페이드가 계속 다시 시작됨).
     private void SetLookTarget(IInteractable target)
     {
-        if (target != null && !target.CanInteract) target = null;
+        if (target != null && (!target.CanInteract || !IsAllowed(target))) target = null;
         if (target == lookInteractable) return;
 
         if (lookInteractable is IFocusable oldFocus) oldFocus.OnFocusExit();
@@ -137,6 +140,12 @@ public class InteractionController : MonoBehaviour
         if (lookInteractable is IFocusable newFocus) newFocus.OnFocusEnter();
 
         RefreshPrompt();
+    }
+
+    // 이 플레이어가 이 대상과 상호작용할 능력이 있는지. 능력이 필요 없는 대상(단서 등)은 항상 true.
+    private bool IsAllowed(IInteractable target)
+    {
+        return !(target is IRequiresAbility requirement) || PlayerAbilities.Has(gameObject, requirement.RequiredAbility);
     }
 
     // 지금 E를 누르면 실행될 대상. 조준 대상이 트리거 대상보다 우선이다.
@@ -158,6 +167,8 @@ public class InteractionController : MonoBehaviour
     {
         // 촬영 모드 중에는 다른 지점의 안내 문구가 뜨면 혼란스러우니 무시한다.
         if (photoCaptureSystem != null && photoCaptureSystem.IsBusy) return;
+        // 이 플레이어에게 없는 능력의 대상(예: 플레이어 A가 사진 촬영 지점 범위에 들어옴)은 등록하지 않는다.
+        if (!IsAllowed(interactable)) return;
 
         triggerInteractable = interactable;
         RefreshPrompt();
@@ -206,7 +217,7 @@ public class InteractionController : MonoBehaviour
         }
 
         IInteractable target = CurrentTarget;
-        if (target != null && target.CanInteract)
+        if (target != null && target.CanInteract && IsAllowed(target))
         {
             target.Interact(gameObject);
         }

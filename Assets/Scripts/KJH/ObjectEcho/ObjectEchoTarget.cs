@@ -11,8 +11,11 @@ using UnityEngine.Events;
 // 사용법: 사물의 최상위에 붙이고, 자식으로 HandTarget / FocusPoint 빈 오브젝트를 만들어 연결한다.
 //         (Tools/KJH/ObjectEcho/Make Object Echo Target 메뉴를 쓰면 자식까지 한 번에 만들어진다)
 //         콜라이더는 이 오브젝트나 자식 어디에 있어도 된다 (조준 레이가 부모 쪽으로 찾아 올라옴).
-public class ObjectEchoTarget : MonoBehaviour, IInteractable, IFocusable
+public class ObjectEchoTarget : MonoBehaviour, IInteractable, IFocusable, IRequiresAbility
 {
+    // 소리 듣기는 플레이어 A(SoundEcho 능력)만 할 수 있다. 다른 플레이어에게는 안내·강조가 뜨지 않는다.
+    public PlayerAbility RequiredAbility => PlayerAbility.SoundEcho;
+
     [Header("위치")]
     [Tooltip("손바닥이 닿을 위치/방향. 파란 Z축 = 손가락 끝 방향, 초록 Y축 = 손등 방향(사물 표면 바깥쪽). " +
              "비워두면 이 오브젝트의 위치를 쓴다.")]
@@ -32,6 +35,10 @@ public class ObjectEchoTarget : MonoBehaviour, IInteractable, IFocusable
     [Tooltip("스펙트럼 선의 출렁임 강도 배율. 1 = 기본, 0.5 = 잔잔하게, 2 = 크게.")]
     [Range(0f, 3f)]
     [SerializeField] private float spectrumIntensity = 1f;
+
+    [Tooltip("스펙트럼이 소리에 반응하는 방식 프리셋 (Calm=잔잔 / Normal=보통 / Sensitive=예민). " +
+             "비워두면 SpectrumOverlay의 기본 반응을 쓴다. 프리셋 위치: Assets/Scripts/KJH/SoundCue/Presets/")]
+    [SerializeField] private SpectrumResponseProfile spectrumResponse;
 
     [Header("사용 규칙")]
     [Tooltip("여러 번 손을 얹을 수 있는지. 끄면(기본) 한 번 듣고 나면 다시 안내가 뜨지 않는다.")]
@@ -59,6 +66,7 @@ public class ObjectEchoTarget : MonoBehaviour, IInteractable, IFocusable
     public AudioClip EchoClip => echoClip;
     public float Volume => volume;
     public float SpectrumIntensity => spectrumIntensity;
+    public SpectrumResponseProfile SpectrumResponse => spectrumResponse;
 
     // 코드에서 AddListener로 구독할 수 있게 공개 (Inspector 연결과 함께 쓸 수 있음).
     public UnityEvent OnEchoCompleted => onEchoCompleted;

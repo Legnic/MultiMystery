@@ -120,6 +120,8 @@ public class PhotoInventory : MonoBehaviour
         if (photoCaptureSystem != null && photoCaptureSystem.IsBusy) return;
         // 단서 살펴보기 중에도 열지 못하게 막는다 (커서 잠금/시점 회전 상태가 서로 꼬이는 것을 방지).
         if (interactionController != null && interactionController.IsModalActive) return;
+        // 사진 인벤토리는 사진을 찍는 플레이어 B(PastPhoto) 전용이다. 다른 플레이어는 Tab을 눌러도 열리지 않는다.
+        if (!PlayerAbilities.Has(gameObject, PlayerAbility.PastPhoto)) return;
 
         if (IsOpen) CloseInventory();
         else OpenInventory();
