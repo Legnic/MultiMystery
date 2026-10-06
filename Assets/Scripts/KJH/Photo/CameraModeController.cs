@@ -20,8 +20,8 @@ public class CameraModeController : MonoBehaviour
     [Tooltip("화면 가장자리의 뷰파인더 프레임 UI를 켜고 끄는 CanvasGroup. 평소엔 alpha 0.")]
     [SerializeField] private CanvasGroup viewfinderFrameCanvasGroup;
 
-    [Tooltip("촬영 중 이동/시점 회전을 완전히 멈추기 위해 참조하는 플레이어 이동 스크립트.")]
-    [SerializeField] private PlayerMovement playerMovement;
+    [Tooltip("촬영 중 이동/시점 회전을 완전히 멈추기 위해 참조하는 플레이어 이동 스크립트 (IPlayerLock을 구현한 컴포넌트: PlayerMovement, 또는 네트워크 플레이어의 NetworkFirstPersonController 등).")]
+    [SerializeField] private MonoBehaviour playerMovement;
 
     [Header("연출 수치")]
     [Tooltip("카메라가 CameraAnchor로 이동/복귀하는 데 걸리는 시간 (초). 기획서 기준 0.6초.")]
@@ -51,6 +51,7 @@ public class CameraModeController : MonoBehaviour
     private Quaternion originalLocalRotation;
     private float originalFov;
     private float breathingSeed;
+    private IPlayerLock playerLock;
 
     private void Awake()
     {
@@ -58,6 +59,20 @@ public class CameraModeController : MonoBehaviour
         if (viewfinderVolume != null) viewfinderVolume.weight = 0f;
         if (viewfinderFrameCanvasGroup != null) viewfinderFrameCanvasGroup.alpha = 0f;
         breathingSeed = Random.Range(0f, 100f); // 여러 카메라가 동시에 흔들려도 서로 다른 위상을 갖게 하기 위한 오프셋
+
+        // 이동/시점 잠금: Inspector에 연결된 컴포넌트가 IPlayerLock인지 확인하고, 비어 있으면 같은 오브젝트에서 찾는다.
+        playerLock = playerMovement as IPlayerLock;
+        if (playerLock == null) playerLock = GetComponent<IPlayerLock>();
+    }
+
+    private void OnValidate()
+    {
+        // Unity Inspector는 인터페이스 타입 칸을 직접 만들 수 없어서 MonoBehaviour 칸으로 받는다.
+        if (playerMovement != null && !(playerMovement is IPlayerLock))
+        {
+            Debug.LogWarning($"[CameraModeController] '{playerMovement.GetType().Name}'은(는) IPlayerLock을 구현하지 않아 Player Movement에 넣을 수 없습니다.", this);
+            playerMovement = null;
+        }
     }
 
     private void Update()
@@ -71,6 +86,17 @@ public class CameraModeController : MonoBehaviour
         mainCamera.transform.localRotation = Quaternion.Euler(swayX, swayY, 0f);
     }
 
+    // 네트워크로 스폰되는 플레이어(예: FPSPlayer)는 프리팹 단계에서 씬의 Volume/CanvasGroup 같은
+    // 참조를 미리 연결해둘 수 없어서(프리팹은 씬 오브젝트를 참조할 수 없음), 스폰 직후(OnNetworkSpawn 등)에
+    // 코드로 찾아서 주입할 방법이 필요하다.
+    public void ConfigureForOwner(Volume viewfinderVolume, CanvasGroup viewfinderFrameCanvasGroup)
+    {
+        this.viewfinderVolume = viewfinderVolume;
+        this.viewfinderFrameCanvasGroup = viewfinderFrameCanvasGroup;
+        if (viewfinderVolume != null) viewfinderVolume.weight = 0f;
+        if (viewfinderFrameCanvasGroup != null) viewfinderFrameCanvasGroup.alpha = 0f;
+    }
+
     // PhotoCaptureSystem이 상호작용 발생 시 호출한다. anchor는 PhotoSpot.CameraAnchor.
     public void EnterCaptureMode(Transform anchor)
     {
@@ -80,11 +106,11 @@ public class CameraModeController : MonoBehaviour
         originalLocalPosition = mainCamera.transform.localPosition;
         originalLocalRotation = mainCamera.transform.localRotation;
 
-        if (playerMovement != null)
+        if (playerLock != null)
         {
             // 촬영 중엔 이동/시점을 완전히 멈춘다 (설계 조건: "플레이어 이동/시점 입력 정지").
-            playerMovement.SpeedMultiplier = 0f;
-            playerMovement.LookEnabled = false;
+            playerLock.SpeedMultiplier = 0f;
+            playerLock.LookEnabled = false;
         }
 
         if (transitionRoutine != null) StopCoroutine(transitionRoutine);
@@ -152,11 +178,11 @@ public class CameraModeController : MonoBehaviour
         {
             IsLockedOnAnchor = true;
         }
-        else if (playerMovement != null)
+        else if (playerLock != null)
         {
             // 원래 시점으로 완전히 돌아온 뒤에야 조작을 돌려준다 (전환 도중 조작이 섞이면 어색하므로).
-            playerMovement.SpeedMultiplier = 1f;
-            playerMovement.LookEnabled = true;
+            playerLock.SpeedMultiplier = 1f;
+            playerLock.LookEnabled = true;
         }
 
         transitionRoutine = null;

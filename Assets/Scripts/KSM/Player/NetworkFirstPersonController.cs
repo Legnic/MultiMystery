@@ -10,7 +10,7 @@ namespace CoopDemo
     /// 입력/카메라/커서는 소유자(Owner)에게만 적용하고, 위치·좌우 회전은 NetworkTransform이 동기화한다.
     /// </summary>
     [RequireComponent(typeof(CharacterController))]
-    public class NetworkFirstPersonController : NetworkBehaviour
+    public class NetworkFirstPersonController : NetworkBehaviour, IPlayerLock
     {
         [SerializeField] float moveSpeed = 4f;
         [SerializeField] float mouseSensitivity = 2f;
@@ -26,6 +26,19 @@ namespace CoopDemo
         NetworkTransform m_NetworkTransform;
         float m_VerticalVelocity;
         float m_Pitch;
+
+        // ── IPlayerLock (ObjectEchoController 등이 이동/시점을 잠그는 데 씀) ──
+        public float SpeedMultiplier { get; set; } = 1f;
+        public bool LookEnabled { get; set; } = true;
+        public float Yaw => transform.eulerAngles.y;
+        public float Pitch => m_Pitch;
+
+        public void SetLookAngles(float yaw, float pitch)
+        {
+            transform.rotation = Quaternion.Euler(0f, yaw, 0f);
+            m_Pitch = Mathf.Clamp(pitch, -80f, 80f);
+            if (playerCamera != null) playerCamera.transform.localRotation = Quaternion.Euler(m_Pitch, 0f, 0f);
+        }
 
         void Awake()
         {
@@ -109,7 +122,7 @@ namespace CoopDemo
                 Cursor.visible = false;
             }
 
-            if (mouse != null && Cursor.lockState == CursorLockMode.Locked)
+            if (LookEnabled && mouse != null && Cursor.lockState == CursorLockMode.Locked)
             {
                 Vector2 delta = mouse.delta.ReadValue() * (mouseSensitivity * 0.02f);
                 transform.Rotate(Vector3.up, delta.x);
@@ -135,7 +148,8 @@ namespace CoopDemo
             if (m_Controller.isGrounded)
             {
                 m_VerticalVelocity = -0.5f;
-                if (kb.spaceKey.wasPressedThisFrame)
+                // LookEnabled를 "연출 중 입력 잠금" 신호로 같이 써서, 사물 소리를 듣는 동안은 점프도 막는다.
+                if (LookEnabled && kb.spaceKey.wasPressedThisFrame)
                 {
                     m_VerticalVelocity = Mathf.Sqrt(jumpHeight * -2f * gravity);
                 }
@@ -145,7 +159,7 @@ namespace CoopDemo
                 m_VerticalVelocity += gravity * Time.deltaTime;
             }
 
-            Vector3 velocity = moveDir * moveSpeed;
+            Vector3 velocity = moveDir * (moveSpeed * SpeedMultiplier);
             velocity.y = m_VerticalVelocity;
             m_Controller.Move(velocity * Time.deltaTime);
         }

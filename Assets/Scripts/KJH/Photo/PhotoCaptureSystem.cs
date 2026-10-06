@@ -28,6 +28,15 @@ public class PhotoCaptureSystem : MonoBehaviour
     // InteractionController가 "지금 촬영 모드라 E를 상호작용이 아니라 촬영으로 써야 하는지" 확인할 때 쓴다.
     public bool IsBusy => currentSpot != null;
 
+    // 네트워크로 스폰되는 플레이어(예: FPSPlayer)는 프리팹 단계에서 씬의 Canvas UI 참조를
+    // 미리 연결해둘 수 없어서(프리팹은 씬 오브젝트를 참조할 수 없음), 스폰 직후(OnNetworkSpawn 등)에
+    // 코드로 찾아서 주입할 방법이 필요하다.
+    public void ConfigureForOwner(FlashEffect flashEffect, PhotoAcquiredToast acquiredToast)
+    {
+        this.flashEffect = flashEffect;
+        this.acquiredToast = acquiredToast;
+    }
+
     private void Awake()
     {
         audioSource = GetComponent<AudioSource>();

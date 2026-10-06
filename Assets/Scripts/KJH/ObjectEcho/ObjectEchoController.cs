@@ -35,8 +35,8 @@ public class ObjectEchoController : MonoBehaviour, IModalInteraction
     [Tooltip("공용 상호작용 컨트롤러. 연출 중 다른 상호작용/인벤토리/촬영을 막는 데 쓴다. 비워두면 같은 오브젝트에서 찾는다.")]
     [SerializeField] private InteractionController interactionController;
 
-    [Tooltip("이동/시점 회전을 멈추고, 시점을 사물 쪽으로 돌리는 데 쓴다. 비워두면 같은 오브젝트에서 찾는다.")]
-    [SerializeField] private PlayerMovement playerMovement;
+    [Tooltip("이동/시점 회전을 멈추고, 시점을 사물 쪽으로 돌리는 데 쓴다 (IPlayerLock을 구현한 컴포넌트: PlayerMovement, 또는 네트워크 플레이어의 NetworkFirstPersonController 등). 비워두면 같은 오브젝트에서 찾는다.")]
+    [SerializeField] private MonoBehaviour playerMovement;
 
     [Tooltip("FOV를 바꿀 플레이어 카메라. 비워두면 InteractionController의 카메라(없으면 Camera.main)를 쓴다.")]
     [SerializeField] private Camera viewCamera;
@@ -142,7 +142,12 @@ public class ObjectEchoController : MonoBehaviour, IModalInteraction
     // bool = 끝까지 들었는지 (중단되면 false).
     public event Action<ObjectEchoTarget, bool> EchoFinished;
 
+    // 네트워크로 스폰되는 플레이어는 Awake 시점에 아직 자기 카메라가 확정되지 않아
+    // Camera.main(씬 기본 카메라)으로 잘못 캐싱될 수 있다. 스폰 직후 올바른 카메라로 바로잡는다.
+    public void SetViewCamera(Camera camera) => viewCamera = camera;
+
     private IHandReach hand;
+    private IPlayerLock playerLock;
     private Vignette vignette;
     private ColorAdjustments colorAdjustments;
 
@@ -163,13 +168,16 @@ public class ObjectEchoController : MonoBehaviour, IModalInteraction
     private void Awake()
     {
         if (interactionController == null) interactionController = GetComponent<InteractionController>();
-        if (playerMovement == null) playerMovement = GetComponent<PlayerMovement>();
         if (viewCamera == null) viewCamera = interactionController != null && interactionController.LookCamera != null ? interactionController.LookCamera : Camera.main;
         if (soundCue == null) soundCue = GetComponentInChildren<SoundCue>(true);
 
         // 손 동작: Inspector에 연결된 컴포넌트가 IHandReach인지 확인하고, 비어 있으면 자식에서 찾는다.
         hand = handReach as IHandReach;
         if (hand == null) hand = GetComponentInChildren<IHandReach>(true);
+
+        // 이동/시점 잠금: Inspector에 연결된 컴포넌트가 IPlayerLock인지 확인하고, 비어 있으면 같은 오브젝트에서 찾는다.
+        playerLock = playerMovement as IPlayerLock;
+        if (playerLock == null) playerLock = GetComponent<IPlayerLock>();
 
         SetupVolume();
     }
@@ -182,6 +190,11 @@ public class ObjectEchoController : MonoBehaviour, IModalInteraction
         {
             Debug.LogWarning($"[ObjectEchoController] '{handReach.GetType().Name}'은(는) IHandReach를 구현하지 않아 Hand Reach에 넣을 수 없습니다.", this);
             handReach = null;
+        }
+        if (playerMovement != null && !(playerMovement is IPlayerLock))
+        {
+            Debug.LogWarning($"[ObjectEchoController] '{playerMovement.GetType().Name}'은(는) IPlayerLock을 구현하지 않아 Player Movement에 넣을 수 없습니다.", this);
+            playerMovement = null;
         }
     }
 
@@ -290,8 +303,8 @@ public class ObjectEchoController : MonoBehaviour, IModalInteraction
         float targetYaw = Mathf.Atan2(dir.x, dir.z) * Mathf.Rad2Deg;
         float targetPitch = -Mathf.Atan2(dir.y, new Vector2(dir.x, dir.z).magnitude) * Mathf.Rad2Deg;
 
-        float startYaw = playerMovement != null ? playerMovement.Yaw : cam.eulerAngles.y;
-        float startPitch = playerMovement != null ? playerMovement.Pitch : Mathf.DeltaAngle(0f, cam.eulerAngles.x);
+        float startYaw = playerLock != null ? playerLock.Yaw : cam.eulerAngles.y;
+        float startPitch = playerLock != null ? playerLock.Pitch : Mathf.DeltaAngle(0f, cam.eulerAngles.x);
         Quaternion startRot = cam.rotation;
         Quaternion endRot = Quaternion.LookRotation(dir);
 
@@ -300,11 +313,11 @@ public class ObjectEchoController : MonoBehaviour, IModalInteraction
         {
             elapsed += Time.unscaledDeltaTime;
             float t = turnCurve.Evaluate(Mathf.Clamp01(elapsed / duration));
-            if (playerMovement != null)
+            if (playerLock != null)
             {
-                // PlayerMovement를 통해 돌려야 잠금 해제 후에도 그 방향을 계속 보고 있다 (내부 pitch 값까지 갱신).
+                // IPlayerLock을 통해 돌려야 잠금 해제 후에도 그 방향을 계속 보고 있다 (내부 pitch 값까지 갱신).
                 // LerpAngle: 350도 → 10도처럼 0도를 넘어갈 때 한 바퀴 돌지 않고 가까운 쪽으로 돈다.
-                playerMovement.SetLookAngles(Mathf.LerpAngle(startYaw, targetYaw, t), Mathf.Lerp(startPitch, targetPitch, t));
+                playerLock.SetLookAngles(Mathf.LerpAngle(startYaw, targetYaw, t), Mathf.Lerp(startPitch, targetPitch, t));
             }
             else
             {
@@ -402,12 +415,12 @@ public class ObjectEchoController : MonoBehaviour, IModalInteraction
 
     private void LockPlayer()
     {
-        if (playerMovement != null)
+        if (playerLock != null)
         {
-            originalSpeedMultiplier = playerMovement.SpeedMultiplier;
-            originalLookEnabled = playerMovement.LookEnabled;
-            playerMovement.SpeedMultiplier = 0f;
-            playerMovement.LookEnabled = false;
+            originalSpeedMultiplier = playerLock.SpeedMultiplier;
+            originalLookEnabled = playerLock.LookEnabled;
+            playerLock.SpeedMultiplier = 0f;
+            playerLock.LookEnabled = false;
         }
         // 공용 독점 상호작용 규칙: 다른 상호작용·Tab 인벤토리·촬영 진입이 막히고 E/Esc가 이쪽으로 온다.
         if (interactionController != null) interactionController.BeginModal(this);
@@ -415,10 +428,10 @@ public class ObjectEchoController : MonoBehaviour, IModalInteraction
 
     private void UnlockPlayer()
     {
-        if (playerMovement != null)
+        if (playerLock != null)
         {
-            playerMovement.SpeedMultiplier = originalSpeedMultiplier;
-            playerMovement.LookEnabled = originalLookEnabled;
+            playerLock.SpeedMultiplier = originalSpeedMultiplier;
+            playerLock.LookEnabled = originalLookEnabled;
         }
         if (interactionController != null) interactionController.EndModal(this);
     }

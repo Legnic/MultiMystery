@@ -61,13 +61,46 @@ git에 커밋되어 팀원 전원이 같은 내용을 공유합니다. 개인적
 - 에디터 Play 모드에서 `CoopSessionManager.HostGame()`을 직접 호출해 실제 Relay 세션 생성/플레이어 스폰(정상 위치, 바닥에 착지)까지 재확인함 — 콘솔 에러 없음
 - UI는 좌측 하단 패널(어두운 반투명 배경)에 제목/호스트·참가 버튼/참가 코드 입력란/상태 텍스트를 그룹화한 형태로 재구성, 실제 플레이 테스트에서 사용자가 최종 확인함(2026-10-02, "특이사항 없음")
 - 테스트 빌드: `C:\Users\mbc\Desktop\MultiTestBuild\MultiMystery.exe` (StandaloneWindows64, KSM 씬만 포함, 2026-10-02 빌드, 0 에러)
-- **다른 팀원 씬/폴더에는 아직 반영 안 됨** — 공용 위치로 옮길지, 각자 씬에 똑같이 복제할지는 팀 논의 필요. 테스트 방법은 빌드 1개 + 에디터 Play 1개로 2개 프로세스를 띄워야 함(에디터는 동시에 Play 2번 불가).
 - 참고 자료: claude.ai Artifact "릴레이 호스트 아키텍처"(연결 흐름 시퀀스 다이어그램, 씬 구성요소 책임 분리, 현재 한계와 다음 단계 정리), `C:\Users\mbc\Desktop\TestMulti\MULTIPLAYER_SETUP.md`(패키지 버전 함정/Unity MCP 자동화 트랩)
+- **위 항목은 KSM 씬(단독 프로토타입) 기준 기록입니다. 실제 팀 통합은 `Develop` 씬에서 진행 중이며, 아래 섹션을 참고하세요.**
+
+## Develop 씬 통합 현황 (2026-10-06)
+- `Develop` 씬이 팀 전체 통합 씬입니다. 호스트/참가 시 실제로 스폰되는 플레이어는 `Assets/Prefabs/KSM/Player.prefab`(KSM 단독 프로토타입용, WASD+고정 3인칭)이 **아니라 `Assets/Prefabs/KSM/FPSPlayer.prefab`**입니다 — `NetworkManager.NetworkConfig.PlayerPrefab`이 이걸 가리킴. `CharacterController` + `NetworkObject` + `NetworkTransform(Owner)` + `NetworkFirstPersonController`(1인칭 WASD+마우스 시점, IsOwner에서만 입력/카메라 활성화) 구성.
+- KJH의 상호작용 시스템(`InteractionController`, `ObjectEchoController` 등, `Assets/Scripts/KJH/Photo`·`ObjectEcho`)을 FPSPlayer에 붙여서 네트워크 멀티플레이에서도 "바라보면 안내 문구 뜨고 E로 상호작용" 이 되도록 연결함:
+  - `Assets/Scripts/KSM/Player/NetworkInteractionBridge.cs`(새 스크립트) — `OnNetworkSpawn`에서 `IsOwner`가 아니면 `InteractionController`/`ObjectEchoController`를 꺼서 상대방 화면에 중복 레이캐스트/안내 문구가 뜨지 않게 하고, 소유자면 자기 카메라와 씬의 `InteractionPromptUI`를 찾아 주입함 (프리팹 단계에서는 씬 참조를 미리 연결할 수 없어서 런타임 주입이 필요).
+  - 이를 위해 KJH의 `InteractionController.cs`에 `ConfigureForOwner(Camera, InteractionPromptUI)`, `ObjectEchoController.cs`에 `SetViewCamera(Camera)` 공개 메서드를 추가함 (기존 동작 변경 없이 런타임 주입용 setter만 추가).
+  - Canvas에 `InteractionPrompt`(CanvasGroup + Text, 화면 하단 중앙) 오브젝트를 추가해 `InteractionPromptUI`로 연결함.
+  - FPSPlayer에 `SoundCue` 자식을 추가해 `ObjectEchoController`의 소리 재생이 가능하게 함.
+  - **이동/시점 잠금 + 손 비주얼도 연결 완료(2026-10-06)**: `ObjectEchoController`의 `playerMovement` 필드를 `PlayerMovement` 전용 타입에서 `MonoBehaviour`(+ 새 인터페이스 `IPlayerLock`)로 일반화해서, KJH의 `PlayerMovement`든 KSM의 `NetworkFirstPersonController`든 똑같이 연출 중 이동/시점을 잠글 수 있게 함(`IHandReach`와 같은 패턴). `NetworkFirstPersonController`에 `SpeedMultiplier`/`LookEnabled`/`Yaw`/`Pitch`/`SetLookAngles`를 추가해 `IPlayerLock`을 구현함. FPSPlayer의 `Main Camera` 아래에 `PlaceholderHand`(단순 박스 손 모양, `PlaceholderHandReach`)도 추가해 `ObjectEchoController.handReach`에 연결함.
+  - **범위 교정(같은 날, 2026-10-06 후속)**: 위 작업은 처음엔 `InteractionController`/`ObjectEchoController` 두 개만 FPSPlayer에 연결했는데, 사용자가 "KJH 씬에서 복사해온 모든 오브젝트들의 기능이 Develop에서도 똑같이 구동되게 해달라"고 재요청 — 확인해보니 Develop에 복사된 KJH의 비활성 `/Player` 오브젝트는 사실 `PlayerMovement`/`CameraModeController`/`PhotoInventory`/`PhotoCaptureSystem`/`InteractionController`/`ClueJournal`/`ObjectEchoController`를 전부 갖춘 완전한 세트였고, `ViewableClue`/`InspectableClue`(Clue 시스템) 같은 다른 KJH 오브젝트들은 여전히 `interactor.GetComponent<PlayerMovement>()`로 구체 타입을 직접 찾고 있어서 FPSPlayer(`NetworkFirstPersonController`) 앞에서는 항상 null → 이동/시점 잠금이 전혀 안 먹히는 상태였음. 또한 Develop 씬엔 `ClueViewerUI` 패널 자체가 없어서 `ViewableClue`의 "살펴보기" 기능이 경고 로그만 찍고 아예 열리지 않는 상태였음. 수정 내용:
+    - `ViewableClue.cs`/`InspectableClue.cs`: `PlayerMovement` 전용 필드를 `IPlayerLock` 인터페이스로 교체(`interactor.GetComponent<IPlayerLock>()`), `CameraModeController.cs`/`PhotoInventory.cs`: `ObjectEchoController`와 같은 `MonoBehaviour`+런타임 캐스트 패턴으로 일반화 — 이제 KJH 쪽 모든 "이동/시점 잠금" 기능이 FPSPlayer에서도 동일하게 동작함.
+    - Unity 메뉴 `Tools/KJH/Clue/Create Clue Viewer UI`를 실행해 Develop의 기존 Canvas 밑에 `ClueViewerUI`(어두운 배경 + 가운데 이미지 + 오른쪽 설명) 패널을 생성함 — 팀이 쓰던 에디터 도구를 그대로 사용해 KJH와 동일한 모양으로 만들어짐.
+    - 새 `/GameSystems` 오브젝트에 `ClueJournal`을 추가함(직렬화 필드가 없는 순수 데이터 컴포넌트라 씬 로드 시점부터 항상 활성 상태인 곳에 둬야 함 — Player는 네트워크 스폰 전까지 없으므로 네트워크 플레이어 프리팹에 올리면 안 됨. 단, `ViewableClue_Sample`은 KJH 원본 씬에서부터 이미 자신의 `clueJournal` 필드가 그 비활성 `/Player`의 `ClueJournal`로 직접 연결되어 있어서 지금은 그쪽을 그대로 씀 — 컴포넌트는 GameObject가 비활성이어도 메서드 호출은 정상 동작하므로 문제없음. `/GameSystems`는 앞으로 참조가 비어있는 새 단서용 기본값 역할).
+    - (이후 전면 포팅으로 대체됨 — 아래 "KJH 기능 전면 포팅" 섹션 참고)
+  - 검증(최초 커밋 + 범위 교정 각각 Play 모드 실측): `ObjectEchoController.TryBegin()`으로 전체 시퀀스(Reaching→Narrowing→Listening→Returning) 통과 — 연출 중 `SpeedMultiplier=0`/`LookEnabled=false`로 잠기고, 손이 뻗어 나갔다가(`IsExtended=true`) 끝나면 복귀, 잠금도 해제됨. `ViewableClue.Interact()`로 "살펴보기" 흐름도 통과 — `ClueViewerUI.IsOpen=true`, `NetworkFirstPersonController`가 잠기고(`SpeedMultiplier=0`/`LookEnabled=false`), `ClueJournal.HasClue=true`로 획득 처리, `OnInteractPressed()`로 닫으면 전부 원복(`IsOpen=false`/`SpeedMultiplier=1`/`LookEnabled=true`). 둘 다 콘솔 에러 0. **(주의: 이 테스트는 전부 메서드 직접 호출로 한 것이라 실제 E키 입력 경로는 검증하지 못했고, 바로 다음 라운드에서 그 경로 자체가 깨져 있었다는 게 드러남 — 아래 참고.)**
+  - **Unity MCP 자동화 팁**: `WaitForSecondsRealtime` 기반 연출(ObjectEcho 등)을 MCP `eval`로 단계별 확인할 때, 각 `eval` 호출 사이의 왕복 지연 자체가 이미 실시간 기준 수 초가 걸릴 수 있다 — "거의 즉시 다음 상태 확인" 할 생각으로 짧게 기다리면 이미 전체 연출이 끝나있을 수 있으니, 상태 변화를 보려면 호출 사이 간격을 그만큼 염두에 둘 것. 또한 `GameObject.Find()`는 비활성 오브젝트를 못 찾으므로(이번에 디버깅 중 헛갈렸던 부분) 비활성일 수 있는 대상은 `Object.FindAnyObjectByType<T>(FindObjectsInactive.Include)`를 써야 함.
+- 겸사겸사 발견한 것: Develop 씬에 `EventSystem`이 2개 중복돼 있어 매 프레임 경고가 쌓이던 문제를 발견해 하나 삭제함 (KJH 씬 내용을 복사해오면서 같이 따라온 것으로 보임).
+- **다른 팀원 씬/폴더(KJH 등)에는 네트워킹 세팅 자체가 반영 안 됨** — Develop이 사실상 통합 지점. 테스트 방법은 빌드 1개 + 에디터 Play 1개로 2개 프로세스를 띄워야 함(에디터는 동시에 Play 2번 불가).
+
+## KJH 기능 전면 포팅 (2026-10-06, 같은 날 세 번째 라운드)
+사용자가 실제로 플레이해보니 "손을 얹는다" 안내 문구는 뜨는데 E를 눌러도 아무 연출(화면 어두워짐/파형/소리)이 일어나지 않는다고 보고 — 직전 라운드의 검증이 전부 메서드 직접 호출(`TryBegin()`, `Interact()`)이었어서 실제 E키 입력 경로 자체는 한 번도 테스트되지 않았던 게 원인이었다. 추가로 "KJH 씬의 모든 기능(상호작용/사운드/사진 촬영)이 Develop에서 작동하게 해달라, KJH 씬은 건드리지 말고 다시 전부 복사해오고, 건물 현관에 배치해서 테스트하기 쉽게 해달라"는 요청.
+
+**치명적 근본 원인 발견**: FPSPlayer 프리팹의 `InteractionController.interactAction`/`cancelAction`(`Player/Interact`, `Photo/ClosePhoto` 입력 액션 참조)이 **둘 다 null**이었다 — 과거 세션에서 `InteractionController`를 FPSPlayer에 연결할 때 `lookCamera`/`promptUI`만 런타임 주입하고 이 두 입력 액션 필드는 빼먹었던 것. 그 결과 `InteractionController.OnEnable()`의 `interactAction.action.performed += OnInteractPerformed` 구독 자체가 전혀 일어나지 않아 **E/Esc 입력이 아무 효과가 없었다** — 조준 감지(레이캐스트)는 `Update()`에서 별도로 돌아가서 안내 문구는 멀쩡히 떴지만, 실제 상호작용(ObjectEcho, Clue, 나중에 추가한 PhotoSpot 전부 포함)은 어느 것도 작동할 수 없는 상태였다. `mcp__unity__simulate_key`로 실제 E키를 눌러보고서야(메서드 직접 호출이 아니라) 발견함.
+- 수정: `InputActionReference.Create(action)`으로 새로 만든 참조는 프리팹에 영구 저장되지 않는다(비영속 런타임 객체라 저장 시 `fileID: 0`으로 날아감 — 처음 이 방법으로 시도했다가 저장 후에도 여전히 null이어서 알아챔). 대신 `AssetDatabase.LoadAllAssetsAtPath("Assets/InputSystem_Actions.inputactions")`로 실제 영속 서브에셋(`InputActionReference`, 이름이 `"Player/Interact"`처럼 `맵/액션` 형태)을 찾아서 연결해야 프리팹에 제대로 저장된다. `ClueSetupMenu.FindActionReference()`가 이미 이 방식을 쓰고 있었음 — 입력 액션을 코드로 와이어링할 땐 항상 이 패턴을 쓸 것.
+- 추가로 FPSPlayer의 태그가 `Untagged`였던 것도 발견 — `PhotoSpot.OnTriggerEnter`가 `other.CompareTag("Player")`로 체크하므로 태그를 `Player`로 바꾸지 않으면 트리거 기반 상호작용(PhotoSpot 등)이 영원히 작동하지 않는다. `Player` 태그로 변경함.
+
+**또 다른 함정(두 번째로 발견)**: 프리팹의 직렬화 필드는 **씬 전용 오브젝트(Canvas UI, Volume 등)를 참조할 수 없다** — `SerializedObject`로 프리팹 인스턴스에 씬 오브젝트 참조를 넣고 `create_prefab`으로 저장해도, 저장된 프리팹 에셋에는 전부 `fileID: 0`(null)으로 사라진다(프리팹은 독립된 에셋이라 특정 씬에만 존재하는 오브젝트를 영구 참조할 수 없기 때문 — 이게 애초에 `ConfigureForOwner`/`SetViewCamera` 같은 런타임 주입 패턴이 필요했던 이유였다는 걸 이번에 다시 확인). `CameraModeController`/`PhotoInventory`/`PhotoCaptureSystem`도 똑같이 `ConfigureForOwner(...)` 메서드를 추가해서 `NetworkInteractionBridge.OnNetworkSpawn()`에서 Develop 씬의 Canvas 하위 오브젝트를 이름으로 찾아 주입하도록 고침.
+
+**KJH → Develop 전면 재확인**: `open_scene(..., additive: true)`로 KJH를 Develop과 동시에 로드해서(KJH는 절대 `save_scene` 하지 않음 — 세션 내내 `isDirty: false` 유지) 비교한 결과, 이미 Develop에 들어와 있던 것: `ViewfinderVolume`, `Inspect_Volume`, `Echo_Wall_Portrait`+`Wall`+`Ambient_RoomTone`, `Cube`/`Cube (1)`, SoundDesk(`Echo_Desk_MusicBox`), `ViewableClue_Sample`. 빠져 있던 것(이번에 `Instantiate()` 후 `SceneManager.MoveGameObjectToScene`/부모 교체로 복사 — **원본은 건드리지 않음**):
+- `PhotoSpot_01`(+`CameraAnchor`) — 건물 현관 근처 spawn 지점 옆 빈 공간 `(3, 0, 3)`에 배치(바닥 비어있음을 `Physics.CheckSphere`로 사전 확인).
+- Develop의 `Canvas` 밑에: `FlashImage`(`FlashEffect`), `PhotoInventoryPanel`(+`ThumbnailParent`), `EnlargedViewPanel`(+`EnlargedImage`/`TitleText`/`DescriptionText`), `ViewfinderFrame`(+`RemainingCountText`+Bar 4개), `SpectrumOverlay`(+`InkLine`), `AcquiredToast`(+`Text`) — KJH의 `PhotoUICanvas`에서 그대로 복제. (`ClueViewer`/`InteractionPrompt`는 이미 있어서 건너뜀.)
+- FPSPlayer 프리팹에 `CameraModeController`/`PhotoInventory`/`PhotoCaptureSystem` 컴포넌트 추가, `InteractionController.photoCaptureSystem`/`photoInventory` 연결(기존엔 둘 다 null이라 "인벤토리 열려있는 동안 바라보기 감지 멈추기" 등의 기능이 조용히 빠져 있었음), `NetworkInteractionBridge`에 이 셋도 `IsOwner` 기준으로 껐다 켰다 하도록 확장.
+- **검증(이번엔 전부 `mcp__unity__simulate_key`로 실제 E/Tab 키 입력 경로를 통해서 확인)**: SoundDesk 앞에서 실제 E키 → `ObjectEchoController` 전체 시퀀스 진행 + `SpectrumOverlay.alpha=1`(파형 표시 확인) + 소리 재생. `PhotoSpot_01` 트리거 범위 진입 → 안내 문구 `[E] 사진 찍기` → E → 카메라가 `CameraAnchor`로 이동·고정(`IsLockedOnAnchor=true`)+뷰파인더 프레임/비네팅 등장(`frameAlpha=1`, `volWeight=1`) → E → 촬영 확정, `PhotoInventory`에 사진 1장 추가 확인 → Tab → 인벤토리 패널 열림(`IsOpen=true`) 확인. 콘솔 에러 0.
+- 포팅하지 않은 것: KJH의 `Cube`/`Cube (1)` 역할을 하는 일반 장식용 큐브는 Develop에 이미 동일하게 있어서 추가 작업 없음. KJH의 `/Player`(비활성 원본), `EventSystem`, `Directional Light`, `Plane`은 Develop에 각자의 버전이 이미 있어서 중복 생성하지 않음(KJH 버전을 복사해오면 오히려 중복/충돌을 일으킴).
 
 ## 사용 가능한 Unity 전용 스킬
 이 환경에는 `unity:` 접두사의 스킬들(unity-cli, ui, urp-postprocessing, physics-3d-collision 등)이 이미 연결되어 있습니다. 관련 작업을 할 때는 먼저 해당 스킬을 확인하세요.
 
 ## 다음에 결정해야 할 것
-1. 네트워킹 세팅(현재 KSM 씬에만 있음)을 공용 위치로 옮길지, 팀 전체 적용 방식/일정
-2. 캐릭터 조작 방식 vs 디오라마 고정 시점 (프로토타입 필요)
-3. 팀 공통 코딩 컨벤션, 공용 에셋/스크립트 배치 규칙
+1. 캐릭터 조작 방식 vs 디오라마 고정 시점 (프로토타입 필요)
+2. 팀 공통 코딩 컨벤션, 공용 에셋/스크립트 배치 규칙

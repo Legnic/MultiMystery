@@ -117,7 +117,7 @@ public class InspectableClue : MonoBehaviour, IInteractable, IFocusable, IModalI
 
     // 살펴보기를 시작한 플레이어 쪽 참조
     private InteractionController controller;
-    private PlayerMovement playerMovement;
+    private IPlayerLock playerLock;
     private Transform cameraTransform;
 
     // 살펴보기 중 회전 상태
@@ -163,7 +163,7 @@ public class InspectableClue : MonoBehaviour, IInteractable, IFocusable, IModalI
         if (!CanInteract) return;
 
         controller = interactor.GetComponent<InteractionController>();
-        playerMovement = interactor.GetComponent<PlayerMovement>();
+        playerLock = interactor.GetComponent<IPlayerLock>();
         Camera cam = controller != null && controller.LookCamera != null ? controller.LookCamera : Camera.main;
         if (cam == null)
         {
@@ -229,10 +229,10 @@ public class InspectableClue : MonoBehaviour, IInteractable, IFocusable, IModalI
         }
 
         // 3) 플레이어 이동/시점 회전을 멈춘다 (CameraModeController와 같은 방식).
-        if (playerMovement != null)
+        if (playerLock != null)
         {
-            playerMovement.SpeedMultiplier = 0f;
-            playerMovement.LookEnabled = false;
+            playerLock.SpeedMultiplier = 0f;
+            playerLock.LookEnabled = false;
         }
 
         // 4) E/Esc 입력을 이쪽으로 받고, 바라보기 감지를 멈추게 한다 (안내 문구도 숨겨짐).
@@ -381,10 +381,10 @@ public class InspectableClue : MonoBehaviour, IInteractable, IFocusable, IModalI
         disabledColliders.Clear();
         if (body != null) body.isKinematic = bodyWasKinematic;
 
-        if (playerMovement != null)
+        if (playerLock != null)
         {
-            playerMovement.SpeedMultiplier = 1f;
-            playerMovement.LookEnabled = true;
+            playerLock.SpeedMultiplier = 1f;
+            playerLock.LookEnabled = true;
         }
 
         CurrentState = State.Idle;

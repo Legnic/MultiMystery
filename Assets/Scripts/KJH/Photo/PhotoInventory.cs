@@ -27,7 +27,8 @@ public class PhotoInventory : MonoBehaviour
     [SerializeField] private InputActionReference toggleInventoryAction;
     [SerializeField] private InputActionReference closePhotoAction;
 
-    [SerializeField] private PlayerMovement playerMovement;
+    [Tooltip("IPlayerLock을 구현한 컴포넌트: PlayerMovement, 또는 네트워크 플레이어의 NetworkFirstPersonController 등.")]
+    [SerializeField] private MonoBehaviour playerMovement;
 
     [Tooltip("촬영 중(뷰파인더 들어가 있는 동안)에는 인벤토리를 못 열게 막기 위한 참조. 비워둬도 동작한다.")]
     [SerializeField] private PhotoCaptureSystem photoCaptureSystem;
@@ -37,6 +38,24 @@ public class PhotoInventory : MonoBehaviour
     [SerializeField] private int maxPhotos = 0;
 
     public bool IsOpen { get; private set; }
+
+    // 네트워크로 스폰되는 플레이어(예: FPSPlayer)는 프리팹 단계에서 씬의 Canvas UI 참조를
+    // 미리 연결해둘 수 없어서(프리팹은 씬 오브젝트를 참조할 수 없음), 스폰 직후(OnNetworkSpawn 등)에
+    // 코드로 찾아서 주입할 방법이 필요하다.
+    public void ConfigureForOwner(GameObject inventoryPanel, Transform thumbnailParent, GameObject enlargedViewPanel,
+        Image enlargedImage, Text enlargedTitleText, Text enlargedDescriptionText, Text remainingCountText)
+    {
+        this.inventoryPanel = inventoryPanel;
+        this.thumbnailParent = thumbnailParent;
+        this.enlargedViewPanel = enlargedViewPanel;
+        this.enlargedImage = enlargedImage;
+        this.enlargedTitleText = enlargedTitleText;
+        this.enlargedDescriptionText = enlargedDescriptionText;
+        this.remainingCountText = remainingCountText;
+        if (inventoryPanel != null) inventoryPanel.SetActive(false);
+        if (enlargedViewPanel != null) enlargedViewPanel.SetActive(false);
+        UpdateRemainingCountText();
+    }
 
     private bool IsUnlimited => maxPhotos <= 0;
     public int RemainingSlots => IsUnlimited ? int.MaxValue : Mathf.Max(0, maxPhotos - capturedPhotoIds.Count);
@@ -51,6 +70,7 @@ public class PhotoInventory : MonoBehaviour
 
     // 같은 Player 오브젝트의 InteractionController. 살펴보기 중인지 확인하는 용도.
     private InteractionController interactionController;
+    private IPlayerLock playerLock;
 
     private void Awake()
     {
@@ -58,6 +78,20 @@ public class PhotoInventory : MonoBehaviour
         if (inventoryPanel != null) inventoryPanel.SetActive(false);
         if (enlargedViewPanel != null) enlargedViewPanel.SetActive(false);
         UpdateRemainingCountText();
+
+        // 이동/시점 잠금: Inspector에 연결된 컴포넌트가 IPlayerLock인지 확인하고, 비어 있으면 같은 오브젝트에서 찾는다.
+        playerLock = playerMovement as IPlayerLock;
+        if (playerLock == null) playerLock = GetComponent<IPlayerLock>();
+    }
+
+    private void OnValidate()
+    {
+        // Unity Inspector는 인터페이스 타입 칸을 직접 만들 수 없어서 MonoBehaviour 칸으로 받는다.
+        if (playerMovement != null && !(playerMovement is IPlayerLock))
+        {
+            Debug.LogWarning($"[PhotoInventory] '{playerMovement.GetType().Name}'은(는) IPlayerLock을 구현하지 않아 Player Movement에 넣을 수 없습니다.", this);
+            playerMovement = null;
+        }
     }
 
     private void OnEnable()
@@ -104,7 +138,7 @@ public class PhotoInventory : MonoBehaviour
 
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
-        if (playerMovement != null) playerMovement.LookEnabled = false;
+        if (playerLock != null) playerLock.LookEnabled = false;
     }
 
     private void CloseInventory()
@@ -115,7 +149,7 @@ public class PhotoInventory : MonoBehaviour
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
-        if (playerMovement != null) playerMovement.LookEnabled = true;
+        if (playerLock != null) playerLock.LookEnabled = true;
     }
 
     private void OpenEnlargedView(PhotoItemData item)

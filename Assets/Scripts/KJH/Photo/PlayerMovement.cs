@@ -4,7 +4,7 @@ using UnityEngine.InputSystem;
 // 1인칭 시점 이동 + 마우스 시점 회전을 담당하는 스크립트.
 // 이 스크립트는 CharacterController가 붙어있는 Player 오브젝트에 붙여서 사용한다.
 [RequireComponent(typeof(CharacterController))]
-public class PlayerMovement : MonoBehaviour
+public class PlayerMovement : MonoBehaviour, IPlayerLock
 {
     // ── Inspector에서 설정하는 값들 ─────────────────────────────
     [Header("이동")]

@@ -39,7 +39,7 @@ public class ViewableClue : MonoBehaviour, IInteractable, IFocusable, IModalInte
 
     private ClueHighlighter highlighter;
     private InteractionController controller;
-    private PlayerMovement playerMovement;
+    private IPlayerLock playerLock;
 
     private void Awake()
     {
@@ -73,7 +73,7 @@ public class ViewableClue : MonoBehaviour, IInteractable, IFocusable, IModalInte
         }
 
         controller = interactor.GetComponent<InteractionController>();
-        playerMovement = interactor.GetComponent<PlayerMovement>();
+        playerLock = interactor.GetComponent<IPlayerLock>();
         Open();
     }
 
@@ -111,10 +111,10 @@ public class ViewableClue : MonoBehaviour, IInteractable, IFocusable, IModalInte
         highlighter.SetHighlighted(false);
 
         // 보고 있는 동안은 플레이어 이동·시점 회전을 멈춘다 (CameraModeController, InspectableClue와 같은 방식).
-        if (playerMovement != null)
+        if (playerLock != null)
         {
-            playerMovement.SpeedMultiplier = 0f;
-            playerMovement.LookEnabled = false;
+            playerLock.SpeedMultiplier = 0f;
+            playerLock.LookEnabled = false;
         }
 
         // E/Esc 입력을 이쪽으로 받고, 바라보기 감지와 안내 문구를 멈춘다.
@@ -141,10 +141,10 @@ public class ViewableClue : MonoBehaviour, IInteractable, IFocusable, IModalInte
         CurrentState = State.Idle;
         viewer.Hide();
 
-        if (playerMovement != null)
+        if (playerLock != null)
         {
-            playerMovement.SpeedMultiplier = 1f;
-            playerMovement.LookEnabled = true;
+            playerLock.SpeedMultiplier = 1f;
+            playerLock.LookEnabled = true;
         }
 
         // 독점 상태를 풀면 다음 프레임부터 다시 바라보기 감지가 시작된다 (계속 보고 있으면 다시 강조됨).

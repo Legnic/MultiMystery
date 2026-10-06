@@ -57,6 +57,14 @@ public class InteractionController : MonoBehaviour
     // 살펴보기 대상이 "카메라 앞" 위치를 계산할 때 쓰는 카메라.
     public Camera LookCamera => lookCamera;
 
+    // 네트워크로 스폰되는 플레이어(예: FPSPlayer)는 프리팹 단계에서 씬의 카메라/프롬프트 UI를
+    // 미리 연결해둘 수 없어서, 스폰 직후(OnNetworkSpawn 등)에 코드로 주입할 방법이 필요하다.
+    public void ConfigureForOwner(Camera camera, InteractionPromptUI prompt)
+    {
+        lookCamera = camera;
+        promptUI = prompt;
+    }
+
     // 촬영 중 / 인벤토리 열림 / 살펴보기 중에는 바라보기 감지를 하지 않는다.
     private bool IsLookDetectionBlocked =>
         (photoCaptureSystem != null && photoCaptureSystem.IsBusy) ||
