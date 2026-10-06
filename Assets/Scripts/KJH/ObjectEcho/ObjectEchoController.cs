@@ -168,6 +168,20 @@ public class ObjectEchoController : MonoBehaviour, IModalInteraction
     // Camera.main(씬 기본 카메라)으로 잘못 캐싱될 수 있다. 스폰 직후 올바른 카메라로 바로잡는다.
     public void SetViewCamera(Camera camera) => viewCamera = camera;
 
+    // 네트워크로 스폰되는 플레이어(예: FPSPlayer)는 프리팹 단계에서 씬의 Canvas UI 참조를
+    // 미리 연결해둘 수 없어서(프리팹은 씬 오브젝트를 참조할 수 없음), 스폰 직후(OnNetworkSpawn 등)에
+    // 코드로 찾아서 주입할 방법이 필요하다.
+    public void SetBlackoutOverlay(CanvasGroup overlay)
+    {
+        blackoutOverlay = overlay;
+        if (blackoutOverlay != null)
+        {
+            blackoutOverlay.alpha = 0f;
+            blackoutOverlay.blocksRaycasts = false;
+            blackoutOverlay.interactable = false;
+        }
+    }
+
     private IHandReach hand;
     private IPlayerLock playerLock;
     private Vignette vignette;

@@ -66,6 +66,8 @@
     <Compile Include="Assets\Scripts\KSM\Networking\CoopSessionManager.cs" />
     <Compile Include="Assets\Scripts\KJH\ObjectEcho\ObjectEchoTarget.cs" />
     <Compile Include="Assets\Scripts\KJH\Photo\PlayerMovement.cs" />
+    <Compile Include="Assets\Scripts\KJH\Common\IRequiresAbility.cs" />
+    <Compile Include="Assets\Scripts\KJH\SoundCue\SpectrumResponseProfile.cs" />
     <Compile Include="Assets\Scripts\KJH\Clue\IModalInteraction.cs" />
     <Compile Include="Assets\Scripts\KSM\Player\PlayerMovement.cs" />
     <Compile Include="Assets\Scripts\KJH\Clue\ClueJournal.cs" />
@@ -85,11 +87,13 @@
     <Compile Include="Assets\Scripts\KJH\ObjectEcho\PlaceholderHandReach.cs" />
     <Compile Include="Assets\Scripts\KSM\UI\MultiplayerMenuUI.cs" />
     <Compile Include="Assets\Scripts\KJH\Photo\CameraModeController.cs" />
+    <Compile Include="Assets\Scripts\KJH\Common\PlayerAbilities.cs" />
     <Compile Include="Assets\Scripts\KJH\Photo\PhotoItemData.cs" />
     <Compile Include="Assets\Scripts\KSM\Player\NetworkFirstPersonController.cs" />
     <Compile Include="Assets\Scripts\KWJ\UI\MainMenuController.cs" />
     <Compile Include="Assets\Scripts\KJH\Clue\InspectableClue.cs" />
     <Compile Include="Assets\Scripts\KJH\Photo\PhotoInventory.cs" />
+    <Compile Include="Assets\Scripts\KJH\Common\PlayerAbility.cs" />
     <Compile Include="Assets\Scripts\KJH\SoundCue\SoundCue.cs" />
     <Compile Include="Assets\Scripts\KJH\ObjectEcho\ObjectEchoController.cs" />
     <Compile Include="Assets\Scripts\KJH\Clue\ClueViewerUI.cs" />

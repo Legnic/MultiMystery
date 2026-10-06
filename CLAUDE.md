@@ -98,6 +98,18 @@ git에 커밋되어 팀원 전원이 같은 내용을 공유합니다. 개인적
 - **검증(이번엔 전부 `mcp__unity__simulate_key`로 실제 E/Tab 키 입력 경로를 통해서 확인)**: SoundDesk 앞에서 실제 E키 → `ObjectEchoController` 전체 시퀀스 진행 + `SpectrumOverlay.alpha=1`(파형 표시 확인) + 소리 재생. `PhotoSpot_01` 트리거 범위 진입 → 안내 문구 `[E] 사진 찍기` → E → 카메라가 `CameraAnchor`로 이동·고정(`IsLockedOnAnchor=true`)+뷰파인더 프레임/비네팅 등장(`frameAlpha=1`, `volWeight=1`) → E → 촬영 확정, `PhotoInventory`에 사진 1장 추가 확인 → Tab → 인벤토리 패널 열림(`IsOpen=true`) 확인. 콘솔 에러 0.
 - 포팅하지 않은 것: KJH의 `Cube`/`Cube (1)` 역할을 하는 일반 장식용 큐브는 Develop에 이미 동일하게 있어서 추가 작업 없음. KJH의 `/Player`(비활성 원본), `EventSystem`, `Directional Light`, `Plane`은 Develop에 각자의 버전이 이미 있어서 중복 생성하지 않음(KJH 버전을 복사해오면 오히려 중복/충돌을 일으킴).
 
+## KJH 추가 머지 반영 — 화면 암전 + 파형 중앙 이동 + 능력 시스템 (2026-10-06, 네 번째 라운드)
+사용자가 KJH 브랜치를 Develop에 머지(`e726708`)한 뒤 "오브젝트 상호작용 후 화면이 좀 더 어두워졌으며 파형이 가운데에서 출력된다. 똑같이 Develop 씬으로 가져와달라"고 요청. `git show --stat`으로 머지 범위를 확인(KJH.unity + Common/PlayerAbility* 신규 + ObjectEchoController/SpectrumOverlay 대폭 수정 등 27개 파일) — **스크립트는 공용(Assets/Scripts)이라 이미 Develop에도 똑같이 적용돼 있고, 이번엔 "씬에만 있는 값/오브젝트"만 다시 포팅하면 되는 상황이었다**.
+
+- **새 능력 시스템(`PlayerAbility`/`PlayerAbilities`/`IRequiresAbility`)**: 2인 협동에서 플레이어 A(소리 듣기)/B(사진 촬영) 능력을 분리. `PlayerAbilities` 컴포넌트가 없으면 능력이 필요한 상호작용(ObjectEcho=SoundEcho, PhotoSpot/PhotoInventory=PastPhoto)이 전부 막히고 경고가 뜬다 — FPSPlayer엔 이 컴포넌트 자체가 없었으므로 추가하지 않으면 이번 머지 이후 모든 상호작용이 조용히 깨지는 상황이었음. KJH 자신의 테스트 Player가 "혼자 테스트할 때는 두 능력 다 켜 둔다" 관례를 따라 `abilities = SoundEcho | PastPhoto`(값 3)로 두고 있어서 FPSPlayer도 동일하게 맞춤(2인 역할 분리는 아직 이 네트워크 프로토타입에 구현 안 됨 — 추후 과제).
+- **화면 암전(`ObjectEchoController.darkenScreen`/`blackoutOverlay`/`blackoutAlpha` 등)**: 시야가 좁아진 뒤 전체 화면을 `blackoutAlpha`(KJH 값 0.9)까지 어둡게 덮는 새 `Darkening` 상태 추가. `blackoutOverlay`는 Canvas 전용 오브젝트라 프리팹에 직접 못 담음 → `ObjectEchoController.SetBlackoutOverlay(CanvasGroup)`를 새로 추가하고 `NetworkInteractionBridge.OnNetworkSpawn()`에서 Develop Canvas의 `EchoBlackout`을 찾아 주입하도록 확장(기존 `ConfigureForOwner` 계열과 동일 패턴).
+- **파형이 화면 정가운데로 이동 + 스펙트럼 반응 전면 개편**: `SpectrumOverlay`가 "하단 중앙 작은 선(620×110)"에서 "화면 정가운데 큰 영역(1000×260)"으로 바뀌고, 내부 반응 계산도 완전히 새 구조(`SpectrumResponse`/`SpectrumResponseProfile` — 자동 음량 맞춤·dB 곡선·실제 파형 섞기 등)로 교체됨. 이런 값들은 손으로 재구성하는 대신 **KJH 씬의 실제 오브젝트를 그대로 복제**하는 쪽을 택함(`open_scene(..., additive: true)`로 KJH를 같이 열어 `Instantiate()` 후 Develop Canvas로 재부모화, KJH는 역시 한 번도 저장 안 함):
+  - `EchoBlackout`(새로 추가): KJH에서 그대로 복제, Canvas 하위에서 `InteractionPrompt`보다 앞 sibling index로 배치.
+  - `SpectrumOverlay`: Develop의 기존 구버전(하단 중앙)을 삭제하고 KJH의 최신 버전을 복제해 맨 뒤 sibling로 배치("암전 위에서도 파형은 항상 최상단에 보여야" 하므로).
+  - `Echo_Desk_MusicBox`(Develop에서 echoClip guid `6afe45b1...`로 식별되는 쪽)에 `spectrumResponse = SpectrumResponse_Sensitive` 프리셋을 연결(KJH의 해당 오브젝트와 동일 — 단, Develop의 "Desk"/"Portrait" 이름과 KJH의 값 매핑이 echoClip 교체 이력(`a516fa8`)때문에 이름 기준과 어긋나 있어서 **반드시 echoClip guid로 대조**해야 했음).
+- **중요 교훈 — Enter Play Mode에서 씬 리로드가 꺼져 있음**: 이 프로젝트는 Play 모드 진입 시 씬을 다시 로드하지 않도록 설정돼 있어서(확인됨: Play 모드 중에 `Instantiate`/`DestroyImmediate`/`SerializedObject` 편집을 해도 Stop 후에도 그대로 남아있음), 평소 "Play 중 편집은 Stop하면 사라진다"는 Unity 기본 가정이 이 프로젝트에선 성립하지 않는다. 그래도 **되도록 Edit 모드에서 씬을 편집하고 저장할 것** — Play 모드 중 편집이 우연히 남는 데 의존하지 말 것(다른 머신 설정에선 사라질 수 있음).
+- **검증(Play 모드, 직접 `TryBegin()` 반복 호출로 빠른 폴링)**: `Reaching→Narrowing→Darkening→Listening→Returning` 전체 통과. `Darkening` 단계에서 `blackoutAlpha`가 0→0.9로 상승 확인, `Listening` 진입 시 `spectrumAlpha=1`(파형 표시, 중앙 배치 `anchorMin=(0.5,0.5)` 확인)+`blackoutAlpha=0.9` 동시 확인, 종료 후 둘 다 0으로 복원. 콘솔 에러 0(Awake 시점의 "Blackout Overlay가 비어있다" 경고 1건은 런타임 주입 전 타이밍이라 기존 lookCamera/promptUI와 같은 패턴의 정상적인 과도 경고).
+
 ## 사용 가능한 Unity 전용 스킬
 이 환경에는 `unity:` 접두사의 스킬들(unity-cli, ui, urp-postprocessing, physics-3d-collision 등)이 이미 연결되어 있습니다. 관련 작업을 할 때는 먼저 해당 스킬을 확인하세요.
 

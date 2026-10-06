@@ -41,7 +41,12 @@ namespace CoopDemo
             Camera ownCamera = GetComponentInChildren<Camera>(true);
             InteractionPromptUI promptUI = FindAnyObjectByType<InteractionPromptUI>(FindObjectsInactive.Include);
             interactionController.ConfigureForOwner(ownCamera, promptUI);
-            if (echoController != null) echoController.SetViewCamera(ownCamera);
+            if (echoController != null)
+            {
+                echoController.SetViewCamera(ownCamera);
+                CanvasGroup blackout = GameObject.Find("Canvas")?.transform.Find("EchoBlackout")?.GetComponent<CanvasGroup>();
+                echoController.SetBlackoutOverlay(blackout);
+            }
 
             ConfigurePhotoSystemForOwner();
         }

@@ -20,6 +20,7 @@ GameObject:
   - component: {fileID: 3912676630872538180}
   - component: {fileID: 3994748893317382008}
   - component: {fileID: 4862280380714093833}
+  - component: {fileID: 1396388984641616065}
   m_Layer: 0
   m_Name: FPSPlayer
   m_TagString: Player
@@ -81,7 +82,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 1044905738
+  GlobalObjectIdHash: 3377387359
   InScenePlacedSourceGlobalObjectIdHash: 785837842
   m_InScenePlacedDisabledByDefault: 0
   DeferredDespawnTick: 0
@@ -265,6 +266,11 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+  darkenScreen: 1
+  blackoutOverlay: {fileID: 0}
+  blackoutDuration: 1.2
+  blackoutAlpha: 0.9
+  blackoutRestoreDuration: 1.2
   delayBeforeSound: 0.4
   delayAfterSound: 0.5
   restoreDuration: 1.6
@@ -445,6 +451,19 @@ MonoBehaviour:
   flashEffect: {fileID: 0}
   acquiredToast: {fileID: 0}
   shutterClip: {fileID: 0}
+--- !u!114 &1396388984641616065
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1685861150997710811}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d7d754815e2c2db4c81f66a19483e0b7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerAbilities
+  abilities: 3
 --- !u!1 &1952306313289465250
 GameObject:
   m_ObjectHideFlags: 0
@@ -678,7 +697,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 0}
+  - {fileID: 2100000, guid: 3ea006eb38ba52e47a6d4d56345d7bc4, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
