@@ -267,28 +267,29 @@ public static class ClueSetupMenu
         ClueViewerUI existing = Object.FindAnyObjectByType<ClueViewerUI>(FindObjectsInactive.Include);
         if (existing != null) return existing;
 
-        // 붙일 Canvas 찾기: 사진 UI Canvas가 있으면 거기에, 없으면 화면 덮개(Overlay) Canvas, 그것도 없으면 새로 만든다.
+        // 붙일 Canvas 찾기: 게임 UI Canvas가 있으면 거기에, 없으면 화면 덮개(Overlay) Canvas, 그것도 없으면 새로 만든다.
         Canvas canvas = Object.FindObjectsByType<Canvas>(FindObjectsInactive.Include)
             .Where(c => c.isRootCanvas && c.renderMode == RenderMode.ScreenSpaceOverlay)
-            .OrderByDescending(c => c.name == "PhotoUICanvas")
+            .OrderByDescending(c => c.name == GameUIGroups.CanvasName)
             .FirstOrDefault();
         if (canvas == null)
         {
-            var canvasGo = new GameObject("ClueUICanvas", typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
-            Undo.RegisterCreatedObjectUndo(canvasGo, "Create ClueUICanvas");
+            var canvasGo = new GameObject(GameUIGroups.CanvasName, typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
+            Undo.RegisterCreatedObjectUndo(canvasGo, "Create " + GameUIGroups.CanvasName);
             canvas = canvasGo.GetComponent<Canvas>();
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
             var scaler = canvasGo.GetComponent<CanvasScaler>();
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
             scaler.referenceResolution = new Vector2(1920, 1080);
             if (sameSceneAs != null) MoveToSameScene(canvasGo, sameSceneAs);
-            log.Add("⚠ 화면 UI Canvas가 없어 ClueUICanvas를 새로 만들었습니다 (안내 문구·획득 알림 UI는 따로 필요합니다).");
+            log.Add($"⚠ 화면 UI Canvas가 없어 {GameUIGroups.CanvasName}를 새로 만들었습니다 (안내 문구·획득 알림 UI는 따로 필요합니다).");
         }
 
         Font font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf"); // 기존 사진 UI와 같은 기본 글꼴
 
         // 루트: 화면 전체를 덮고, CanvasGroup으로 한 번에 나타나고 사라진다.
-        GameObject root = CreateUI("ClueViewer", canvas.transform);
+        // Canvas 바로 아래가 아니라 기능별 묶음(Clue) 안에 만든다. 묶음 순서 덕분에 안내 문구·획득 알림(Common)보다 아래에 그려진다.
+        GameObject root = CreateUI("ClueViewer", GameUIGroups.GetOrCreate(canvas, GameUIGroups.Clue));
         Undo.RegisterCreatedObjectUndo(root, "Create ClueViewer");
         Stretch(root.GetComponent<RectTransform>());
         CanvasGroup group = root.AddComponent<CanvasGroup>();
@@ -357,10 +358,6 @@ public static class ClueSetupMenu
         hintRt.sizeDelta = new Vector2(600f, 50f);
         hint.text = "[E] 닫기";
 
-        // 안내 문구·획득 알림보다 아래에 그려지도록(= 알림이 어두운 배경 위에 보이도록) 순서를 맞춘다.
-        Transform prompt = canvas.transform.Cast<Transform>().FirstOrDefault(t => t.GetComponent<InteractionPromptUI>() != null);
-        if (prompt != null) root.transform.SetSiblingIndex(prompt.GetSiblingIndex());
-
         // ClueViewerUI 연결
         ClueViewerUI viewer = root.AddComponent<ClueViewerUI>();
         var so = new SerializedObject(viewer);
@@ -372,7 +369,7 @@ public static class ClueSetupMenu
         so.ApplyModifiedProperties();
 
         EditorSceneManager.MarkSceneDirty(canvas.gameObject.scene);
-        log.Add($"ClueViewerUI 생성 ({canvas.name}/ClueViewer): 어두운 배경 + 가운데 이미지 + 오른쪽 설명");
+        log.Add($"ClueViewerUI 생성 ({canvas.name}/{GameUIGroups.Clue}/ClueViewer): 어두운 배경 + 가운데 이미지 + 오른쪽 설명");
         return viewer;
     }
 
