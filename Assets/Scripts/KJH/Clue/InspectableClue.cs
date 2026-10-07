@@ -66,7 +66,7 @@ public class InspectableClue : MonoBehaviour, IInteractable, IFocusable, IModalI
     [SerializeField] private float hideDuration = 0.6f;
 
     [Header("입력")]
-    [Tooltip("마우스 이동량을 읽을 액션 (Player/Look). 살펴보는 동안 오브젝트 회전에 쓴다.")]
+    [Tooltip("마우스 이동량을 읽을 액션 (Player/Look). 살펴보는 동안 오브젝트 회전에 쓴다. 비워두면 플레이어(PlayerMovement)의 Look 액션을 쓴다.")]
     [SerializeField] private InputActionReference lookAction;
 
     [Header("배경 연출")]
@@ -115,10 +115,16 @@ public class InspectableClue : MonoBehaviour, IInteractable, IFocusable, IModalI
     private Rigidbody body;
     private bool bodyWasKinematic;
 
+    // 들고 보는 상태에서 사진 찍기 (같은 오브젝트에 InspectPhotoCapture가 붙어 있을 때만). 없으면 null.
+    private InspectPhotoCapture photoCapture;
+
     // 살펴보기를 시작한 플레이어 쪽 참조
+    private GameObject interactor;
     private InteractionController controller;
     private PlayerMovement playerMovement;
     private Transform cameraTransform;
+    // 실제로 회전에 쓸 Look 액션. Inspector에서 비워두면 플레이어의 것을 빌려 쓴다 (Add Component로 직접 붙여도 돌아가게).
+    private InputAction activeLookAction;
 
     // 살펴보기 중 회전 상태
     private Quaternion inspectBaseRotation; // 카메라 기준 기본 자세 (회전 0일 때)
@@ -134,6 +140,7 @@ public class InspectableClue : MonoBehaviour, IInteractable, IFocusable, IModalI
         // 인터페이스 타입으로도 컴포넌트를 찾을 수 있다. 어떤 종류의 펼침 연출이든 IRevealAnimation이면 다 모인다.
         revealAnimations = GetComponentsInChildren<IRevealAnimation>(true);
         body = GetComponent<Rigidbody>();
+        photoCapture = GetComponent<InspectPhotoCapture>();
         // 강조 컴포넌트가 없으면(예전에 설정한 단서) 실행 중에 붙여서 그대로 동작하게 한다.
         highlighter = GetComponent<ClueHighlighter>();
         if (highlighter == null) highlighter = gameObject.AddComponent<ClueHighlighter>();
@@ -150,7 +157,9 @@ public class InspectableClue : MonoBehaviour, IInteractable, IFocusable, IModalI
 
     private void Update()
     {
-        if (CurrentState == State.Inspecting) UpdateInspectRotation();
+        // 사진 촬영(뷰파인더) 중에는 단서를 고정한다 — 마우스를 움직여도 돌아가지 않는다.
+        bool frozenForPhoto = photoCapture != null && photoCapture.IsCapturing;
+        if (CurrentState == State.Inspecting && !frozenForPhoto) UpdateInspectRotation();
     }
 
     // ── IInteractable ──────────────────────────────────────
@@ -162,6 +171,7 @@ public class InspectableClue : MonoBehaviour, IInteractable, IFocusable, IModalI
     {
         if (!CanInteract) return;
 
+        this.interactor = interactor;
         controller = interactor.GetComponent<InteractionController>();
         playerMovement = interactor.GetComponent<PlayerMovement>();
         Camera cam = controller != null && controller.LookCamera != null ? controller.LookCamera : Camera.main;
@@ -171,6 +181,17 @@ public class InspectableClue : MonoBehaviour, IInteractable, IFocusable, IModalI
             return;
         }
         cameraTransform = cam.transform;
+
+        InputActionReference lookRef = lookAction != null ? lookAction : (playerMovement != null ? playerMovement.LookAction : null);
+        activeLookAction = lookRef != null ? lookRef.action : null;
+        if (activeLookAction == null)
+        {
+            Debug.LogWarning("[InspectableClue] Look 액션을 찾지 못해 마우스로 돌려볼 수 없습니다. Inspector의 Look Action에 Player/Look을 연결해 주세요.", this);
+        }
+        else
+        {
+            activeLookAction.Enable();
+        }
 
         BeginInspect();
     }
@@ -193,7 +214,10 @@ public class InspectableClue : MonoBehaviour, IInteractable, IFocusable, IModalI
     // ── IModalInteraction (살펴보기 중 E / Esc) ────────────
     public void OnInteractPressed()
     {
-        if (CurrentState == State.Inspecting) EndInspect(); // 이동 중(MovingIn/Out)의 입력은 무시
+        if (CurrentState != State.Inspecting) return; // 이동 중(MovingIn/Out)의 입력은 무시
+        // 사진을 찍을 수 있는 단서면 E = 사진 찍기 (Esc = 내려놓기). 찍을 수 없으면(능력 없음, 이미 찍음) 원래대로 E = 내려놓기.
+        if (photoCapture != null && photoCapture.TryBeginCapture(interactor)) return;
+        EndInspect();
     }
 
     public void OnCancelPressed()
@@ -334,7 +358,7 @@ public class InspectableClue : MonoBehaviour, IInteractable, IFocusable, IModalI
         if (inspectVolume != null) inspectVolume.weight = 1f;
 
         CurrentState = State.Inspecting;
-        if (controller != null && controller.PromptUI != null) controller.PromptUI.Show("[E] 내려놓기  [마우스] 돌려보기");
+        RefreshInspectPrompt();
         if (autoPlayReveal)
         {
             foreach (IRevealAnimation reveal in revealAnimations) reveal.PlayReveal(revealDuration); // 눈앞에 도착한 뒤 펼친다
@@ -391,6 +415,17 @@ public class InspectableClue : MonoBehaviour, IInteractable, IFocusable, IModalI
         if (controller != null) controller.EndModal(this);
     }
 
+    // 살펴보는 중의 안내 문구를 지금 상황에 맞게 보여준다. 사진 촬영이 끝나거나 취소됐을 때 InspectPhotoCapture도 호출한다.
+    public void RefreshInspectPrompt()
+    {
+        if (CurrentState != State.Inspecting || controller == null || controller.PromptUI == null) return;
+
+        bool canPhoto = photoCapture != null && photoCapture.CanCapture(interactor);
+        controller.PromptUI.Show(canPhoto
+            ? "[E] 사진 찍기  [Esc] 내려놓기  [마우스] 돌려보기"
+            : "[E] 내려놓기  [마우스] 돌려보기");
+    }
+
     private void ApplyInspectPose()
     {
         GetInspectTarget(out Vector3 pos, out Quaternion rot);
@@ -402,9 +437,9 @@ public class InspectableClue : MonoBehaviour, IInteractable, IFocusable, IModalI
     // 살펴보는 동안 마우스 이동량(Look 액션)으로 오브젝트를 돌린다. 커서는 잠긴 상태 그대로다.
     private void UpdateInspectRotation()
     {
-        if (lookAction == null || cameraTransform == null) return;
+        if (activeLookAction == null || cameraTransform == null) return;
 
-        Vector2 delta = lookAction.action.ReadValue<Vector2>();
+        Vector2 delta = activeLookAction.ReadValue<Vector2>();
         inspectYaw += delta.x * rotateSensitivity;
         inspectPitch = Mathf.Clamp(inspectPitch + delta.y * rotateSensitivity, -pitchLimit, pitchLimit);
         ApplyInspectPose();
