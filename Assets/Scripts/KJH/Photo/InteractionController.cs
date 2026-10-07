@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -11,6 +12,8 @@ using UnityEngine.InputSystem;
 // 능력 필터: 대상이 IRequiresAbility로 "필요한 능력"을 밝혔는데 이 플레이어(PlayerAbilities)에게 그 능력이 없으면,
 // 그 대상은 이 플레이어에게 "없는 것"으로 취급한다 (안내 문구·강조·E 반응 모두 없음).
 // 예: 플레이어 A(SoundEcho)에게는 사진 촬영 지점이, 플레이어 B(PastPhoto)에게는 소리 듣기 사물이 반응하지 않는다.
+// 조건 필터: 대상 오브젝트에 IInteractionCondition(예: TimeUnlock)이 붙어 있고 그 조건을 만족하지 못해도 같은 방식으로 "없는 것"으로 취급한다.
+// 조건은 실행 중에 바뀔 수 있으므로(시간대가 바뀜) 매 프레임 다시 확인한다.
 // 사용법: Player 오브젝트에 붙인다 (같은 오브젝트에 PhotoCaptureSystem도 있어야 한다).
 public class InteractionController : MonoBehaviour
 {
@@ -48,6 +51,10 @@ public class InteractionController : MonoBehaviour
     // 같은 콜라이더를 계속 바라볼 때 매 프레임 GetComponentInParent를 하지 않도록 캐시해 둔다.
     private Collider lastLookCollider;
     private IInteractable lastLookColliderTarget;
+    // 트리거 대상이 지금 이 플레이어에게 보이는지 (능력·조건을 만족하는지). 바뀌는 순간에만 안내 문구를 갱신하려고 기억해 둔다.
+    private bool triggerAvailable;
+    // 대상의 조건 컴포넌트를 찾을 때 매번 새 리스트를 만들지 않도록 재사용한다 (매 프레임 호출되므로).
+    private readonly List<IInteractionCondition> conditionBuffer = new List<IInteractionCondition>();
     // 지금 화면을 독차지하는 상호작용 (살펴보기 등). null이면 평소 상태.
     private IModalInteraction activeModal;
 
@@ -98,6 +105,14 @@ public class InteractionController : MonoBehaviour
         // 매 프레임 조준점이 가리키는 대상을 찾는다. 감지가 막힌 상태면 "아무것도 안 가리킴"으로 처리한다.
         IInteractable target = IsLookDetectionBlocked ? null : FindLookTarget();
         SetLookTarget(target);
+
+        // 트리거 범위 안에 있는 동안 조건이 바뀌면(예: 시간대가 바뀌어 열림) 범위를 다시 드나들지 않아도 안내 문구가 바로 바뀌게 한다.
+        bool available = triggerInteractable != null && IsAllowed(triggerInteractable);
+        if (available != triggerAvailable)
+        {
+            triggerAvailable = available;
+            RefreshPrompt();
+        }
     }
 
     // 화면 가운데에서 앞으로 레이를 쏴서 맞은 콜라이더의 부모 쪽에서 IInteractable을 찾는다.
@@ -134,14 +149,25 @@ public class InteractionController : MonoBehaviour
         RefreshPrompt();
     }
 
-    // 이 플레이어가 이 대상과 상호작용할 능력이 있는지. 능력이 필요 없는 대상(단서 등)은 항상 true.
+    // 이 플레이어가 지금 이 대상과 상호작용할 수 있는지.
+    // ① 능력: 능력이 필요 없는 대상(단서 등)은 통과 ② 조건: 대상 오브젝트에 붙은 IInteractionCondition을 모두 만족해야 통과 (없으면 통과)
     private bool IsAllowed(IInteractable target)
     {
-        return !(target is IRequiresAbility requirement) || PlayerAbilities.Has(gameObject, requirement.RequiredAbility);
+        if (target is IRequiresAbility requirement && !PlayerAbilities.Has(gameObject, requirement.RequiredAbility)) return false;
+
+        if (target is Component component)
+        {
+            component.GetComponents(conditionBuffer);
+            foreach (IInteractionCondition condition in conditionBuffer)
+            {
+                if (!condition.IsMet(gameObject)) return false;
+            }
+        }
+        return true;
     }
 
     // 지금 E를 누르면 실행될 대상. 조준 대상이 트리거 대상보다 우선이다.
-    private IInteractable CurrentTarget => lookInteractable ?? triggerInteractable;
+    private IInteractable CurrentTarget => lookInteractable ?? (triggerAvailable ? triggerInteractable : null);
 
     // 현재 대상에 맞게 안내 문구를 보여주거나 숨긴다.
     private void RefreshPrompt()
@@ -159,10 +185,10 @@ public class InteractionController : MonoBehaviour
     {
         // 촬영 모드 중에는 다른 지점의 안내 문구가 뜨면 혼란스러우니 무시한다.
         if (photoCaptureSystem != null && photoCaptureSystem.IsBusy) return;
-        // 이 플레이어에게 없는 능력의 대상(예: 플레이어 A가 사진 촬영 지점 범위에 들어옴)은 등록하지 않는다.
-        if (!IsAllowed(interactable)) return;
-
+        // 능력·조건이 맞지 않는 대상(예: 플레이어 A가 사진 촬영 지점 범위에 들어옴, 아직 열리지 않은 시간대)도 기억은 해 두되
+        // 안내 문구는 띄우지 않는다. 범위 안에 있는 동안 조건이 맞게 되면(시간대가 바뀜) Update에서 그때 안내 문구를 띄운다.
         triggerInteractable = interactable;
+        triggerAvailable = IsAllowed(interactable);
         RefreshPrompt();
     }
 
@@ -172,6 +198,7 @@ public class InteractionController : MonoBehaviour
         if (triggerInteractable != interactable) return; // 이미 다른 대상으로 바뀐 뒤의 뒤늦은 호출은 무시
 
         triggerInteractable = null;
+        triggerAvailable = false;
         RefreshPrompt();
     }
 
