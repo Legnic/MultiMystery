@@ -34,6 +34,9 @@ public class ViewableClue : MonoBehaviour, IInteractable, IFocusable, IModalInte
     [Tooltip("이미지·설명이 닫힐 때 호출된다.")]
     [SerializeField] private UnityEvent onClosed;
 
+    // 이미지·설명이 화면에 뜰 때마다 코드에서 구독할 수 있는 이벤트 (예: SafeClue가 "처음 읽음"을 판단하는 데 쓴다).
+    public event System.Action<ViewableClue> Opened;
+
     public State CurrentState { get; private set; } = State.Idle;
     public ClueData ClueData => clueData;
 
@@ -134,6 +137,7 @@ public class ViewableClue : MonoBehaviour, IInteractable, IFocusable, IModalInte
 
         PlaySound(openSound);
         onOpened?.Invoke();
+        Opened?.Invoke(this);
     }
 
     private void Close()
