@@ -48,9 +48,9 @@
 
 ### 1-4. 손 / 스펙트럼 UI
 - `Player/Main Camera/PlaceholderHand` : PlaceholderHandReach + 단순 도형 손. 처음 놓인 위치(화면 밖 오른쪽 아래)가 대기 자리입니다.
-- `PhotoUICanvas/EchoBlackout` : 화면 전체를 덮는 암전 덮개(평소 투명). 그리는 순서가 **게임 화면 < EchoBlackout < InteractionPrompt < SpectrumOverlay** 여야 암전 위에 안내 문구와 파형이 보입니다.
+- `GameUICanvas/ObjectEcho/EchoBlackout` : 화면 전체를 덮는 암전 덮개(평소 투명). 그리는 순서가 **게임 화면 < EchoBlackout < SpectrumOverlay < Common 묶음(InteractionPrompt·AcquiredToast)** 이어야 암전 위에 파형과 안내 문구가 보입니다. (파형은 화면 가운데, 안내 문구는 아래쪽이라 서로 겹치지 않음)
   컨트롤러의 `Darken Screen`(켜기/끄기), `Blackout Duration`(1.2초), `Blackout Alpha`(1 = 완전 암전), `Blackout Restore Duration`(1.2초)으로 조절합니다.
-- `PhotoUICanvas/SpectrumOverlay` : 화면 정가운데, 1000×260. 선 색은 자식 `InkLine` 의 Color에서 바꿉니다.
+- `GameUICanvas/ObjectEcho/SpectrumOverlay` : 화면 정가운데, 1000×260. 선 색은 자식 `InkLine` 의 Color에서 바꿉니다.
 - Player의 ObjectEchoController에 Hand Reach / Sound Cue 가 연결되어 있는지 확인합니다.
 
 ### 1-5. HandTarget / FocusPoint 배치 요령

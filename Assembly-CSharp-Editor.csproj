@@ -58,7 +58,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\Scripts\KJH\Clue\Editor\ClueSetupMenu.cs" />
+    <Compile Include="Assets\Scripts\KJH\GameTime\Editor\GameClockEditor.cs" />
     <Compile Include="Assets\Scripts\KJH\ObjectEcho\Editor\ObjectEchoSetupMenu.cs" />
+    <Compile Include="Assets\Scripts\KJH\Common\Editor\GameUIGroups.cs" />
     <Compile Include="Assets\TutorialInfo\Editor\ReadmeEditor.cs" />
   </ItemGroup>
   <ItemGroup>

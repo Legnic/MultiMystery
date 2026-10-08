@@ -9,7 +9,7 @@ using UnityEngine;
 // Rigidbody가 없으므로, 트리거 쪽인 PhotoSpot이 Kinematic Rigidbody를 들고 있어야 한다.
 [RequireComponent(typeof(Collider))]
 [RequireComponent(typeof(Rigidbody))]
-public class PhotoSpot : MonoBehaviour, IInteractable, IRequiresAbility
+public class PhotoSpot : MonoBehaviour, IInteractable, IRequiresAbility, IPhotoSubject
 {
     // 과거 사진 촬영은 플레이어 B(PastPhoto 능력)만 할 수 있다. 다른 플레이어에게는 안내도 뜨지 않는다.
     public PlayerAbility RequiredAbility => PlayerAbility.PastPhoto;
@@ -32,8 +32,12 @@ public class PhotoSpot : MonoBehaviour, IInteractable, IRequiresAbility
     // 촬영 완료 시 "더 이상 상호작용 대상이 아니다"라고 알려주기 위해 들고 있는다.
     private InteractionController registeredController;
 
+    // IPhotoSubject 구현 ─────────────────────────────────────
     public Transform CameraAnchor => cameraAnchor;
     public PhotoItemData PhotoItem => photoItem;
+    public bool RestorePlayerControlOnExit => true; // 지점 촬영은 끝나면 바로 다시 걸어다닐 수 있다
+    public void OnPhotoCaptured() => MarkCaptured();
+    public void OnPhotoCancelled() { }
 
     private void Awake()
     {
@@ -51,6 +55,12 @@ public class PhotoSpot : MonoBehaviour, IInteractable, IRequiresAbility
     public void Interact(GameObject interactor)
     {
         if (!CanInteract) return;
+        if (cameraAnchor == null)
+        {
+            // PhotoSpot은 반드시 정해진 시점에서 찍어야 하므로, 앵커가 비어 있으면 "지금 시점 그대로" 찍지 않고 막는다.
+            Debug.LogWarning("[PhotoSpot] CameraAnchor가 연결되어 있지 않습니다.", this);
+            return;
+        }
 
         // 촬영은 Player에 붙어있는 PhotoCaptureSystem이 실제로 수행한다.
         // PhotoSpot은 "어디서, 무엇을 찍을지"만 알려주는 역할만 한다.

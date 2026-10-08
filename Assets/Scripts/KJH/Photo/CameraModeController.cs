@@ -52,6 +52,10 @@ public class CameraModeController : MonoBehaviour
     private float originalFov;
     private float breathingSeed;
     private IPlayerLock playerLock;
+    // 고정된 순간의 카메라 로컬 회전. 호흡 흔들림은 이 회전 위에 아주 작게 더해진다.
+    private Quaternion lockedLocalRotation;
+    // 이번 촬영 모드를 나올 때 플레이어 조작을 돌려줄지 (살펴보기 중 촬영이면 false — 살펴보기가 끝날 때 돌려준다).
+    private bool restorePlayerControlOnExit = true;
 
     private void Awake()
     {
@@ -83,7 +87,7 @@ public class CameraModeController : MonoBehaviour
         float t = (Time.time + breathingSeed) * breathingSwaySpeed;
         float swayX = (Mathf.PerlinNoise(t, 0f) - 0.5f) * 2f * breathingSwayIntensity;
         float swayY = (Mathf.PerlinNoise(0f, t) - 0.5f) * 2f * breathingSwayIntensity;
-        mainCamera.transform.localRotation = Quaternion.Euler(swayX, swayY, 0f);
+        mainCamera.transform.localRotation = lockedLocalRotation * Quaternion.Euler(swayX, swayY, 0f);
     }
 
     // 네트워크로 스폰되는 플레이어(예: FPSPlayer)는 프리팹 단계에서 씬의 Volume/CanvasGroup 같은
@@ -97,10 +101,12 @@ public class CameraModeController : MonoBehaviour
         if (viewfinderFrameCanvasGroup != null) viewfinderFrameCanvasGroup.alpha = 0f;
     }
 
-    // PhotoCaptureSystem이 상호작용 발생 시 호출한다. anchor는 PhotoSpot.CameraAnchor.
-    public void EnterCaptureMode(Transform anchor)
+    // PhotoCaptureSystem이 상호작용 발생 시 호출한다. anchor는 촬영 대상의 CameraAnchor.
+    // anchor가 null이면 카메라는 움직이지 않고(시야각도 그대로) 뷰파인더 연출만 켠다 — 단서를 들고 보는 시점 그대로 찍을 때.
+    public void EnterCaptureMode(Transform anchor, bool restorePlayerControlOnExit = true)
     {
-        if (mainCamera == null || anchor == null) return;
+        if (mainCamera == null) return;
+        this.restorePlayerControlOnExit = restorePlayerControlOnExit;
 
         // 복귀할 때 쓸 원래 로컬 위치/회전을 기억해둔다 (플레이어 자식으로 붙어있으므로 로컬 좌표 기준).
         originalLocalPosition = mainCamera.transform.localPosition;
@@ -137,9 +143,9 @@ public class CameraModeController : MonoBehaviour
         Vector3 startPos = mainCamera.transform.position;
         Quaternion startRot = mainCamera.transform.rotation;
 
-        // 목표 위치/회전: 들어갈 땐 CameraAnchor(월드 좌표), 나갈 땐 기억해둔 원래 로컬 좌표를 월드로 환산.
-        Vector3 targetPos = toAnchor ? anchor.position : mainCamera.transform.parent.TransformPoint(originalLocalPosition);
-        Quaternion targetRot = toAnchor ? anchor.rotation : mainCamera.transform.parent.rotation * originalLocalRotation;
+        // 목표 위치/회전: 들어갈 땐 CameraAnchor(월드 좌표, 앵커가 없으면 지금 자리), 나갈 땐 기억해둔 원래 로컬 좌표를 월드로 환산.
+        Vector3 targetPos = toAnchor ? (anchor != null ? anchor.position : startPos) : mainCamera.transform.parent.TransformPoint(originalLocalPosition);
+        Quaternion targetRot = toAnchor ? (anchor != null ? anchor.rotation : startRot) : mainCamera.transform.parent.rotation * originalLocalRotation;
 
         float startWeight = viewfinderVolume != null ? viewfinderVolume.weight : 0f;
         float targetWeight = toAnchor ? 1f : 0f;
@@ -148,7 +154,8 @@ public class CameraModeController : MonoBehaviour
         float targetAlpha = toAnchor ? 1f : 0f;
 
         float startFov = mainCamera.fieldOfView;
-        float targetFov = toAnchor && captureFov > 0f ? captureFov : originalFov;
+        // 앵커 없이 찍을 땐 시야각을 바꾸지 않는다 (눈앞에 든 단서의 크기가 갑자기 바뀌지 않도록).
+        float targetFov = toAnchor ? (anchor != null && captureFov > 0f ? captureFov : startFov) : originalFov;
 
         float elapsed = 0f;
         while (elapsed < cameraMoveDuration)
@@ -176,9 +183,10 @@ public class CameraModeController : MonoBehaviour
 
         if (toAnchor)
         {
+            lockedLocalRotation = mainCamera.transform.localRotation;
             IsLockedOnAnchor = true;
         }
-        else if (playerLock != null)
+        else if (playerLock != null && restorePlayerControlOnExit)
         {
             // 원래 시점으로 완전히 돌아온 뒤에야 조작을 돌려준다 (전환 도중 조작이 섞이면 어색하므로).
             playerLock.SpeedMultiplier = 1f;

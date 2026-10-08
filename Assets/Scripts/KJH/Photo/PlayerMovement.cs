@@ -22,6 +22,9 @@ public class PlayerMovement : MonoBehaviour, IPlayerLock
     [Tooltip("InputSystem_Actions의 Player/Look (Vector2, 마우스 델타).")]
     [SerializeField] private InputActionReference lookAction;
 
+    // 살펴보기 단서처럼 마우스 이동량이 필요한 다른 기능이 같은 Look 액션을 빌려 쓸 수 있게 공개한다.
+    public InputActionReference LookAction => lookAction;
+
     [Tooltip("시점 회전을 적용할 카메라 Transform (보통 Player의 자식인 Main Camera).")]
     [SerializeField] private Transform cameraTransform;
 
