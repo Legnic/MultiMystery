@@ -1,4 +1,4 @@
-﻿using Unity.Netcode;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -33,6 +33,8 @@ namespace LGH
                 if (r != null) r.shadowCastingMode = mine ? ShadowCastingMode.ShadowsOnly : ShadowCastingMode.On;
             if (controller != null) controller.enabled = mine;
             gameObject.name = mine ? "Player (나)" : "Player (상대)";
+            var avatar = GetComponentInChildren<PlayerAvatar>(true);
+            if (avatar != null) avatar.SetSlot((int)OwnerClientId);
 
             if (mine)
             {

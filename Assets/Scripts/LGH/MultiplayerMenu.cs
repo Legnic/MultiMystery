@@ -34,6 +34,9 @@ namespace LGH
         async void Start()
         {
             ShowCursor(true);
+            // keep the game (and the host's network loop) running when its window is not focused,
+            // otherwise a second window on the same PC freezes and the join times out
+            Application.runInBackground = true;
             roomName = "저택 " + UnityEngine.Random.Range(100, 1000);
             try
             {
@@ -46,6 +49,8 @@ namespace LGH
                 ready = true;
                 status = "방을 만들거나 목록에서 방을 눌러 참가하세요";
                 RefreshRooms();
+                // test helper: start the game with -lghAutoHost to open a room straight away
+                if (Array.IndexOf(Environment.GetCommandLineArgs(), "-lghAutoHost") >= 0) CreateRoom();
             }
             catch (Exception e)
             {
@@ -146,7 +151,7 @@ namespace LGH
             }
             catch (Exception e)
             {
-                status = "참가 실패: 방이 가득 찼거나 사라졌어요 (" + e.Message + ")";
+                status = "참가 실패: 방장과 연결하지 못했어요. 방장 게임이 켜져 있는지, 양쪽이 같은 버전인지 확인하세요 (" + e.Message + ")";
                 Debug.LogException(e);
                 nextRefresh = 0f; // refresh the list right away
             }
@@ -193,7 +198,7 @@ namespace LGH
             if (nm == null) return;
             if (!nm.IsServer && clientId == nm.LocalClientId)
             {
-                status = "호스트와 연결이 끊어졌어요";
+                status = "호스트와 연결이 끊어졌어요" + (string.IsNullOrEmpty(nm.DisconnectReason) ? "" : " (" + nm.DisconnectReason + ")");
                 session = null;
                 nextRefresh = 0f;
                 ShowCursor(true);
