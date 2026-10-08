@@ -1632,6 +1632,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::LGH.MultiplayerMenu
   menuCamera: {fileID: 749266727}
   maxPlayers: 2
+  refreshInterval: 4
 --- !u!4 &115997535
 Transform:
   m_ObjectHideFlags: 0
@@ -29126,6 +29127,177 @@ MonoBehaviour:
   m_ShadowLayerMask: 1
   m_RenderingLayers: 1
   m_ShadowRenderingLayers: 1
+--- !u!1001 &504303075933645890
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 8215270256177518897, guid: f1f9787889f7e4a4baf0de9043a52ea4, type: 3}
+      propertyPath: m_Name
+      value: VictorianInterior_LGH
+      objectReference: {fileID: 0}
+    - target: {fileID: 8244046435934045694, guid: f1f9787889f7e4a4baf0de9043a52ea4, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8244046435934045694, guid: f1f9787889f7e4a4baf0de9043a52ea4, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8244046435934045694, guid: f1f9787889f7e4a4baf0de9043a52ea4, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8244046435934045694, guid: f1f9787889f7e4a4baf0de9043a52ea4, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8244046435934045694, guid: f1f9787889f7e4a4baf0de9043a52ea4, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8244046435934045694, guid: f1f9787889f7e4a4baf0de9043a52ea4, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8244046435934045694, guid: f1f9787889f7e4a4baf0de9043a52ea4, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8244046435934045694, guid: f1f9787889f7e4a4baf0de9043a52ea4, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8244046435934045694, guid: f1f9787889f7e4a4baf0de9043a52ea4, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8244046435934045694, guid: f1f9787889f7e4a4baf0de9043a52ea4, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: f1f9787889f7e4a4baf0de9043a52ea4, type: 3}
+--- !u!1001 &558255331134503189
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 1142366880021259680, guid: f073e4134ea4a4d4bb204df64471b949, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1142366880021259680, guid: f073e4134ea4a4d4bb204df64471b949, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1142366880021259680, guid: f073e4134ea4a4d4bb204df64471b949, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1142366880021259680, guid: f073e4134ea4a4d4bb204df64471b949, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1142366880021259680, guid: f073e4134ea4a4d4bb204df64471b949, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1142366880021259680, guid: f073e4134ea4a4d4bb204df64471b949, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1142366880021259680, guid: f073e4134ea4a4d4bb204df64471b949, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1142366880021259680, guid: f073e4134ea4a4d4bb204df64471b949, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1142366880021259680, guid: f073e4134ea4a4d4bb204df64471b949, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1142366880021259680, guid: f073e4134ea4a4d4bb204df64471b949, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7682920396014404072, guid: f073e4134ea4a4d4bb204df64471b949, type: 3}
+      propertyPath: m_Name
+      value: VictorianExterior_LGH
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: f073e4134ea4a4d4bb204df64471b949, type: 3}
+--- !u!1001 &5387589473592741274
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 7986787528679246188, guid: 1d8fd42a8f3371a4e96954528663b9f0, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7986787528679246188, guid: 1d8fd42a8f3371a4e96954528663b9f0, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7986787528679246188, guid: 1d8fd42a8f3371a4e96954528663b9f0, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7986787528679246188, guid: 1d8fd42a8f3371a4e96954528663b9f0, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7986787528679246188, guid: 1d8fd42a8f3371a4e96954528663b9f0, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7986787528679246188, guid: 1d8fd42a8f3371a4e96954528663b9f0, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7986787528679246188, guid: 1d8fd42a8f3371a4e96954528663b9f0, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7986787528679246188, guid: 1d8fd42a8f3371a4e96954528663b9f0, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7986787528679246188, guid: 1d8fd42a8f3371a4e96954528663b9f0, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7986787528679246188, guid: 1d8fd42a8f3371a4e96954528663b9f0, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8365437012223504602, guid: 1d8fd42a8f3371a4e96954528663b9f0, type: 3}
+      propertyPath: m_Name
+      value: VictorianDoorCasings_LGH
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 1d8fd42a8f3371a4e96954528663b9f0, type: 3}
 --- !u!1001 &6345343118482399426
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -29201,3 +29373,6 @@ SceneRoots:
   - {fileID: 1543708230}
   - {fileID: 2025934642}
   - {fileID: 115997535}
+  - {fileID: 558255331134503189}
+  - {fileID: 504303075933645890}
+  - {fileID: 5387589473592741274}
