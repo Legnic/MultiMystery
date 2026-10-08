@@ -64,6 +64,7 @@
     <Compile Include="Assets\Scripts\LGH\CandleFlicker.cs" />
     <Compile Include="Assets\Scripts\LGH\DoorNetworkSync.cs" />
     <Compile Include="Assets\Scripts\LGH\FirstPersonController.cs" />
+    <Compile Include="Assets\Scripts\LGH\PlayerAvatar.cs" />
     <Compile Include="Assets\TutorialInfo\Readme.cs" />
     <Compile Include="Assets\Scripts\LGH\NetworkPlayer.cs" />
     <Compile Include="Assets\Scripts\LGH\DayNightCycle.cs" />
