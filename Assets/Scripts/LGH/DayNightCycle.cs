@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace LGH
 {
@@ -16,6 +16,9 @@ namespace LGH
         [Header("Timing")]
         public float dayLengthSeconds = 60f;
         [Range(0f, 1f)] public float startTime01 = 0f;
+        [Tooltip("켜면 시간이 흐르지 않고 startTime01 시각에 고정됩니다 (예: 0.8 = 한밤).")]
+        public bool freezeTime = false;
+        public bool showPhaseLabel = true;
 
         [Header("Sun path (south-facing window)")]
         public float maxElevation = 52f;
@@ -92,8 +95,11 @@ namespace LGH
         void Update()
         {
             if (dayLengthSeconds <= 0f) return;
-            t01 += Time.deltaTime / dayLengthSeconds;
-            if (t01 > 1f) t01 -= 1f;
+            if (!freezeTime)
+            {
+                t01 += Time.deltaTime / dayLengthSeconds;
+                if (t01 > 1f) t01 -= 1f;
+            }
 
             // Azimuth sweeps East(90) -> South(0, noon) -> West(-90) -> ... ; elevation follows one sine cycle (up in day, below horizon at night).
             float azimuth = 90f - t01 * 360f + azimuthOffset;
@@ -142,6 +148,7 @@ namespace LGH
 
         void OnGUI()
         {
+            if (!showPhaseLabel) return;
             GUI.color = Color.white;
             GUI.Label(new Rect(12, 12, 400, 24), CurrentPhaseName() + "  -  " + Mathf.RoundToInt(t01 * 100f) + "%");
         }
