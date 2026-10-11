@@ -182,8 +182,11 @@ public class InspectableClue : MonoBehaviour, IInteractable, IFocusable, IModalI
         }
         cameraTransform = cam.transform;
 
-        InputActionReference lookRef = lookAction != null ? lookAction : (playerMovement != null ? playerMovement.LookAction : null);
-        activeLookAction = lookRef != null ? lookRef.action : null;
+        // Inspector에 비워뒀다면: 싱글플레이 PlayerMovement의 Look 액션 → 그것도 없으면(네트워크 플레이어 등)
+        // 프로젝트 전역 입력 액션의 Player/Look을 쓴다.
+        PlayerMovement singlePlayer = interactor.GetComponent<PlayerMovement>();
+        InputActionReference lookRef = lookAction != null ? lookAction : (singlePlayer != null ? singlePlayer.LookAction : null);
+        activeLookAction = lookRef != null ? lookRef.action : InputSystem.actions != null ? InputSystem.actions.FindAction("Player/Look") : null;
         if (activeLookAction == null)
         {
             Debug.LogWarning("[InspectableClue] Look 액션을 찾지 못해 마우스로 돌려볼 수 없습니다. Inspector의 Look Action에 Player/Look을 연결해 주세요.", this);
