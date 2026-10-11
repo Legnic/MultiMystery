@@ -23740,7 +23740,7 @@ MonoBehaviour:
     Address: 127.0.0.1
     Port: 7777
     WebSocketPath: /
-    ServerListenAddress: 
+    ServerListenAddress: 127.0.0.1
     ClientBindPort: 0
   DebugSimulator:
     PacketDelayMS: 0
@@ -30652,6 +30652,67 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f073e4134ea4a4d4bb204df64471b949, type: 3}
+--- !u!1001 &2814977306447362987
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 1446227208578180014, guid: ad98bc407862f304fa60069b62dc4fee, type: 3}
+      propertyPath: m_Name
+      value: VoiceChat
+      objectReference: {fileID: 0}
+    - target: {fileID: 8505189715887334514, guid: ad98bc407862f304fa60069b62dc4fee, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8505189715887334514, guid: ad98bc407862f304fa60069b62dc4fee, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8505189715887334514, guid: ad98bc407862f304fa60069b62dc4fee, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8505189715887334514, guid: ad98bc407862f304fa60069b62dc4fee, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8505189715887334514, guid: ad98bc407862f304fa60069b62dc4fee, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8505189715887334514, guid: ad98bc407862f304fa60069b62dc4fee, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8505189715887334514, guid: ad98bc407862f304fa60069b62dc4fee, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8505189715887334514, guid: ad98bc407862f304fa60069b62dc4fee, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8505189715887334514, guid: ad98bc407862f304fa60069b62dc4fee, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8505189715887334514, guid: ad98bc407862f304fa60069b62dc4fee, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8533415359974065854, guid: ad98bc407862f304fa60069b62dc4fee, type: 3}
+      propertyPath: mode
+      value: 1
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: ad98bc407862f304fa60069b62dc4fee, type: 3}
 --- !u!1001 &5387589473592741274
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -30789,3 +30850,4 @@ SceneRoots:
   - {fileID: 745638861}
   - {fileID: 92503013}
   - {fileID: 1928547731}
+  - {fileID: 2814977306447362987}
