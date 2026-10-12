@@ -15,6 +15,8 @@ namespace LGH
 
         // Burn time of a new candle, read by the holders, loose candles and the inventory
         public static float BurnSeconds = 180f;
+        // true = candles never burn down (current setting)
+        public static bool Infinite = true;
 
         [Tooltip("Fewest candles on each candle spot")]
         [Min(0)] public int minCandles = 1;
@@ -22,6 +24,8 @@ namespace LGH
         [Min(0)] public int maxCandles = 4;
         [Tooltip("How long a new candle burns once it is put in a holder (seconds)")]
         [Min(5f)] public float burnSeconds = 180f;
+        [Tooltip("Candles never burn down or go out. Turn off to use burnSeconds again")]
+        public bool infiniteCandles = true;
         [Tooltip("A candle taken out with less than this left is used up")]
         public float minUsefulSeconds = 2f;
 
@@ -36,6 +40,7 @@ namespace LGH
         {
             Instance = this;
             BurnSeconds = burnSeconds;
+            Infinite = infiniteCandles;
             pickups = FindObjectsByType<CandlePickup>(FindObjectsInactive.Include);
             sconces = FindObjectsByType<CandleSconce>(FindObjectsInactive.Include);
             Array.Sort(pickups, (a, b) => string.CompareOrdinal(PathOf(a.transform), PathOf(b.transform)));
@@ -45,7 +50,7 @@ namespace LGH
             foreach (var p in pickups) p.SetPresent(0, 0f);
         }
 
-        void OnValidate() { BurnSeconds = burnSeconds; }
+        void OnValidate() { BurnSeconds = burnSeconds; Infinite = infiniteCandles; }
 
         void Start()
         {

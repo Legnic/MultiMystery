@@ -33,6 +33,7 @@ namespace LGH
             get
             {
                 if (!Holding) return 0f;
+                if (CandleNetworkSync.Infinite) return CandleNetworkSync.BurnSeconds;   // never burns down
                 double now = IsSpawned ? NetworkManager.ServerTime.Time : Time.time;
                 double start = IsSpawned ? litAt.Value : offlineStart;
                 return Mathf.Max(0f, CandleNetworkSync.BurnSeconds - (float)(now - start));
