@@ -78,7 +78,7 @@ namespace LGH
 
         void Update()
         {
-            if (!IsLit) return;
+            if (!IsLit || CandleNetworkSync.Infinite) return;   // infinite candles never burn down
             Remaining -= Time.deltaTime;
             if (Remaining <= 0f) { SetLit(false, 0f); return; }   // burnt out (every player runs the same clock)
             ApplyBurn();
