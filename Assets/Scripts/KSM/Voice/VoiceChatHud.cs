@@ -11,18 +11,41 @@ namespace CoopDemo
         [SerializeField] GameObject content;
         [SerializeField] Text statusText;
         [SerializeField] Text micText;
+        [SerializeField] Slider micVolumeSlider;
+        [SerializeField] Text micVolumeText;
 
         static readonly Color k_Idle = new Color(0.85f, 0.85f, 0.85f, 1f);
         static readonly Color k_Speaking = new Color(0.45f, 1f, 0.55f, 1f);
         static readonly Color k_Muted = new Color(1f, 0.5f, 0.45f, 1f);
 
+        bool m_SliderHooked;
+
+        void Start()
+        {
+            if (micVolumeSlider == null) return;
+            micVolumeSlider.minValue = -50;
+            micVolumeSlider.maxValue = 50;
+            micVolumeSlider.wholeNumbers = true;
+        }
+
         void Update()
         {
             if (manager == null || content == null) return;
 
-            bool show = manager.Active;
+            // 방 만들기(로비) 화면에서는 아직 음성 서비스만 켜져 있을 뿐 실제 플레이어가 없으므로 숨긴다.
+            // 방을 만들거나 참가해서 플레이어가 스폰된 뒤(플레이 화면)에만 보여준다.
+            bool show = manager.Active && LGH.NetworkPlayer.Local != null;
             if (content.activeSelf != show) content.SetActive(show);
             if (!show) return;
+
+            // 음성 서비스가 막 준비됐을 때 한 번만 슬라이더를 현재 값으로 맞춘다 (이후엔 사용자가 직접 조작).
+            if (!m_SliderHooked && micVolumeSlider != null)
+            {
+                m_SliderHooked = true;
+                micVolumeSlider.SetValueWithoutNotify(manager.MicVolume);
+                micVolumeSlider.onValueChanged.AddListener(OnMicVolumeSliderChanged);
+                UpdateMicVolumeText(manager.MicVolume);
+            }
 
             statusText.text = manager.Status
                 + (manager.IsInChannel ? $"   (상대 {manager.RemoteCount}명)" : string.Empty);
@@ -44,6 +67,18 @@ namespace CoopDemo
 
             statusText.color = manager.RemoteSpeaking ? k_Speaking : k_Idle;
             if (manager.RemoteSpeaking) statusText.text += "   상대가 말하는 중";
+        }
+
+        void OnMicVolumeSliderChanged(float value)
+        {
+            int volume = Mathf.RoundToInt(value);
+            manager.SetMicVolume(volume);
+            UpdateMicVolumeText(volume);
+        }
+
+        void UpdateMicVolumeText(int volume)
+        {
+            if (micVolumeText != null) micVolumeText.text = $"마이크 감도 {volume:+#;-#;0}";
         }
     }
 }

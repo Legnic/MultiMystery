@@ -33,6 +33,8 @@ namespace CoopDemo
         [Header("마이크")]
         [SerializeField] bool startMicMuted;
         [SerializeField] Key toggleMicKey = Key.M;
+        [Tooltip("마이크 입력 감도(게인). 0이 기본, -50이면 가장 작게, 50이면 가장 크게 보낸다.")]
+        [SerializeField, Range(-50, 50)] int micVolume;
 
         readonly Dictionary<VivoxParticipant, Action> m_SpeechHandlers = new Dictionary<VivoxParticipant, Action>();
 
@@ -54,6 +56,7 @@ namespace CoopDemo
         public bool IsReady => m_Ready;
         public bool IsInChannel { get; private set; }
         public bool IsMicMuted => m_Ready && VivoxService.Instance.IsInputDeviceMuted;
+        public int MicVolume => m_Ready ? VivoxService.Instance.InputDeviceVolume : micVolume;
         public bool SelfSpeaking { get; private set; }
         public bool RemoteSpeaking { get; private set; }
         public int RemoteCount { get; private set; }
@@ -150,6 +153,13 @@ namespace CoopDemo
             else VivoxService.Instance.UnmuteInputDevice();
         }
 
+        // 마이크 입력 감도(게인)를 설정한다. -50(가장 작게) ~ 50(가장 크게), 0이 기본.
+        public void SetMicVolume(int volume)
+        {
+            micVolume = Mathf.Clamp(volume, -50, 50);
+            if (m_Ready) VivoxService.Instance.SetInputDeviceVolume(micVolume);
+        }
+
         async void InitializeVoiceAsync()
         {
             m_Initializing = true;
@@ -175,6 +185,7 @@ namespace CoopDemo
 
                 m_Ready = true;
                 if (startMicMuted) VivoxService.Instance.MuteInputDevice();
+                VivoxService.Instance.SetInputDeviceVolume(micVolume);
 
                 HookSessions();
                 SetStatus("음성: 방에 들어오면 자동 연결");
