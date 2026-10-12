@@ -30660,9 +30660,29 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 251340245813524054, guid: ad98bc407862f304fa60069b62dc4fee, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 90
+      objectReference: {fileID: 0}
     - target: {fileID: 1446227208578180014, guid: ad98bc407862f304fa60069b62dc4fee, type: 3}
       propertyPath: m_Name
       value: VoiceChat
+      objectReference: {fileID: 0}
+    - target: {fileID: 2315637395900854096, guid: ad98bc407862f304fa60069b62dc4fee, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4341864182908534508, guid: ad98bc407862f304fa60069b62dc4fee, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4341864182908534508, guid: ad98bc407862f304fa60069b62dc4fee, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4341864182908534508, guid: ad98bc407862f304fa60069b62dc4fee, type: 3}
+      propertyPath: m_AnchorMin.x
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8505189715887334514, guid: ad98bc407862f304fa60069b62dc4fee, type: 3}
       propertyPath: m_LocalPosition.x
@@ -30702,6 +30722,14 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8505189715887334514, guid: ad98bc407862f304fa60069b62dc4fee, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9028207054094085430, guid: ad98bc407862f304fa60069b62dc4fee, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9028207054094085430, guid: ad98bc407862f304fa60069b62dc4fee, type: 3}
+      propertyPath: m_AnchorMax.y
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
