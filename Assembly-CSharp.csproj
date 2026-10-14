@@ -64,7 +64,10 @@
     <Compile Include="Assets\Scripts\LGH\InteractableDoor.cs" />
     <Compile Include="Assets\Scripts\KJH\Clue\ParchmentRoller.cs" />
     <Compile Include="Assets\Scripts\KJH\Photo\InteractionController.cs" />
+    <Compile Include="Assets\Scripts\LGH\CandlePickup.cs" />
     <Compile Include="Assets\Scripts\KJH\Photo\PhotoAcquiredToast.cs" />
+    <Compile Include="Assets\Scripts\LGH\PlayerInventory.cs" />
+    <Compile Include="Assets\Scripts\LGH\HeldCandle.cs" />
     <Compile Include="Assets\Scripts\LGH\PlayerInteractor.cs" />
     <Compile Include="Assets\Scripts\KJH\KeySafe\LockedSafe.cs" />
     <Compile Include="Assets\Scripts\KJH\ObjectEcho\ObjectEchoTarget.cs" />
@@ -75,6 +78,7 @@
     <Compile Include="Assets\Scripts\KJH\KeySafe\SimpleDoorOpenSequence.cs" />
     <Compile Include="Assets\Scripts\KJH\Clue\InspectPhotoCapture.cs" />
     <Compile Include="Assets\Scripts\KSM\Voice\VoiceChatMode.cs" />
+    <Compile Include="Assets\Scripts\LGH\InteractableDrawer.cs" />
     <Compile Include="Assets\Scripts\KJH\KeySafe\InteractionMessageUI.cs" />
     <Compile Include="Assets\Scripts\LGH\MultiplayerMenu.cs" />
     <Compile Include="Assets\Scripts\KJH\SoundCue\SpectrumResponseProfile.cs" />
@@ -87,6 +91,7 @@
     <Compile Include="Assets\Scripts\KJH\Photo\InteractionPromptUI.cs" />
     <Compile Include="Assets\Scripts\LGH\CandleFlicker.cs" />
     <Compile Include="Assets\Scripts\LGH\DoorNetworkSync.cs" />
+    <Compile Include="Assets\Scripts\LGH\CandleSconce.cs" />
     <Compile Include="Assets\Scripts\KJH\Photo\IPhotoSubject.cs" />
     <Compile Include="Assets\Scripts\KJH\KeySafe\SafeClue.cs" />
     <Compile Include="Assets\Scripts\KJH\Photo\FlashEffect.cs" />
@@ -96,6 +101,7 @@
     <Compile Include="Assets\Scripts\KJH\Photo\IInteractable.cs" />
     <Compile Include="Assets\Scripts\LGH\PlayerAvatar.cs" />
     <Compile Include="Assets\TutorialInfo\Readme.cs" />
+    <Compile Include="Assets\Scripts\KJH\Photo\FootstepSound.cs" />
     <Compile Include="Assets\Scripts\KJH\Clue\ViewableClue.cs" />
     <Compile Include="Assets\Scripts\KJH\ObjectEcho\IPlayerLock.cs" />
     <Compile Include="Assets\Scripts\KJH\SoundCue\SpectrumOverlay.cs" />
@@ -120,6 +126,7 @@
     <Compile Include="Assets\Scripts\KJH\SoundCue\InkWaveformGraphic.cs" />
     <Compile Include="Assets\Scripts\KJH\GameTime\GameClock.cs" />
     <Compile Include="Assets\Scripts\KJH\GameTime\TimePhase.cs" />
+    <Compile Include="Assets\Scripts\LGH\CandleNetworkSync.cs" />
     <Compile Include="Assets\Scripts\LGH\NetworkPlayer.cs" />
     <Compile Include="Assets\Scripts\KJH\KeySafe\KeyData.cs" />
     <Compile Include="Assets\Scripts\LGH\DayNightCycle.cs" />
