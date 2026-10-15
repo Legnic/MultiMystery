@@ -67,6 +67,7 @@
     <Compile Include="Assets\Scripts\LGH\CandlePickup.cs" />
     <Compile Include="Assets\Scripts\KJH\Photo\PhotoAcquiredToast.cs" />
     <Compile Include="Assets\Scripts\LGH\PlayerInventory.cs" />
+    <Compile Include="Assets\Scripts\KJH\Puzzle\PortraitTilt.cs" />
     <Compile Include="Assets\Scripts\LGH\HeldCandle.cs" />
     <Compile Include="Assets\Scripts\LGH\PlayerInteractor.cs" />
     <Compile Include="Assets\Scripts\KJH\KeySafe\LockedSafe.cs" />
@@ -110,6 +111,7 @@
     <Compile Include="Assets\Scripts\KJH\KeySafe\ISafeOpenSequence.cs" />
     <Compile Include="Assets\Scripts\KJH\ObjectEcho\PlaceholderHandReach.cs" />
     <Compile Include="Assets\Scripts\KSM\UI\MultiplayerMenuUI.cs" />
+    <Compile Include="Assets\Scripts\KJH\Puzzle\PortraitPuzzle.cs" />
     <Compile Include="Assets\Scripts\KJH\GameTime\TimeUnlock.cs" />
     <Compile Include="Assets\Scripts\KJH\Photo\CameraModeController.cs" />
     <Compile Include="Assets\Scripts\KJH\Common\PlayerAbilities.cs" />
@@ -129,6 +131,7 @@
     <Compile Include="Assets\Scripts\LGH\CandleNetworkSync.cs" />
     <Compile Include="Assets\Scripts\LGH\NetworkPlayer.cs" />
     <Compile Include="Assets\Scripts\KJH\KeySafe\KeyData.cs" />
+    <Compile Include="Assets\Scripts\KJH\Map\PlayerSpawnPoint.cs" />
     <Compile Include="Assets\Scripts\LGH\DayNightCycle.cs" />
   </ItemGroup>
   <ItemGroup>
