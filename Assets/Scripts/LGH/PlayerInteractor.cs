@@ -22,6 +22,7 @@ namespace LGH
         CandlePickup focusedPickup;
         CandleSconce focusedSconce;
         InteractableDrawer focusedDrawer;
+        PortraitTilt focusedPortrait;
         PlayerInventory inventory;
         HeldCandle held;
         string message;
@@ -54,14 +55,20 @@ namespace LGH
             focusedPickup = null;
             focusedSconce = null;
             focusedDrawer = null;
+            focusedPortrait = null;
             if (viewCamera == null) return;
+            if (PortraitTilt.Current != null) return; // 액자를 살펴보는 동안은 그쪽이 입력(Q/E/F)을 가져간다
             if (Physics.Raycast(viewCamera.position, viewCamera.forward, out RaycastHit hit, reach, mask, QueryTriggerInteraction.Ignore))
             {
                 var c = hit.collider;
                 focusedPickup = c.GetComponentInParent<CandlePickup>();
                 if (focusedPickup == null) focusedSconce = c.GetComponentInParent<CandleSconce>();
                 if (focusedPickup == null && focusedSconce == null) focusedDrawer = c.GetComponentInParent<InteractableDrawer>();
-                if (focusedPickup == null && focusedSconce == null && focusedDrawer == null) focused = c.GetComponentInParent<InteractableDoor>();
+                if (focusedPickup == null && focusedSconce == null && focusedDrawer == null)
+                {
+                    focusedPortrait = c.GetComponentInParent<PortraitTilt>();
+                    if (focusedPortrait == null) focused = c.GetComponentInParent<InteractableDoor>();
+                }
             }
 
             var kb = Keyboard.current;
@@ -74,6 +81,7 @@ namespace LGH
             }
             if (!kb.eKey.wasPressedThisFrame) return;
 
+            if (focusedPortrait != null) { focusedPortrait.BeginView(this); return; }
             if (focusedPickup != null || focusedSconce != null || focusedDrawer != null)
             {
                 if (candles == null) return;
@@ -101,6 +109,8 @@ namespace LGH
 
         string Prompt()
         {
+            if (PortraitTilt.Current != null) return PortraitTilt.Current.ViewPrompt;
+            if (focusedPortrait != null) return "[E] 그림 살펴보기";
             if (focusedPickup != null) return "[E] 양초 줍기";
             if (focusedSconce != null)
             {

@@ -41,7 +41,11 @@ namespace LGH
                 Local = this;
                 int slot = (int)(OwnerClientId % (ulong)Mathf.Max(1, spawnPoints.Length));
                 if (controller != null) controller.enabled = false;
-                transform.SetPositionAndRotation(spawnPoints[slot], Quaternion.Euler(0f, spawnYaw, 0f));
+                // 씬에 PlayerSpawnPoint가 있으면 그 위치(방별 시작점)를 우선 사용
+                Vector3 pos = spawnPoints[slot];
+                float yaw = spawnYaw;
+                if (PlayerSpawnPoint.TryGet(slot, out var spawnPos, out var spawnRot)) { pos = spawnPos; yaw = spawnRot; }
+                transform.SetPositionAndRotation(pos, Quaternion.Euler(0f, yaw, 0f));
                 if (controller != null) controller.enabled = true;
             }
         }
