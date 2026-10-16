@@ -67,6 +67,7 @@
     <Compile Include="Assets\Scripts\LGH\CandlePickup.cs" />
     <Compile Include="Assets\Scripts\KJH\Photo\PhotoAcquiredToast.cs" />
     <Compile Include="Assets\Scripts\LGH\PlayerInventory.cs" />
+    <Compile Include="Assets\Scripts\KJH\Puzzle\PortraitTilt.cs" />
     <Compile Include="Assets\Scripts\LGH\IRoomResettable.cs" />
     <Compile Include="Assets\Scripts\LGH\HeldCandle.cs" />
     <Compile Include="Assets\Scripts\LGH\PlayerInteractor.cs" />
@@ -112,6 +113,7 @@
     <Compile Include="Assets\Scripts\KJH\KeySafe\ISafeOpenSequence.cs" />
     <Compile Include="Assets\Scripts\KJH\ObjectEcho\PlaceholderHandReach.cs" />
     <Compile Include="Assets\Scripts\KSM\UI\MultiplayerMenuUI.cs" />
+    <Compile Include="Assets\Scripts\KJH\Puzzle\PortraitPuzzle.cs" />
     <Compile Include="Assets\Scripts\KJH\GameTime\TimeUnlock.cs" />
     <Compile Include="Assets\Scripts\KJH\Photo\CameraModeController.cs" />
     <Compile Include="Assets\Scripts\KJH\Common\PlayerAbilities.cs" />
@@ -131,6 +133,7 @@
     <Compile Include="Assets\Scripts\LGH\CandleNetworkSync.cs" />
     <Compile Include="Assets\Scripts\LGH\NetworkPlayer.cs" />
     <Compile Include="Assets\Scripts\KJH\KeySafe\KeyData.cs" />
+    <Compile Include="Assets\Scripts\KJH\Map\PlayerSpawnPoint.cs" />
     <Compile Include="Assets\Scripts\LGH\DayNightCycle.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -139,11 +142,14 @@
     <None Include="Assets\AssetPacks\Pine Forest_LowPoly\Shaders\Ground_Simple.shader" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile-2-Pass.shader" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_Bitmap.shader" />
+    <None Include="Assets\AssetPacks\Supercyan Free Forest Sample\Shaders\Legacy\CelShader.shader" />
+    <None Include="Assets\AssetPacks\Supercyan Free Forest Sample\Shaders\SupercyanShaderLighting.cginc" />
     <None Include="Assets\TutorialInfo\StyleSheets\ReadmeEditor.uss" />
     <None Include="Assets\TextMesh Pro\Shaders\TMPro_Mobile.cginc" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF SSD.shader" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Surface-Mobile.shader" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF SpaceWarp.shader" />
+    <None Include="Assets\AssetPacks\Supercyan Free Forest Sample\Shaders\SupercyanShader.shader" />
     <None Include="Assets\AssetPacks\Pine Forest_LowPoly\Shaders\Mobile_Vtx_Cutout.shader" />
     <None Include="Assets\AssetPacks\Pine Forest_LowPoly\Shaders\Mobile_Vtx_Cutout_Wind.shader" />
     <None Include="Assets\TextMesh Pro\Shaders\SDFFunctions.hlsl" />
