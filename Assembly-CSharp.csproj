@@ -67,6 +67,7 @@
     <Compile Include="Assets\Scripts\LGH\CandlePickup.cs" />
     <Compile Include="Assets\Scripts\KJH\Photo\PhotoAcquiredToast.cs" />
     <Compile Include="Assets\Scripts\LGH\PlayerInventory.cs" />
+    <Compile Include="Assets\Scripts\LGH\IRoomResettable.cs" />
     <Compile Include="Assets\Scripts\LGH\HeldCandle.cs" />
     <Compile Include="Assets\Scripts\LGH\PlayerInteractor.cs" />
     <Compile Include="Assets\Scripts\KJH\KeySafe\LockedSafe.cs" />
@@ -96,6 +97,7 @@
     <Compile Include="Assets\Scripts\KJH\KeySafe\SafeClue.cs" />
     <Compile Include="Assets\Scripts\KJH\Photo\FlashEffect.cs" />
     <Compile Include="Assets\Scripts\KSM\Voice\VoiceChatHud.cs" />
+    <Compile Include="Assets\Scripts\LGH\RoomResetter.cs" />
     <Compile Include="Assets\Scripts\LGH\FirstPersonController.cs" />
     <Compile Include="Assets\Scripts\KJH\Photo\PhotoCaptureSystem.cs" />
     <Compile Include="Assets\Scripts\KJH\Photo\IInteractable.cs" />
