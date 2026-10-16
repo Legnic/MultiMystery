@@ -235406,6 +235406,120 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2147058426}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1001 &686568201872516145
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 8231792938049536532, guid: 9dd27b0c3fd8a84438b49d81d8ce415c, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 43.195
+      objectReference: {fileID: 0}
+    - target: {fileID: 8231792938049536532, guid: 9dd27b0c3fd8a84438b49d81d8ce415c, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8231792938049536532, guid: 9dd27b0c3fd8a84438b49d81d8ce415c, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 12.17554
+      objectReference: {fileID: 0}
+    - target: {fileID: 8231792938049536532, guid: 9dd27b0c3fd8a84438b49d81d8ce415c, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8231792938049536532, guid: 9dd27b0c3fd8a84438b49d81d8ce415c, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8231792938049536532, guid: 9dd27b0c3fd8a84438b49d81d8ce415c, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8231792938049536532, guid: 9dd27b0c3fd8a84438b49d81d8ce415c, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8231792938049536532, guid: 9dd27b0c3fd8a84438b49d81d8ce415c, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8231792938049536532, guid: 9dd27b0c3fd8a84438b49d81d8ce415c, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8231792938049536532, guid: 9dd27b0c3fd8a84438b49d81d8ce415c, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8752434424826779822, guid: 9dd27b0c3fd8a84438b49d81d8ce415c, type: 3}
+      propertyPath: m_Name
+      value: Blue Toy Figure
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 9dd27b0c3fd8a84438b49d81d8ce415c, type: 3}
+--- !u!1001 &1027240972205999887
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 6126303409742692299, guid: 5fc936a4efaffff4bb2cbc302e0ba898, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 43.964
+      objectReference: {fileID: 0}
+    - target: {fileID: 6126303409742692299, guid: 5fc936a4efaffff4bb2cbc302e0ba898, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6126303409742692299, guid: 5fc936a4efaffff4bb2cbc302e0ba898, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 11.471
+      objectReference: {fileID: 0}
+    - target: {fileID: 6126303409742692299, guid: 5fc936a4efaffff4bb2cbc302e0ba898, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6126303409742692299, guid: 5fc936a4efaffff4bb2cbc302e0ba898, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6126303409742692299, guid: 5fc936a4efaffff4bb2cbc302e0ba898, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6126303409742692299, guid: 5fc936a4efaffff4bb2cbc302e0ba898, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6126303409742692299, guid: 5fc936a4efaffff4bb2cbc302e0ba898, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6126303409742692299, guid: 5fc936a4efaffff4bb2cbc302e0ba898, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6126303409742692299, guid: 5fc936a4efaffff4bb2cbc302e0ba898, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6795598490279503217, guid: 5fc936a4efaffff4bb2cbc302e0ba898, type: 3}
+      propertyPath: m_Name
+      value: Orange Toy Figure
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 5fc936a4efaffff4bb2cbc302e0ba898, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -235425,3 +235539,5 @@ SceneRoots:
   - {fileID: 5140705}
   - {fileID: 802803245}
   - {fileID: 2130115070}
+  - {fileID: 1027240972205999887}
+  - {fileID: 686568201872516145}
