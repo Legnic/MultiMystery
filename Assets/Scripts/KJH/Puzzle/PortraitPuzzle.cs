@@ -10,7 +10,7 @@ public class PortraitPuzzle : NetworkBehaviour
 {
     public static PortraitPuzzle Instance { get; private set; }
 
-    [Tooltip("퍼즐에 쓰는 액자들 (순서대로 정답과 대응)")]
+    [Tooltip("기울일 수 있는 액자들. 앞에서부터 Answer 개수만큼이 정답 판정 대상이고, 그 뒤는 정답과 무관한 장식 액자(상태만 동기화)")]
     [SerializeField] PortraitTilt[] portraits;
     [Tooltip("각 액자의 정답 단계: -1 = 왼쪽 30도, +1 = 오른쪽 30도")]
     [SerializeField] int[] answer = { 1, 1, -1 };
@@ -39,7 +39,7 @@ public class PortraitPuzzle : NetworkBehaviour
     public void RequestShift(PortraitTilt portrait, int delta)
     {
         int i = IndexOf(portrait);
-        if (i < 0 || Solved) return;
+        if (i < 0 || (Solved && i < answer.Length)) return;
         if (IsSpawned) ShiftRpc(i, delta);
         else ServerShift(i, delta);
     }
@@ -50,14 +50,14 @@ public class PortraitPuzzle : NetworkBehaviour
     // 호스트(또는 단독 실행)에서만 호출
     void ServerShift(int index, int delta)
     {
-        if (Solved || index < 0 || index >= portraits.Length) return;
+        if (index < 0 || index >= portraits.Length || (Solved && index < answer.Length)) return;
         int next = Mathf.Clamp(portraits[index].Step + delta, -1, 1);
         if (next == portraits[index].Step) return;
 
         if (IsSpawned) ApplyStepRpc(index, next);
         else portraits[index].ApplyStep(next);
 
-        if (IsAnswer(index, next))
+        if (!Solved && index < answer.Length && IsAnswer(index, next))
         {
             if (IsSpawned) SolveRpc();
             else Solve();
