@@ -66,11 +66,9 @@
     <Compile Include="Assets\Scripts\KJH\Photo\InteractionController.cs" />
     <Compile Include="Assets\Scripts\LGH\CandlePickup.cs" />
     <Compile Include="Assets\Scripts\KJH\Photo\PhotoAcquiredToast.cs" />
-    <Compile Include="Assets\Scripts\KSM\Player\GimmickInjectionBridge.cs" />
     <Compile Include="Assets\Scripts\LGH\PlayerInventory.cs" />
     <Compile Include="Assets\Scripts\KJH\Puzzle\PortraitTilt.cs" />
     <Compile Include="Assets\Scripts\LGH\IRoomResettable.cs" />
-    <Compile Include="Assets\Scripts\KSM\Player\InteractionMediator.cs" />
     <Compile Include="Assets\Scripts\LGH\HeldCandle.cs" />
     <Compile Include="Assets\Scripts\LGH\PlayerInteractor.cs" />
     <Compile Include="Assets\Scripts\KJH\KeySafe\LockedSafe.cs" />
