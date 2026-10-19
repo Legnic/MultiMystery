@@ -66,9 +66,11 @@
     <Compile Include="Assets\Scripts\KJH\Photo\InteractionController.cs" />
     <Compile Include="Assets\Scripts\LGH\CandlePickup.cs" />
     <Compile Include="Assets\Scripts\KJH\Photo\PhotoAcquiredToast.cs" />
+    <Compile Include="Assets\Scripts\KSM\Player\GimmickInjectionBridge.cs" />
     <Compile Include="Assets\Scripts\LGH\PlayerInventory.cs" />
     <Compile Include="Assets\Scripts\KJH\Puzzle\PortraitTilt.cs" />
     <Compile Include="Assets\Scripts\LGH\IRoomResettable.cs" />
+    <Compile Include="Assets\Scripts\KSM\Player\InteractionMediator.cs" />
     <Compile Include="Assets\Scripts\LGH\HeldCandle.cs" />
     <Compile Include="Assets\Scripts\LGH\PlayerInteractor.cs" />
     <Compile Include="Assets\Scripts\KJH\KeySafe\LockedSafe.cs" />
@@ -98,6 +100,7 @@
     <Compile Include="Assets\Scripts\KJH\KeySafe\SafeClue.cs" />
     <Compile Include="Assets\Scripts\KJH\Photo\FlashEffect.cs" />
     <Compile Include="Assets\Scripts\KSM\Voice\VoiceChatHud.cs" />
+    <Compile Include="Assets\Scripts\KSM\Player\ToyFigureSlotAvatar.cs" />
     <Compile Include="Assets\Scripts\LGH\RoomResetter.cs" />
     <Compile Include="Assets\Scripts\LGH\FirstPersonController.cs" />
     <Compile Include="Assets\Scripts\KJH\Photo\PhotoCaptureSystem.cs" />
@@ -129,6 +132,7 @@
     <Compile Include="Assets\Scripts\KJH\Clue\ClueViewerUI.cs" />
     <Compile Include="Assets\Scripts\KJH\SoundCue\InkWaveformGraphic.cs" />
     <Compile Include="Assets\Scripts\KJH\GameTime\GameClock.cs" />
+    <Compile Include="Assets\Scripts\KSM\Player\ProceduralToyAnimator.cs" />
     <Compile Include="Assets\Scripts\KJH\GameTime\TimePhase.cs" />
     <Compile Include="Assets\Scripts\LGH\CandleNetworkSync.cs" />
     <Compile Include="Assets\Scripts\LGH\NetworkPlayer.cs" />
