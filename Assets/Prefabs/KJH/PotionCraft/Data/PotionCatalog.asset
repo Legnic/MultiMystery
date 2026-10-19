@@ -1,0 +1,71 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2d5de63961f13454bb7eea8e54099a82, type: 3}
+  m_Name: PotionCatalog
+  m_EditorClassIdentifier: Assembly-CSharp::PotionCraft.PotionCatalog
+  materials:
+  - id: 0
+    displayName: "\uBD89\uC740 \uBFCC\uB9AC"
+    color: {r: 0.55, g: 0.22, b: 0.15, a: 1}
+    prefab: {fileID: 2943942553543475651, guid: 985763021e9684b4987c119f9696c31f, type: 3}
+  - id: 1
+    displayName: "\uC740\uBE5B \uC78E"
+    color: {r: 0.78, g: 0.8, b: 0.85, a: 1}
+    prefab: {fileID: 6661813463591212078, guid: 734e4603eef2e744bbc43618f3fc28b8, type: 3}
+  - id: 2
+    displayName: "\uCD08\uB85D \uC78E\uC0AC\uADC0"
+    color: {r: 0.25, g: 0.62, b: 0.25, a: 1}
+    prefab: {fileID: 3043207900978616426, guid: 75705588aca73204094c51e54bbc77fe, type: 3}
+  - id: 3
+    displayName: "\uD30C\uB780 \uAF43"
+    color: {r: 0.3, g: 0.45, b: 0.95, a: 1}
+    prefab: {fileID: 4539834738924009570, guid: 7c6155874246c7f45aa8e10f8f87b436, type: 3}
+  waters:
+  - id: 0
+    displayName: "\uBE68\uAC04\uC0C9 \uBB3C"
+    color: {r: 0.85, g: 0.15, b: 0.15, a: 1}
+    prefab: {fileID: 6594898590054719308, guid: 504d02ef61991784a87b5391e7eddf40, type: 3}
+  - id: 1
+    displayName: "\uD30C\uB780\uC0C9 \uBB3C"
+    color: {r: 0.18, g: 0.35, b: 0.9, a: 1}
+    prefab: {fileID: 280793852066180716, guid: 2350ce95470ea534a864b92b9ceea893, type: 3}
+  - id: 2
+    displayName: "\uCD08\uB85D\uC0C9 \uBB3C"
+    color: {r: 0.2, g: 0.75, b: 0.3, a: 1}
+    prefab: {fileID: 1374924929513630132, guid: 2cd61b0e66e43a74188177fe4ef9ac98, type: 3}
+  powders:
+  - id: 0
+    displayName: "\uCD08\uB85D\uC0C9 \uAC00\uB8E8"
+    color: {r: 0.2, g: 0.8, b: 0.3, a: 1}
+  - id: 1
+    displayName: "\uBE68\uAC04\uC0C9 \uAC00\uB8E8"
+    color: {r: 0.9, g: 0.12, b: 0.12, a: 1}
+  - id: 2
+    displayName: "\uD30C\uB780\uC0C9 \uAC00\uB8E8"
+    color: {r: 0.15, g: 0.35, b: 0.95, a: 1}
+  - id: 3
+    displayName: "\uBD84\uD64D\uC0C9 \uAC00\uB8E8"
+    color: {r: 1, g: 0.5, b: 0.75, a: 1}
+  - id: 4
+    displayName: "\uAC80\uC815\uC0C9 \uAC00\uB8E8"
+    color: {r: 0.06, g: 0.06, b: 0.06, a: 1}
+  - id: 5
+    displayName: "\uD669\uAE08\uBE5B \uAC00\uB8E8"
+    color: {r: 1, g: 0.82, b: 0.2, a: 1}
+  lumpName: "\uC7AC\uB8CC \uB369\uC774"
+  lumpColor: {r: 0.45, g: 0.45, b: 0.45, a: 1}
+  lumpPrefab: {fileID: 287118967712542255, guid: facf85f6929dbff46874cd92063905b4, type: 3}
+  powderPrefab: {fileID: 3284560908978889269, guid: a6cfc4eb8460094428c1d5d371e21f42, type: 3}
+  fxMaterial: {fileID: 2100000, guid: 44a007b0e777d0744930e433a8eb0fca, type: 2}
+  rejectClip: {fileID: 0}
+  explodeClip: {fileID: 0}
+  successClip: {fileID: 0}

@@ -46,8 +46,14 @@ namespace LGH
 
         public void ShowMessage(string msg)
         {
+            ShowMessage(msg, 2f);
+        }
+
+        // 표시 시간을 지정하는 버전 (긴 자막용). 기존 호출은 위의 2초 버전이 그대로 처리한다.
+        public void ShowMessage(string msg, float seconds)
+        {
             message = msg;
-            messageUntil = Time.time + 2f;
+            messageUntil = Time.time + seconds;
         }
 
         void Update()
