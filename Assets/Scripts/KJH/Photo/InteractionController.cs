@@ -48,6 +48,8 @@ public class InteractionController : MonoBehaviour
     private IInteractable triggerInteractable;
     // 조준점이 지금 가리키고 있는 상호작용 대상 (단서 등). 안 가리키면 null.
     private IInteractable lookInteractable;
+    // 마지막으로 화면에 띄운 안내 문구. 같은 대상의 문구가 바뀌었는지 비교하는 데 쓴다.
+    private string shownPrompt;
     // 같은 콜라이더를 계속 바라볼 때 매 프레임 GetComponentInParent를 하지 않도록 캐시해 둔다.
     private Collider lastLookCollider;
     private IInteractable lastLookColliderTarget;
@@ -148,7 +150,12 @@ public class InteractionController : MonoBehaviour
     private void SetLookTarget(IInteractable target)
     {
         if (target != null && (!target.CanInteract || !IsAllowed(target))) target = null;
-        if (target == lookInteractable) return;
+        if (target == lookInteractable)
+        {
+            // 같은 대상을 보고 있어도 상태에 따라 문구가 바뀌는 대상(승강기 버튼 등)은 문구만 다시 띄운다.
+            if (target != null && target.InteractPrompt != shownPrompt) RefreshPrompt();
+            return;
+        }
 
         if (lookInteractable is IFocusable oldFocus) oldFocus.OnFocusExit();
         lookInteractable = target;
@@ -184,7 +191,8 @@ public class InteractionController : MonoBehaviour
         if (activeModal != null) return; // 살펴보기 중엔 그쪽이 직접 안내 문구를 관리한다
 
         IInteractable target = CurrentTarget;
-        if (target != null) promptUI.Show(target.InteractPrompt);
+        shownPrompt = target != null ? target.InteractPrompt : null;
+        if (target != null) promptUI.Show(shownPrompt);
         else promptUI.Hide();
     }
 

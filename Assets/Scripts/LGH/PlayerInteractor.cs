@@ -22,6 +22,7 @@ namespace LGH
         CandlePickup focusedPickup;
         CandleSconce focusedSconce;
         InteractableDrawer focusedDrawer;
+        IWorldInteractable focusedWorld;   // KJH 도르래 승강기 버튼/창 등
         PortraitTilt focusedPortrait;
         PlayerInventory inventory;
         HeldCandle held;
@@ -56,6 +57,7 @@ namespace LGH
             focusedSconce = null;
             focusedDrawer = null;
             focusedPortrait = null;
+            focusedWorld = null;
             if (viewCamera == null) return;
             if (PortraitTilt.Current != null) return; // 액자를 살펴보는 동안은 그쪽이 입력(Q/E/F)을 가져간다
             if (Physics.Raycast(viewCamera.position, viewCamera.forward, out RaycastHit hit, reach, mask, QueryTriggerInteraction.Ignore))
@@ -66,8 +68,10 @@ namespace LGH
                 if (focusedPickup == null && focusedSconce == null) focusedDrawer = c.GetComponentInParent<InteractableDrawer>();
                 if (focusedPickup == null && focusedSconce == null && focusedDrawer == null)
                 {
-                    focusedPortrait = c.GetComponentInParent<PortraitTilt>();
-                    if (focusedPortrait == null) focused = c.GetComponentInParent<InteractableDoor>();
+                    var world = c.GetComponentInParent<IWorldInteractable>();
+                    if (world != null && world.CanInteract) focusedWorld = world;
+                    if (focusedWorld == null) focusedPortrait = c.GetComponentInParent<PortraitTilt>();
+                    if (focusedWorld == null && focusedPortrait == null) focused = c.GetComponentInParent<InteractableDoor>();
                 }
             }
 
@@ -81,6 +85,7 @@ namespace LGH
             }
             if (!kb.eKey.wasPressedThisFrame) return;
 
+            if (focusedWorld != null) { focusedWorld.Interact(gameObject); return; }
             if (focusedPortrait != null) { focusedPortrait.BeginView(this); return; }
             if (focusedPickup != null || focusedSconce != null || focusedDrawer != null)
             {
@@ -110,6 +115,7 @@ namespace LGH
         string Prompt()
         {
             if (PortraitTilt.Current != null) return PortraitTilt.Current.ViewPrompt;
+            if (focusedWorld != null) return focusedWorld.CanInteract ? focusedWorld.InteractPrompt : null;
             if (focusedPortrait != null) return "[E] 그림 살펴보기";
             if (focusedPickup != null) return "[E] 양초 줍기";
             if (focusedSconce != null)
