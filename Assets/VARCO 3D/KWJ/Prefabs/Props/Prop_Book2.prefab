@@ -48,6 +48,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -5754084199372789682, guid: af769b345f2857741a27781d5aba83a4, type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: -8006812049289700604, guid: e44c255d7cf7cf94a87333a33a94fa20, type: 3}
     - target: {fileID: 919132149155446097, guid: af769b345f2857741a27781d5aba83a4, type: 3}
       propertyPath: m_Name
       value: Prop_Book2
