@@ -103,7 +103,6 @@ public class PortraitTilt : MonoBehaviour
 
         if (kb.fKey.wasPressedThisFrame) { EndView(); return; }
         if (PortraitPuzzle.Instance == null) return;
-        if (PortraitPuzzle.Instance.Solved) return;
         if (kb.qKey.wasPressedThisFrame) PortraitPuzzle.Instance.RequestShift(this, -1);
         else if (kb.eKey.wasPressedThisFrame) PortraitPuzzle.Instance.RequestShift(this, +1);
     }
@@ -113,7 +112,6 @@ public class PortraitTilt : MonoBehaviour
         get
         {
             string state = Step < 0 ? "왼쪽 30°" : Step > 0 ? "오른쪽 30°" : "가운데";
-            if (PortraitPuzzle.Instance != null && PortraitPuzzle.Instance.Solved) return "액자가 제자리에서 떨어졌다  [F] 그만 보기";
             return "[Q] 왼쪽  [E] 오른쪽  [F] 그만 보기   (" + state + ")";
         }
     }

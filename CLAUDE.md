@@ -111,6 +111,13 @@ git에 커밋되어 팀원 전원이 같은 내용을 공유합니다. 개인적
 - **중요 교훈 — Enter Play Mode에서 씬 리로드가 꺼져 있음**: 이 프로젝트는 Play 모드 진입 시 씬을 다시 로드하지 않도록 설정돼 있어서(확인됨: Play 모드 중에 `Instantiate`/`DestroyImmediate`/`SerializedObject` 편집을 해도 Stop 후에도 그대로 남아있음), 평소 "Play 중 편집은 Stop하면 사라진다"는 Unity 기본 가정이 이 프로젝트에선 성립하지 않는다. 그래도 **되도록 Edit 모드에서 씬을 편집하고 저장할 것** — Play 모드 중 편집이 우연히 남는 데 의존하지 말 것(다른 머신 설정에선 사라질 수 있음).
 - **검증(Play 모드, 직접 `TryBegin()` 반복 호출로 빠른 폴링)**: `Reaching→Narrowing→Darkening→Listening→Returning` 전체 통과. `Darkening` 단계에서 `blackoutAlpha`가 0→0.9로 상승 확인, `Listening` 진입 시 `spectrumAlpha=1`(파형 표시, 중앙 배치 `anchorMin=(0.5,0.5)` 확인)+`blackoutAlpha=0.9` 동시 확인, 종료 후 둘 다 0으로 복원. 콘솔 에러 0(Awake 시점의 "Blackout Overlay가 비어있다" 경고 1건은 런타임 주입 전 타이밍이라 기존 lookCamera/promptUI와 같은 패턴의 정상적인 과도 경고).
 
+## 약품 제조 퍼즐 GIM-00x (2026-10-19, KJH 씬)
+- 스크립트 `Assets/Scripts/KJH/PotionCraft/`(네임스페이스 `PotionCraft`), 프리팹/데이터 `Assets/Prefabs/KJH/PotionCraft/`. 씬 배치·데이터 생성은 `Tools/KJH/PotionCraft/Build All`(재실행 가능, 덮어씀).
+- 서버 권한 동기화는 `DoorSync_LGH`에 붙은 `PotionCraftSync` 하나가 담당(손에 든 아이템 + 모든 장치 상태 + 완료 여부, 늦게 접속하면 전체 상태 수신). 장치는 전부 `PotionStation`(= `IWorldInteractable`) 파생이라 LGH 플레이어 프리팹 수정이 없다. 새 장치는 `ServerInteract`/`GetState`/`ApplyState`/`Refresh`만 구현하면 된다.
+- 도르래 `Dumbwaiter`는 `acceptedCargo` 필터(Candle/PotionLump)로 받는 화물을 정한다. 현재 PotionLump, 용량 1, 싣기 창=1층·꺼내기 창=2층. 예전 양초 테스트로 되돌리려면 필터를 Candle로.
+- `LGH/PlayerInteractor.ShowMessage(msg, seconds)` 오버로드 추가(긴 자막용, 기존 2초 호출은 그대로).
+- 검증 한계: Relay(UGS) 방 생성은 이 환경에서 불가, `NetworkManager.StartHost()` 로컬 호스트로만 확인. `simulate_key`는 Game 뷰 포커스가 없으면 키가 안 들어가므로 E 입력 경로는 `Interact()` 직접 호출로 대신 확인.
+
 ## 사용 가능한 Unity 전용 스킬
 이 환경에는 `unity:` 접두사의 스킬들(unity-cli, ui, urp-postprocessing, physics-3d-collision 등)이 이미 연결되어 있습니다. 관련 작업을 할 때는 먼저 해당 스킬을 확인하세요.
 

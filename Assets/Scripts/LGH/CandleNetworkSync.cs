@@ -244,7 +244,7 @@ namespace LGH
             Reply(DoSwap(inv, sender), sender);
         }
 
-        void Remember(PlayerInventory inv, ulong client)
+        public void Remember(PlayerInventory inv, ulong client)
         {
             if (IsSpawned) carried[client] = inv.Snapshot();
         }
