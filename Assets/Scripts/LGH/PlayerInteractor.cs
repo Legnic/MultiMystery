@@ -12,7 +12,10 @@ namespace LGH
     // so both players see the same thing.
     public class PlayerInteractor : MonoBehaviour
     {
-        public static PlayerInteractor Active { get; private set; }
+        // 지금 켜져 있는 PlayerInteractor 중 가장 최근 것. 멀티플레이에서 상대 플레이어 복사본은 스폰 직후 곧바로 꺼지는데(NetworkPlayer.Awake),
+        // 단순히 "마지막 OnEnable = Active"로 두면 그 순간 내 것이 null로 덮여 모든 안내 문구가 사라진다. 그래서 목록으로 관리한다.
+        static readonly System.Collections.Generic.List<PlayerInteractor> enabledList = new System.Collections.Generic.List<PlayerInteractor>();
+        public static PlayerInteractor Active { get { return enabledList.Count > 0 ? enabledList[enabledList.Count - 1] : null; } }
 
         public Transform viewCamera;
         public float reach = 2.6f;
@@ -41,8 +44,8 @@ namespace LGH
             held = GetComponentInChildren<HeldCandle>(true);
         }
 
-        void OnEnable() { Active = this; }
-        void OnDisable() { if (Active == this) Active = null; }
+        void OnEnable() { enabledList.Remove(this); enabledList.Add(this); }
+        void OnDisable() { enabledList.Remove(this); }
 
         public void ShowMessage(string msg)
         {
