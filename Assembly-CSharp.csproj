@@ -73,6 +73,7 @@
     <Compile Include="Assets\Scripts\KJH\Puzzle\PortraitTilt.cs" />
     <Compile Include="Assets\Scripts\KSM\Player\ToyActionNetwork.cs" />
     <Compile Include="Assets\Scripts\KJH\PotionCraft\PotionTypes.cs" />
+    <Compile Include="Assets\Scripts\KJH\Puzzle\PortraitPuzzleScene.cs" />
     <Compile Include="Assets\Scripts\KJH\Dumbwaiter\DumbwaiterWindow.cs" />
     <Compile Include="Assets\Scripts\KJH\Dumbwaiter\DumbwaiterNetworkSync.cs" />
     <Compile Include="Assets\Scripts\LGH\IRoomResettable.cs" />
@@ -152,6 +153,7 @@
     <Compile Include="Assets\Scripts\KJH\Dumbwaiter\DumbwaiterButton.cs" />
     <Compile Include="Assets\Scripts\KJH\GameTime\GameClock.cs" />
     <Compile Include="Assets\Scripts\KSM\Player\ProceduralToyAnimator.cs" />
+    <Compile Include="Assets\Scripts\KJH\Puzzle\KeyBoxLid.cs" />
     <Compile Include="Assets\Scripts\KJH\GameTime\TimePhase.cs" />
     <Compile Include="Assets\Scripts\LGH\CandleNetworkSync.cs" />
     <Compile Include="Assets\Scripts\LGH\NetworkPlayer.cs" />
