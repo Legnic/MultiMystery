@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9e731218c9768064a88ca35440013b2a, type: 3}
+  m_Name: Item_Letter
+  m_EditorClassIdentifier: Assembly-CSharp::LGH.ItemData
+  itemId: letter_sealed
+  displayName: "\uBD09\uC778\uB41C \uD3B8\uC9C0"
+  description: "\uBD89\uC740 \uBC00\uB78D\uC73C\uB85C \uBD09\uD574\uC9C4 \uD3B8\uC9C0. \uC8FC\uC778\uC5D0\uAC8C \uB05D\uB0B4 \uC804\uD574\uC9C0\uC9C0 \uBABB\uD55C \uAC83 \uAC19\uB2E4."
+  icon: {fileID: 2800000, guid: e479117e029af794f9fd9a33d74aca87, type: 3}
+  stackable: 0
+  maxStack: 1
+  readText: "\uB808\uC774\uBE10\uC6B0\uB4DC \uACBD\uAED8,\n\n\uC800\uD0DD\uC758 \uC2DC\uACC4\uAC00 \uBAA8\uB450 \uAC19\uC740 \uC2DC\uAC01\uC5D0 \uBA48\uCD98 \uADF8\uB0A0 \uBC24 \uC774\uD6C4\uB85C, \uC800\uB294 \uB354 \uC774\uC0C1 \uC774 \uC9D1\uC5D0 \uBA38\uBB3C \uC218 \uC5C6\uC2B5\uB2C8\uB2E4.\n\n\uB9AC\uB128\uC2E4 \uC5F4\uC1E0\uB294 \uC548\uC8FC\uC778 \uBC29\uC758 \uC11C\uB78D\uC7A5\uC5D0 \uB123\uC5B4 \uB450\uC5C8\uC2B5\uB2C8\uB2E4. \uBD80\uB514 \uC544\uC774\uB4E4\uC744 \uADF8 \uBC29\uC5D0 \uB4E4\uC774\uC9C0 \uB9C8\uC2ED\uC2DC\uC624.\n\n\u2014 \uC9D1\uC0AC E. \uD560\uB85C\uC6E8\uC774"

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -35,6 +35,13 @@ namespace LGH
 
         int IndexOf(InteractableDoor d) { return Array.IndexOf(doors, d); }
 
+        static PlayerInventory InventoryOfClient(ulong client)
+        {
+            foreach (var inv in PlayerInventory.All)
+                if (inv != null && inv.IsSpawned && inv.OwnerClientId == client) return inv;
+            return null;
+        }
+
         public override void OnNetworkSpawn()
         {
             if (!IsServer) RequestFullStateRpc();
@@ -60,11 +67,19 @@ namespace LGH
         {
             if (index < 0 || index >= doors.Length) return;
             var d = doors[index];
-            string blocked = d.CheckBlocked(userPosition);
+            ulong sender = rpcParams.Receive.SenderClientId;
+            var inv = InventoryOfClient(sender);
+            string blocked = d.CheckBlocked(userPosition, inv);
             if (blocked != null)
             {
                 MessageRpc(blocked, RpcTarget.Single(rpcParams.Receive.SenderClientId, RpcTargetUse.Temp));
                 return;
+            }
+            if (d.locked)   // not blocked while locked = this player carries the key
+            {
+                if (d.consumeKey && inv != null) inv.RemoveItem(d.keyItem, 1);
+                LockRpc(index, false);
+                MessageRpc(d.keyItem.NameOrFallback + "(으)로 문을 열었다", RpcTarget.Single(sender, RpcTargetUse.Temp));
             }
             bool open = !d.IsOpen;
             ApplyRpc(index, open, d.ComputeAngle(open, userPosition));
@@ -84,7 +99,9 @@ namespace LGH
         [Rpc(SendTo.ClientsAndHost)]
         void LockRpc(int index, bool isLocked)
         {
-            if (index >= 0 && index < doors.Length) doors[index].locked = isLocked;
+            if (index < 0 || index >= doors.Length) return;
+            doors[index].locked = isLocked;
+            if (doors[index].partner != null) doors[index].partner.locked = isLocked;   // double doors share one lock
         }
 
         [Rpc(SendTo.SpecifiedInParams)]

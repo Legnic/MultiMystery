@@ -20,6 +20,7 @@ namespace LGH
 
         InteractableDoor focused;
         CandlePickup focusedPickup;
+        WorldItem focusedItem;
         CandleSconce focusedSconce;
         InteractableDrawer focusedDrawer;
         IWorldInteractable focusedWorld;   // KJH 도르래 승강기 버튼/창 등
@@ -60,6 +61,7 @@ namespace LGH
         {
             focused = null;
             focusedPickup = null;
+            focusedItem = null;
             focusedSconce = null;
             focusedDrawer = null;
             focusedPortrait = null;
@@ -79,6 +81,13 @@ namespace LGH
                     if (focusedWorld == null) focusedPortrait = c.GetComponentInParent<PortraitTilt>();
                     if (focusedWorld == null && focusedPortrait == null) focused = c.GetComponentInParent<InteractableDoor>();
                 }
+                // items lying around (keys, letters...) win over whatever they rest on
+                var wi = c.GetComponentInParent<WorldItem>();
+                if (wi != null && wi.IsPresent && wi.item != null)
+                {
+                    focusedItem = wi;
+                    focusedPickup = null; focusedSconce = null; focusedDrawer = null; focusedWorld = null; focusedPortrait = null; focused = null;
+                }
             }
 
             var kb = Keyboard.current;
@@ -91,6 +100,12 @@ namespace LGH
             }
             if (!kb.eKey.wasPressedThisFrame) return;
 
+            if (focusedItem != null)
+            {
+                var items = ItemNetworkSync.Instance;
+                if (items != null) { string im = items.RequestPickup(focusedItem, inventory); if (!string.IsNullOrEmpty(im)) ShowMessage(im); }
+                return;
+            }
             if (focusedWorld != null) { focusedWorld.Interact(gameObject); return; }
             if (focusedPortrait != null) { focusedPortrait.BeginView(this); return; }
             if (focusedPickup != null || focusedSconce != null || focusedDrawer != null)
@@ -107,13 +122,13 @@ namespace LGH
             var sync = DoorNetworkSync.Instance;
             if (sync != null && sync.IsSpawned)
             {
-                string blocked = focused.CheckBlocked(transform.position);
+                string blocked = focused.CheckBlocked(transform.position, inventory);
                 if (blocked != null) ShowMessage(blocked);
                 else sync.RequestInteract(focused, transform.position);
             }
             else
             {
-                string msg = focused.Interact(transform.position);
+                string msg = focused.Interact(transform.position, inventory);
                 if (!string.IsNullOrEmpty(msg)) ShowMessage(msg);
             }
         }
@@ -121,6 +136,7 @@ namespace LGH
         string Prompt()
         {
             if (PortraitTilt.Current != null) return PortraitTilt.Current.ViewPrompt;
+            if (focusedItem != null) return focusedItem.Prompt;
             if (focusedWorld != null) return focusedWorld.CanInteract ? focusedWorld.InteractPrompt : null;
             if (focusedPortrait != null) return "[E] 그림 살펴보기";
             if (focusedPickup != null) return "[E] 양초 줍기";
@@ -133,7 +149,7 @@ namespace LGH
                 return "빈 양초대 — 양초가 필요하다";
             }
             if (focusedDrawer != null) return focusedDrawer.IsOpen ? "[E] 서랍 닫기" : "[E] 서랍 열기";
-            if (focused != null) return focused.locked ? "[E] 문 (잠김)" : (focused.IsOpen ? "[E] 문 닫기" : "[E] 문 열기");
+            if (focused != null) return focused.locked ? (focused.CanUnlockWith(inventory) ? "[E] " + focused.keyItem.NameOrFallback + "(으)로 열기" : "[E] 문 (잠김)") : (focused.IsOpen ? "[E] 문 닫기" : "[E] 문 열기");
             return null;
         }
 

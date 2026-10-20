@@ -80,7 +80,7 @@ namespace LGH
             if (menuCamera != null && menuCamera.gameObject.activeSelf == InGame)
                 menuCamera.gameObject.SetActive(!InGame);
             // FirstPersonController unlocks the cursor on Esc; treat that as the pause menu
-            paused = InGame && Cursor.lockState != CursorLockMode.Locked;
+            paused = InGame && Cursor.lockState != CursorLockMode.Locked && !PlayerInventory.UiOpen;
 
             if (InLobbyMenu && !busy && Time.unscaledTime >= nextRefresh) RefreshRooms();
         }

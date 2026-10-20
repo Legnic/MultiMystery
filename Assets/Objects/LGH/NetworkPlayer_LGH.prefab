@@ -295,8 +295,8 @@ Light:
   serializedVersion: 13
   m_Type: 2
   m_Color: {r: 1, g: 0.62, b: 0.3, a: 1}
-  m_Intensity: 2.6
-  m_Range: 7
+  m_Intensity: 4.2
+  m_Range: 9.5
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
   m_CookieSize2D: {x: 0.5, y: 0.5}
@@ -1559,9 +1559,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::LGH.CandleFlicker
   candleLight: {fileID: 9180403862825612602}
   flame: {fileID: 448885654740752146}
-  baseIntensity: 2.6
+  baseIntensity: 4.2
   intensityJitter: 0.5
-  baseRange: 7
+  baseRange: 9.5
   speed: 7
 --- !u!114 &3862155750263364956
 MonoBehaviour:

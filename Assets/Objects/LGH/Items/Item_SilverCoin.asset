@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9e731218c9768064a88ca35440013b2a, type: 3}
+  m_Name: Item_SilverCoin
+  m_EditorClassIdentifier: Assembly-CSharp::LGH.ItemData
+  itemId: coin_silver
+  displayName: "\uC740\uD654"
+  description: "\uBE45\uD1A0\uB9AC\uC544 \uC5EC\uC655\uC758 \uC606\uC5BC\uAD74\uC774 \uC0C8\uACA8\uC9C4 \uC624\uB798\uB41C \uC740\uD654."
+  icon: {fileID: 2800000, guid: 644772d928baa8f489b2c3994f52d820, type: 3}
+  stackable: 1
+  maxStack: 99
+  readText: 

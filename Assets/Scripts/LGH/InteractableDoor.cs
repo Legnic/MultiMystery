@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 namespace LGH
 {
@@ -18,6 +18,10 @@ namespace LGH
         [Header("Lock")]
         public bool locked = false;
         public string lockedMessage = "잠겨 있다";
+        [Tooltip("이 아이템(열쇠)을 가진 플레이어는 잠긴 문을 열 수 있다. 비워두면 열쇠로는 열리지 않는다.")]
+        public ItemData keyItem;
+        [Tooltip("문을 열 때 열쇠를 인벤토리에서 없앤다")]
+        public bool consumeKey = false;
         public bool oneWay = false;
         public Vector3 openSideLocal = Vector3.forward;   // side (in this object's local space) the door can be opened from
         public string oneWayMessage = "이쪽에서는 열리지 않는다";
@@ -52,9 +56,9 @@ namespace LGH
         }
 
         // Why the door can't be used right now (null = it can).
-        public string CheckBlocked(Vector3 userPosition)
+        public string CheckBlocked(Vector3 userPosition, PlayerInventory inventory = null)
         {
-            if (locked) return lockedMessage;
+            if (locked && !CanUnlockWith(inventory)) return keyItem != null ? keyItem.NameOrFallback + "이(가) 필요하다" : lockedMessage;
             if (!IsOpen && oneWay)
             {
                 Vector3 side = transform.TransformDirection(openSideLocal);
@@ -76,13 +80,14 @@ namespace LGH
         }
 
         // Local (single player) use. Returns a message to show, or null when the door moved.
-        public string Interact(Vector3 userPosition)
+        public string Interact(Vector3 userPosition, PlayerInventory inventory = null)
         {
-            string blocked = CheckBlocked(userPosition);
+            string blocked = CheckBlocked(userPosition, inventory);
             if (blocked != null) return blocked;
+            string keyMsg = locked ? UseKey(inventory) : null;
             SetOpen(!IsOpen, userPosition);
             if (partner != null) partner.SetOpen(IsOpen, userPosition);
-            return null;
+            return keyMsg;
         }
 
         public void SetOpen(bool open, Vector3 userPosition)
@@ -106,8 +111,19 @@ namespace LGH
         [ContextMenu("Use current rotation as closed")]
         void CaptureClosed() { closedRotation = (hinge != null ? hinge : transform).localRotation; useSavedClosedRotation = true; }
 
-        public void Unlock() { locked = false; }
-        public void Lock() { locked = true; }
+        public bool CanUnlockWith(PlayerInventory inventory) { return locked && keyItem != null && inventory != null && inventory.HasItem(keyItem); }
+
+        // Single player: open the lock with the key in the bag. Returns the message to show.
+        public string UseKey(PlayerInventory inventory)
+        {
+            if (!CanUnlockWith(inventory)) return null;
+            Unlock();
+            if (consumeKey) inventory.RemoveItem(keyItem, 1);
+            return keyItem.NameOrFallback + "(으)로 문을 열었다";
+        }
+
+        public void Unlock() { locked = false; if (partner != null) partner.locked = false; }
+        public void Lock() { locked = true; if (partner != null) partner.locked = true; }
 
         public void ResetForNewRoom()
         {
