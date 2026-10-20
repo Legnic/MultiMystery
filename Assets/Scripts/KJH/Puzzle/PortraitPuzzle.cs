@@ -21,6 +21,9 @@ public class PortraitPuzzle : NetworkBehaviour
 
     public bool Solved { get; private set; }
 
+    // 퍼즐이 풀린 순간 모든 컴퓨터에서 한 번 불린다. 다른 기믹(GIM-002 등)이 판정 로직을 건드리지 않고 이어 붙일 수 있게 열어 둔 신호.
+    public static event System.Action SolvedEvent;
+
     void Awake() { Instance = this; }
 
     public override void OnDestroy()
@@ -98,6 +101,7 @@ public class PortraitPuzzle : NetworkBehaviour
             try { keyBox.Open(dropDelay, instant); }
             catch (System.Exception e) { Debug.LogError("[PortraitPuzzle] 열쇠 상자 뚜껑 열기 실패: " + e); }
         }
+        SolvedEvent?.Invoke();
     }
 
     // 중력 낙하 + 앞으로 기울며 바닥에 쓰러지는 연출 (물리 엔진 없이 계산해서 모든 클라이언트가 같은 결과를 본다)
