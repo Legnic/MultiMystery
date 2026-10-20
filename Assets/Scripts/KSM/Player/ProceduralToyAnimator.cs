@@ -35,6 +35,14 @@ namespace KSM
         public float idleBreatheRate = 1.2f;
         public float idleBreatheAmount = 1.5f;
 
+        // When an action animator is posing the right arm (e.g. holding a candle), skip it here so the
+        // two don't fight over the same bones; everything else (legs, left arm, torso) keeps animating.
+        [System.NonSerialized] public bool suppressRightArm;
+        // When an action animator owns the whole body (e.g. examining something), skip every bone.
+        // A flag rather than disabling the component: OnEnable() re-captures rest pose, which would
+        // capture mid-pose instead of the true bind pose if toggled off and on repeatedly.
+        [System.NonSerialized] public bool suppressAll;
+
         Vector3 lastPos;
         float phase, speed;
 
@@ -63,6 +71,7 @@ namespace KSM
 
         void LateUpdate()
         {
+            if (suppressAll) return;
             float dt = Mathf.Max(Time.deltaTime, 1e-4f);
             Vector3 p = transform.position, d = p - lastPos; d.y = 0f; lastPos = p;
             float target = Mathf.Clamp01(d.magnitude / dt / 3f);
@@ -85,9 +94,12 @@ namespace KSM
             float armL = -hipL * (armSwing / Mathf.Max(hipSwing, 0.01f));
             float armR = -hipR * (armSwing / Mathf.Max(hipSwing, 0.01f));
             Apply(leftArm, leftArmRest, armL, 0f, 0f);
-            Apply(rightArm, rightArmRest, armR, 0f, 0f);
             Apply(leftForeArm, leftForeArmRest, Mathf.Abs(armL) * (elbowBend / Mathf.Max(armSwing, 0.01f)), 0f, 0f);
-            Apply(rightForeArm, rightForeArmRest, Mathf.Abs(armR) * (elbowBend / Mathf.Max(armSwing, 0.01f)), 0f, 0f);
+            if (!suppressRightArm)
+            {
+                Apply(rightArm, rightArmRest, armR, 0f, 0f);
+                Apply(rightForeArm, rightForeArmRest, Mathf.Abs(armR) * (elbowBend / Mathf.Max(armSwing, 0.01f)), 0f, 0f);
+            }
 
             // torso: side-to-side sway plus a double-time up/down bounce, both fading in with speed
             float sway = Mathf.Sin(phase) * torsoSway * speed;
