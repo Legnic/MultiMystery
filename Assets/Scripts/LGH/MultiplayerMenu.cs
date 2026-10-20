@@ -130,6 +130,7 @@ namespace LGH
                 string n = string.IsNullOrWhiteSpace(roomName) ? "저택" : roomName.Trim();
                 var options = new SessionOptions { Name = n, MaxPlayers = maxPlayers, IsPrivate = false }.WithRelayNetwork();
                 session = await MultiplayerService.Instance.CreateSessionAsync(options);
+                RoomResetter.ResetAll(); // fresh room: put every door/puzzle/clue back to its initial state
                 status = "방을 만들었어요. 참가 코드: " + session.Code;
             }
             catch (Exception e)

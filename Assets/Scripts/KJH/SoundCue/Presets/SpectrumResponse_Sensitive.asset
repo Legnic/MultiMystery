@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 276bb564c737a564eae94a44cc84e219, type: 3}
+  m_Name: SpectrumResponse_Sensitive
+  m_EditorClassIdentifier: Assembly-CSharp::SpectrumResponseProfile
+  response:
+    gain: 14
+    useDecibelScale: 1
+    decibelFloor: -42
+    highFrequencyTilt: 3
+    autoNormalize: 1
+    normalizeTarget: 1
+    normalizeRelease: 1
+    minReference: 0.12
+    riseSpeed: 24
+    fallSpeed: 9
+    waveCycles: 11
+    waveFlowSpeed: 1.8
+    edgeFalloff: 0.12
+    waveformBlend: 0.45
+    waveformSmoothing: 28

@@ -5,7 +5,7 @@ namespace LGH
     // Hinged door that swings away from whoever opens it.
     // Single player: PlayerInteractor calls Interact().
     // Multiplayer: PlayerInteractor asks DoorNetworkSync, the host decides, and every player calls ApplyState().
-    public class InteractableDoor : MonoBehaviour
+    public class InteractableDoor : MonoBehaviour, IRoomResettable
     {
         [Header("Parts")]
         public Transform hinge;                 // pivot at the jamb; its first child is the door leaf
@@ -34,6 +34,7 @@ namespace LGH
         Vector3 leafDirParent;
         float currentAngle, targetAngle;
         bool initialized;
+        bool initialLocked;
 
         void Awake() { Init(); }
 
@@ -41,6 +42,7 @@ namespace LGH
         {
             if (initialized) return;
             initialized = true;
+            initialLocked = locked;   // remember the authored lock state, in case a puzzle unlocks it later
             if (hinge == null) hinge = transform;
             closedLocal = useSavedClosedRotation ? closedRotation : hinge.localRotation;
             hinge.localRotation = closedLocal;   // start shut even if the scene was saved with the door open
@@ -106,6 +108,12 @@ namespace LGH
 
         public void Unlock() { locked = false; }
         public void Lock() { locked = true; }
+
+        public void ResetForNewRoom()
+        {
+            locked = initialLocked;
+            ApplyState(false, 0f, true);
+        }
 
         void Update()
         {

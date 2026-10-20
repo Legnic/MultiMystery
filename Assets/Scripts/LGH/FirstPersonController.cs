@@ -4,13 +4,27 @@ using UnityEngine.InputSystem;
 namespace LGH
 {
     [RequireComponent(typeof(CharacterController))]
-    public class FirstPersonController : MonoBehaviour
+    public class FirstPersonController : MonoBehaviour, IPlayerLock
     {
         public float moveSpeed = 4.0f;
         public float mouseSensitivity = 2.0f;
         public float gravity = -9.81f;
         public float jumpHeight = 1.2f;
         public Transform cameraTransform;
+
+        // IPlayerLock: lets a cutscene-style interaction (object echo, clue viewing, ...) pause
+        // movement/look and drive the camera itself without needing to know this is a
+        // FirstPersonController specifically.
+        public float SpeedMultiplier { get; set; } = 1f;
+        public bool LookEnabled { get; set; } = true;
+        public float Yaw => transform.eulerAngles.y;
+        public float Pitch => pitch;
+        public void SetLookAngles(float yaw, float pitchValue)
+        {
+            transform.rotation = Quaternion.Euler(0f, yaw, 0f);
+            pitch = Mathf.Clamp(pitchValue, -80f, 80f);
+            if (cameraTransform != null) cameraTransform.localRotation = Quaternion.Euler(pitch, 0f, 0f);
+        }
 
         private CharacterController controller;
         private float verticalVelocity;
@@ -44,7 +58,7 @@ namespace LGH
                 Cursor.visible = true;
             }
 
-            if (mouse != null && Cursor.lockState == CursorLockMode.Locked)
+            if (LookEnabled && mouse != null && Cursor.lockState == CursorLockMode.Locked)
             {
                 Vector2 delta = mouse.delta.ReadValue() * (mouseSensitivity * 0.02f);
                 transform.Rotate(Vector3.up, delta.x);
@@ -74,7 +88,7 @@ namespace LGH
                 verticalVelocity += gravity * Time.deltaTime;
             }
 
-            Vector3 velocity = moveDir * moveSpeed;
+            Vector3 velocity = moveDir * moveSpeed * SpeedMultiplier;
             velocity.y = verticalVelocity;
             controller.Move(velocity * Time.deltaTime);
         }
