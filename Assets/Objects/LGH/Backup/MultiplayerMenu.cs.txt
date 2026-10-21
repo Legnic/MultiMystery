@@ -21,6 +21,9 @@ namespace LGH
         ISession session;
         string joinCode = "";
         string roomName = "";
+        string nickname = "";
+        // the name this player uses in the room (saved on this PC, shown above the head to the other player)
+        public static string Nickname { get; private set; } = "";
         string status = "온라인 서비스에 연결 중...";
         bool ready, busy, paused, querying;
         float nextRefresh;
@@ -38,6 +41,9 @@ namespace LGH
             // otherwise a second window on the same PC freezes and the join times out
             Application.runInBackground = true;
             roomName = "저택 " + UnityEngine.Random.Range(100, 1000);
+            nickname = PlayerPrefs.GetString("LGH_Nickname", "");
+            if (string.IsNullOrWhiteSpace(nickname)) nickname = "탐정 " + UnityEngine.Random.Range(100, 1000);
+            Nickname = nickname.Trim();
             try
             {
                 var options = new InitializationOptions();
@@ -80,7 +86,7 @@ namespace LGH
             if (menuCamera != null && menuCamera.gameObject.activeSelf == InGame)
                 menuCamera.gameObject.SetActive(!InGame);
             // FirstPersonController unlocks the cursor on Esc; treat that as the pause menu
-            paused = InGame && Cursor.lockState != CursorLockMode.Locked;
+            paused = InGame && Cursor.lockState != CursorLockMode.Locked && !PlayerInventory.UiOpen;
 
             if (InLobbyMenu && !busy && Time.unscaledTime >= nextRefresh) RefreshRooms();
         }
@@ -206,6 +212,37 @@ namespace LGH
             }
         }
 
+        void SetNickname(string value)
+        {
+            nickname = value;
+            Nickname = string.IsNullOrWhiteSpace(value) ? "플레이어" : value.Trim();
+            PlayerPrefs.SetString("LGH_Nickname", nickname);
+            if (NetworkPlayer.Local != null) NetworkPlayer.Local.SetNickname(Nickname);
+        }
+
+        // e.g. "나: 홍길동   ·   상대: 김철수"
+        static string PlayerNames()
+        {
+            string me = null, other = null;
+            foreach (var p in NetworkPlayer.All)
+            {
+                if (p == null || !p.IsSpawned) continue;
+                if (p.IsOwner) me = p.Nickname; else other = other == null ? p.Nickname : other + ", " + p.Nickname;
+            }
+            string s = me != null ? "나: " + me : "";
+            if (other != null) s += (s.Length > 0 ? "   ·   " : "") + "상대: " + other;
+            return s;
+        }
+
+        void NicknameRow()
+        {
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("닉네임", small, GUILayout.Width(70), GUILayout.Height(38));
+            string n = GUILayout.TextField(nickname, 12, field, GUILayout.Height(38));
+            if (n != nickname) SetNickname(n);
+            GUILayout.EndHorizontal();
+        }
+
         static void ShowCursor(bool show)
         {
             Cursor.lockState = show ? CursorLockMode.None : CursorLockMode.Locked;
@@ -243,13 +280,15 @@ namespace LGH
                 if (session != null)
                 {
                     string info = session.Name + "   참가 코드 " + session.Code + "   " + session.PlayerCount + "/" + session.MaxPlayers + "명";
+                    string names = PlayerNames();
+                    if (names.Length > 0) info += "      " + names;
                     GUI.Label(new Rect(14, 8, w - 28, 28), info, small);
                     if (session.IsHost && session.PlayerCount < 2) GUI.Label(new Rect(14, 34, w - 28, 28), "상대를 기다리는 중... 상대는 방 목록에서 이 방을 누르면 들어와요", small);
                 }
                 return;
             }
 
-            float pw = 520f, ph = gInGame ? 220f : Mathf.Min(620f, h - 40f);
+            float pw = 520f, ph = gInGame ? 280f : Mathf.Min(680f, h - 40f);
             var r = new Rect((w - pw) / 2f, (h - ph) / 2f, pw, ph);
             GUI.Box(r, GUIContent.none, box);
             GUILayout.BeginArea(new Rect(r.x + 24, r.y + 16, pw - 48, ph - 32));
@@ -258,8 +297,10 @@ namespace LGH
             {
                 GUILayout.Label("일시정지", title, GUILayout.Height(48));
                 if (gHasSession) GUILayout.Label(session != null ? session.Name + "  (참가 코드: " + session.Code + ")" : "", label);
-                GUILayout.Space(12);
-                if (GUILayout.Button("계속하기", button, GUILayout.Height(42))) ShowCursor(false);
+                GUILayout.Space(8);
+                NicknameRow();
+                GUILayout.Space(8);
+                if (GUILayout.Button("계속하기", button, GUILayout.Height(42))) { GUIUtility.keyboardControl = 0; ShowCursor(false); }
                 GUILayout.Space(6);
                 GUI.enabled = !busy;
                 if (GUILayout.Button("방 나가기", button, GUILayout.Height(42))) LeaveRoom();
@@ -270,6 +311,9 @@ namespace LGH
                 GUILayout.Label("저택", title, GUILayout.Height(50));
                 GUILayout.Label("2인 협동 방탈출", label);
                 GUILayout.Space(10);
+
+                NicknameRow();
+                GUILayout.Space(8);
 
                 bool canAct = ready && !busy && session == null;
                 GUI.enabled = canAct;

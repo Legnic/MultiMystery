@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9e731218c9768064a88ca35440013b2a, type: 3}
+  m_Name: Item_FlintlockPistol
+  m_EditorClassIdentifier: Assembly-CSharp::LGH.ItemData
+  itemId: pistol_flintlock
+  displayName: "\uD50C\uB9B0\uD2B8\uB77D \uAD8C\uCD1D"
+  description: "\uBD80\uC2EF\uB3CC\uB85C \uBD88\uC744 \uBD99\uC774\uB294 \uB0A1\uC740 \uAD8C\uCD1D. \uCD1D\uC54C\uC774 \uB2E8 \uD55C \uBC1C \uC7A5\uC804\uB418\uC5B4 \uC788\uB2E4."
+  icon: {fileID: 2800000, guid: 7e435934bb80d7b41aa592b8dcefd7f7, type: 3}
+  stackable: 0
+  maxStack: 1
+  readText: 

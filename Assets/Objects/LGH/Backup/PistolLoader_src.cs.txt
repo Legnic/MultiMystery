@@ -1,0 +1,172 @@
+using Unity.Netcode;
+using UnityEngine;
+using UnityEngine.InputSystem;
+
+namespace LGH
+{
+    // On the player. While you carry the flintlock pistol, hold R to load it.
+    // Loading takes loadSeconds in total (1:30) and can be done bit by bit: let go of R and the progress stays.
+    // The loading noise (ramrod scraping, metal clicks) is heard by everyone near you, so do it where nobody can hear.
+    // At 100% the single bullet is in. (Firing is a separate step.)
+    public class PistolLoader : NetworkBehaviour
+    {
+        public static PistolLoader Local { get; private set; }
+        // true when R belongs to loading (so the candle swap stays out of the way)
+        public static bool WantsR { get { return Local != null && Local.HasGun && !Local.Loaded; } }
+
+        public ItemData pistol;
+        public float loadSeconds = 90f;
+        [Tooltip("How far away other players can hear the loading noise (metres).")]
+        public float hearDistance = 14f;
+        [Range(0f, 1f)] public float volume = 0.9f;
+        [Tooltip("Walking speed while loading (1 = normal).")]
+        public float moveWhileLoading = 0.35f;
+
+        readonly NetworkVariable<bool> loadingNet = new NetworkVariable<bool>(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+        readonly NetworkVariable<float> progressNet = new NetworkVariable<float>(0f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+
+        float progress;
+        bool loadingLocal;
+        PlayerInventory inventory;
+        FirstPersonController move;
+        AudioSource noise;
+        static AudioClip clip;
+        GUIStyle hintStyle, barStyle;
+        float doneMessageUntil;
+
+        public float Progress { get { return Mine ? progress : progressNet.Value; } }
+        public bool Loaded { get { return Progress >= 1f; } }
+        public bool HasGun { get { return inventory != null && pistol != null && inventory.HasItem(pistol); } }
+        public bool IsLoading { get { return Mine ? loadingLocal : loadingNet.Value; } }
+        bool Mine { get { return IsSpawned ? IsOwner : true; } }
+
+        void Awake()
+        {
+            inventory = GetComponent<PlayerInventory>();
+            move = GetComponent<FirstPersonController>();
+            if (pistol == null && ItemDatabase.Instance != null) pistol = ItemDatabase.Instance.Find("pistol_flintlock");
+            var go = new GameObject("PistolLoadNoise");
+            go.transform.SetParent(transform, false);
+            go.transform.localPosition = new Vector3(0f, 1.1f, 0.3f);
+            noise = go.AddComponent<AudioSource>();
+            noise.clip = Clip();
+            noise.loop = true;
+            noise.playOnAwake = false;
+            noise.spatialBlend = 1f;
+            noise.rolloffMode = AudioRolloffMode.Linear;
+            noise.minDistance = 1.5f;
+            noise.maxDistance = hearDistance;
+            noise.volume = volume;
+            noise.dopplerLevel = 0f;
+        }
+
+        public override void OnNetworkSpawn() { if (IsOwner) Local = this; }
+        public override void OnNetworkDespawn() { if (Local == this) Local = null; }
+        void OnEnable() { if (!IsSpawned && Local == null) Local = this; }
+        void OnDisable() { if (Local == this && !IsSpawned) Local = null; }
+
+        void Update()
+        {
+            if (Mine) OwnerUpdate();
+            bool play = IsLoading;
+            if (play && !noise.isPlaying) noise.Play();
+            else if (!play && noise.isPlaying) noise.Stop();
+        }
+
+        void OwnerUpdate()
+        {
+            if (pistol == null && ItemDatabase.Instance != null) pistol = ItemDatabase.Instance.Find("pistol_flintlock");
+            var kb = Keyboard.current;
+            bool busy = PlayerInventory.UiOpen || MultiplayerMenu.Typing || Cursor.lockState != CursorLockMode.Locked || (move != null && !move.enabled);
+            bool want = HasGun && progress < 1f && kb != null && kb.rKey.isPressed && !busy;
+            if (want)
+            {
+                progress = Mathf.Min(1f, progress + Time.deltaTime / Mathf.Max(1f, loadSeconds));
+                if (progress >= 1f)
+                {
+                    want = false;
+                    doneMessageUntil = Time.time + 3f;
+                    var pi = PlayerInteractor.Active;
+                    if (pi != null) pi.ShowMessage("장전 완료. 총알 한 발이 들어갔다.", 3f);
+                }
+            }
+            if (want != loadingLocal)
+            {
+                loadingLocal = want;
+                if (move != null) move.SpeedMultiplier = want ? moveWhileLoading : 1f;
+                if (IsSpawned) loadingNet.Value = want;
+            }
+            if (IsSpawned && Mathf.Abs(progressNet.Value - progress) > 0.01f) progressNet.Value = progress;
+        }
+
+        void OnGUI()
+        {
+            if (!Mine || !HasGun) return;
+            if (PlayerInventory.UiOpen) return;
+            var v = UiScale.Apply();
+            if (hintStyle == null)
+            {
+                hintStyle = new GUIStyle(GUI.skin.label) { fontSize = 14, alignment = TextAnchor.MiddleCenter };
+                hintStyle.normal.textColor = new Color(0.9f, 0.85f, 0.75f, 0.9f);
+                barStyle = new GUIStyle(hintStyle) { fontSize = 15, fontStyle = FontStyle.Bold };
+                barStyle.normal.textColor = new Color(1f, 0.9f, 0.7f);
+            }
+            int pct = Mathf.FloorToInt(progress * 100f);
+            float w = 260f, x = (v.x - w) * 0.5f, y = v.y - 120f;
+            if (loadingLocal)
+            {
+                var old = GUI.color;
+                GUI.color = new Color(0f, 0f, 0f, 0.65f); GUI.DrawTexture(new Rect(x - 2, y - 2, w + 4, 18), Texture2D.whiteTexture);
+                GUI.color = new Color(0.82f, 0.62f, 0.3f, 1f); GUI.DrawTexture(new Rect(x, y, w * progress, 14), Texture2D.whiteTexture);
+                GUI.color = old;
+                float left = (1f - progress) * loadSeconds;
+                GUI.Label(new Rect(0, y - 26, v.x, 22), "장전 중... " + pct + "%  (남은 시간 " + Mathf.FloorToInt(left / 60f) + ":" + Mathf.FloorToInt(left % 60f).ToString("00") + ")", barStyle);
+                GUI.Label(new Rect(0, y + 18, v.x, 20), "철컥거리는 소리가 주변에 들린다!", hintStyle);
+            }
+            else if (progress < 1f)
+                GUI.Label(new Rect(0, y - 4, v.x, 22), "[R] 길게 눌러 권총 장전  " + pct + "%", hintStyle);
+            else if (Time.time < doneMessageUntil)
+                GUI.Label(new Rect(0, y - 4, v.x, 22), "권총 장전 완료 (1발)", barStyle);
+        }
+
+        // ---- loading noise: ramrod scraping down the barrel + metal clicks, made in code (2.4 s loop)
+        static AudioClip Clip()
+        {
+            if (clip != null) return clip;
+            const int rate = 22050;
+            float len = 2.4f;
+            int n = Mathf.RoundToInt(rate * len);
+            var data = new float[n];
+            var rnd = new System.Random(7);
+            float lp = 0f, bp = 0f;
+            float[] clicks = { 0.05f, 0.62f, 1.25f, 1.31f, 1.9f };
+            for (int i = 0; i < n; i++)
+            {
+                float t = i / (float)rate;
+                // scraping: noise, band-limited, swelling with each ramrod stroke (~1.6 strokes/s)
+                float white = (float)(rnd.NextDouble() * 2.0 - 1.0);
+                lp += (white - lp) * 0.35f;
+                bp += ((white - lp) - bp) * 0.25f;
+                float stroke = Mathf.Sin(t * Mathf.PI * 1.6f);
+                float scrape = bp * Mathf.Pow(Mathf.Abs(stroke), 1.5f) * 0.55f;
+                // metallic ring of the barrel while scraping
+                scrape += Mathf.Sin(2f * Mathf.PI * 1830f * t) * 0.04f * Mathf.Abs(stroke);
+                float s = scrape;
+                foreach (float c in clicks)
+                {
+                    float d = t - c;
+                    if (d < 0f || d > 0.12f) continue;
+                    float env = Mathf.Exp(-d * 55f);
+                    s += env * (Mathf.Sin(2f * Mathf.PI * 2900f * d) * 0.5f + Mathf.Sin(2f * Mathf.PI * 4300f * d) * 0.3f + Mathf.Sin(2f * Mathf.PI * 920f * d) * 0.35f);
+                }
+                data[i] = Mathf.Clamp(s, -1f, 1f) * 0.8f;
+            }
+            // smooth the loop seam
+            int fade = rate / 50;
+            for (int i = 0; i < fade; i++) { float k = i / (float)fade; data[i] *= k; data[n - 1 - i] *= k; }
+            clip = AudioClip.Create("PistolLoading", n, 1, rate, false);
+            clip.SetData(data, 0);
+            return clip;
+        }
+    }
+}
