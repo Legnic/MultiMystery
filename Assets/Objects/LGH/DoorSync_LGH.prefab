@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 4662300254345192026}
   - component: {fileID: 7398938033562790829}
   - component: {fileID: 7765855718131438641}
-  - component: {fileID: 8422873742349614200}
   - component: {fileID: 2113124026501252124}
   m_Layer: 0
   m_Name: DoorSync_LGH
@@ -74,19 +73,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e97eceef337f9ab4fb35ebcdb8f9db97, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LGH.DoorNetworkSync
-  ShowTopMostFoldoutHeaderGroup: 1
---- !u!114 &8422873742349614200
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8031392657628942143}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d97bcca5fd6bd4c4fb1e2ba36d9fbafc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LGH.DumbwaiterNetworkSync
   ShowTopMostFoldoutHeaderGroup: 1
 --- !u!114 &2113124026501252124
 MonoBehaviour:

@@ -118,6 +118,15 @@ git에 커밋되어 팀원 전원이 같은 내용을 공유합니다. 개인적
 - `LGH/PlayerInteractor.ShowMessage(msg, seconds)` 오버로드 추가(긴 자막용, 기존 2초 호출은 그대로).
 - 검증 한계: Relay(UGS) 방 생성은 이 환경에서 불가, `NetworkManager.StartHost()` 로컬 호스트로만 확인. `simulate_key`는 Game 뷰 포커스가 없으면 키가 안 들어가므로 E 입력 경로는 `Interact()` 직접 호출로 대신 확인.
 
+## 인형극 퍼즐 GIM-002 (2026-10-20, KJH 씬)
+- 명세: `GIM-002_ClaudeCode_제작명세서.md` + 기획 원본 `GIM-002_반주로완성하는인형극(세부화)`(이채원). 결정: KJH 씬에 구현, 들기·꽂기 방식 도입, 놀이책 읽기 키 = F(R은 LGH 양초 바꾸기), 네트워크 = NGO 호스트 판정.
+- 판정 로직은 순수 C# `Assets/Scripts/KJH/Gim002/Core/Gim002Logic.cs`(별도 asmdef `Gim002.Core`, 시간은 `Tick(dt)`) + EditMode 테스트 29개(`Gim002/Tests/Editor`, Test Runner > EditMode). 수치·장면·문구는 전부 `Assets/Prefabs/KJH/Gim002/Data/Gim002Config.asset`과 장면 데이터 에셋에 있다.
+- 화면 스크립트는 `Gim002Controller.Instance`의 `State`/`StateChanged`/`EventReceived`만 보고 움직이고, 요청은 `IGim002Net`으로 보낸다. 오프라인은 `LocalGim002Net`, 네트워크는 `Gim002Sync.prefab`(`Gim002NetSync`, `DefaultNetworkPrefabs.asset`에 등록) — 호스트가 `LocalGim002Net`을 판정 엔진으로 돌리고 상태는 NetworkVariable, 사건은 Rpc(Everyone).
+- 공용 들기 시스템: `Assets/Scripts/KJH/Common/Hold/`(`PlayerHand`, `HoldableItem`, `IHoldableSocket`). 손은 로컬 전용 자동 생성 오브젝트라 LGH 플레이어 프리팹을 수정하지 않는다. 물건을 들면 원래 자리에 `HoldableHomeSpot` 콜라이더가 켜져 "제자리에 두기"가 된다.
+- GIM-001 연결: `PortraitPuzzle.SolvedEvent`(static event, `Solve()` 끝에서 호출) 한 줄만 추가함. 판정 로직은 그대로.
+- 씬 배치는 `Tools/KJH/GIM-002/Build All`(재실행 가능, GIM002 루트를 지우고 다시 만듦, 데이터 에셋은 없을 때만 생성 → 튜닝 값 보존). 기존 오브젝트에도 컴포넌트를 붙인다: 음악실 문 2개(`Gim002KeyTarget`, 열쇠 쓰기 전 잠김), `Key_Behind_E3`/`Key_Behind_2F`(`Gim002KeyItem` + BoxCollider).
+- 검증 한계: Play 모드에서 `StartHost()` 로컬 호스트로 GIM-001 해결 → 열쇠 2개 → 장면 1~3 → Complete까지 통과(오답·재접속 리셋 포함, 콘솔 에러 0). 단 `simulate_key`/`QueueStateEvent` 키 입력이 Game 뷰 포커스 문제로 들어가지 않아 **손잡이 2초 누르기와 놀이책 F/←/→ 입력은 직접 플레이로 확인 필요**, 두 클라이언트 동시 테스트도 미실행.
+
 ## 사용 가능한 Unity 전용 스킬
 이 환경에는 `unity:` 접두사의 스킬들(unity-cli, ui, urp-postprocessing, physics-3d-collision 등)이 이미 연결되어 있습니다. 관련 작업을 할 때는 먼저 해당 스킬을 확인하세요.
 
