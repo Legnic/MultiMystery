@@ -3,22 +3,26 @@ using LGH;
 using Unity.Netcode;
 using UnityEngine;
 
-// 갤러리 액자 퍼즐 판정. 씬에 NetworkObject와 함께 하나만 둔다(DoorNetworkSync와 같은 방식).
+// 갤러리 액자 퍼즐 판정. 네트워크 프리팹(PortraitPuzzleSync)으로 등록해 씬에 하나만 둔다(DoorNetworkSync와 같은 방식).
+// 씬 관리가 꺼져 있어서 프리팹으로 등록되지 않은 씬 NetworkObject는 클라이언트에 존재하지 않는다.
 // 호스트가 각 액자의 단계(-1/0/+1)를 관리하고, 정답(E0=+1, E1=+1, E2=-1)이 되면 모두에게 알려
 // 마지막 액자(E3)를 떨어뜨려 뒤에 붙은 열쇠를 드러낸다. 네트워크 없이 단독 실행해도 같은 로직으로 동작한다.
 public class PortraitPuzzle : NetworkBehaviour
 {
     public static PortraitPuzzle Instance { get; private set; }
 
-    [Tooltip("기울일 수 있는 액자들. 앞에서부터 Answer 개수만큼이 정답 판정 대상이고, 그 뒤는 정답과 무관한 장식 액자(상태만 동기화)")]
-    [SerializeField] PortraitTilt[] portraits;
-    [Tooltip("각 액자의 정답 단계: -1 = 왼쪽 30도, +1 = 오른쪽 30도")]
-    [SerializeField] int[] answer = { 1, 1, -1 };
-    [Tooltip("정답일 때 떨어지는 액자")]
-    [SerializeField] Transform fallingFrame;
-    [SerializeField] float dropDelay = 0.7f;
+    // 씬 오브젝트 참조(액자들, 떨어질 액자, 열쇠 상자)는 프리팹이 직접 들 수 없어서 씬의 PortraitPuzzleScene에서 런타임에 가져온다.
+    static PortraitPuzzleScene Cfg { get { return PortraitPuzzleScene.Instance; } }
+    PortraitTilt[] portraits { get { return Cfg != null && Cfg.portraits != null ? Cfg.portraits : System.Array.Empty<PortraitTilt>(); } }
+    int[] answer { get { return Cfg != null && Cfg.answer != null ? Cfg.answer : System.Array.Empty<int>(); } }
+    Transform fallingFrame { get { return Cfg != null ? Cfg.fallingFrame : null; } }
+    float dropDelay { get { return Cfg != null ? Cfg.dropDelay : 0.7f; } }
+    KeyBoxLid keyBox { get { return Cfg != null ? Cfg.keyBox : null; } }
 
     public bool Solved { get; private set; }
+
+    // 퍼즐이 풀린 순간 모든 컴퓨터에서 한 번 불린다. 다른 기믹(GIM-002 등)이 판정 로직을 건드리지 않고 이어 붙일 수 있게 열어 둔 신호.
+    public static event System.Action SolvedEvent;
 
     void Awake() { Instance = this; }
 
@@ -88,8 +92,16 @@ public class PortraitPuzzle : NetworkBehaviour
     {
         if (Solved) return;
         Solved = true;
+        // 1층·2층 어느 쪽 플레이어든 같은 문구를 본다. 아래 연출 중 하나가 예외를 던져도 문구가 사라지지 않게 가장 먼저 띄운다.
+        if (!instant && PlayerInteractor.Active != null) PlayerInteractor.Active.ShowMessage("액자 주변에 변화가 생겼다");
+        Debug.Log($"[PortraitPuzzle] Solve instant={instant} frame={(fallingFrame != null)} keyBox={(keyBox != null)}");
         if (fallingFrame != null) StartCoroutine(Drop(instant));
-        if (!instant && PlayerInteractor.Active != null) PlayerInteractor.Active.ShowMessage("철컥 — 마지막 액자가 떨어졌다");
+        if (keyBox != null)
+        {
+            try { keyBox.Open(dropDelay, instant); }
+            catch (System.Exception e) { Debug.LogError("[PortraitPuzzle] 열쇠 상자 뚜껑 열기 실패: " + e); }
+        }
+        SolvedEvent?.Invoke();
     }
 
     // 중력 낙하 + 앞으로 기울며 바닥에 쓰러지는 연출 (물리 엔진 없이 계산해서 모든 클라이언트가 같은 결과를 본다)

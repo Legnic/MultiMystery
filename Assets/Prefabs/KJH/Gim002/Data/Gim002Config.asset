@@ -1,0 +1,52 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d63a46d7584c4884991c3a530371bfab, type: 3}
+  m_Name: Gim002Config
+  m_EditorClassIdentifier: Gim002.Core::Gim002.Gim002Config
+  scenes:
+  - {fileID: 11400000, guid: d55cbd6508e105e43a0ecfb73873f587, type: 2}
+  - {fileID: 11400000, guid: 487f5c755df7f0647b879ebff2561f54, type: 2}
+  - {fileID: 11400000, guid: 32116f873af263c4984f32fbd627522e, type: 2}
+  timing:
+    crankHoldSeconds: 2
+    curtainSeconds: 1
+    judgeDelaySeconds: 0.3
+    stageWrongFlashSeconds: 0.5
+    returnHomeSeconds: 0.5
+    pianoWrongSeconds: 1
+    performSeconds: 3
+    cleanupSeconds: 1
+  bookIntro: "\uD55C \uC0AC\uB78C\uC740 \uBC18\uC8FC\uB97C, \uD55C \uC0AC\uB78C\uC740 \uBB34\uB300\uB97C.\n\uC774\uC57C\uAE30\uB97C \uB4E4\uB824\uC8FC\uACE0 \uCE5C\uAD6C\uB4E4\uC758 \uACF5\uC5F0\uC744 \uC644\uC131\uD574 \uBCF4\uB834.\n\uBC18\uC8FC\uB294 \uBB34\uB300\uAC00 \uC54C\uB824 \uC904 \uAC70\uB780\uB2E4. \uAC74\uBC18\uC758 \uADF8\uB9BC\uC744 \uB530\uB77C \uCE58\uB834."
+  dollNames:
+  - "\uB9DD\uC6D0\uACBD \uBD80\uC5C9\uC774"
+  - "\uCC45 \uBD80\uC5C9\uC774"
+  - "\uBB3C\uBFCC\uB9AC\uAC1C \uAC1C\uAD6C\uB9AC"
+  - "\uBC14\uC774\uC62C\uB9B0 \uACE0\uC591\uC774"
+  backgroundNames:
+  - "\uBC24\uC232 \uCE74\uB4DC"
+  - "\uC628\uC2E4 \uCE74\uB4DC"
+  - "\uC74C\uC545\uC2E4 \uCE74\uB4DC"
+  - "\uBC14\uB2E4 \uCE74\uB4DC"
+  - "\uC131 \uCE74\uB4DC"
+  symbolNames:
+  - "\uD574"
+  - "\uAD6C\uB984"
+  - "\uB2EC"
+  - "\uAF43"
+  - "\uBCC4"
+  msgCurtainClosed: "\uCEE4\uD2BC\uC774 \uB2EB\uD600 \uC788\uB2E4"
+  msgNotReady: "\uC190\uC7A1\uC774\uAC00 \uAFC8\uCA4D\uB3C4 \uD558\uC9C0 \uC54A\uB294\uB2E4"
+  msgSlotLocked: "\uB2E8\uB2E8\uD788 \uACE0\uC815\uB418\uC5B4 \uBE60\uC9C0\uC9C0 \uC54A\uB294\uB2E4"
+  msgWrongSlotDoll: "\uC778\uD615\uC740 \uBB34\uB300 \uBC14\uB2E5\uC758 \uAF42\uC774\uC5D0 \uC138\uC6CC\uC57C \uD55C\uB2E4"
+  msgWrongSlotBg: "\uBC30\uACBD\uCE74\uB4DC\uB294 \uBB34\uB300 \uB4A4\uCABD \uC2AC\uB86F\uC5D0 \uAF42\uC544\uC57C \uD55C\uB2E4"
+  msgWrongKey: "\uBB38\uC591\uC774 \uB9DE\uC9C0 \uC54A\uB294\uB2E4"
+  msgComplete: "\uC778\uD615\uADF9\uC774 \uB05D\uB0AC\uB2E4. \uC5B4\uB514\uC120\uAC00 \uBC15\uC218 \uC18C\uB9AC\uAC00 \uB4E4\uB9B0 \uAC83 \uAC19\uB2E4"

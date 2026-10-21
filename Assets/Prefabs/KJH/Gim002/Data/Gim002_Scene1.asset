@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6c00d9aee6d54d3449fdf738053198cd, type: 3}
+  m_Name: Gim002_Scene1
+  m_EditorClassIdentifier: Gim002.Core::Gim002.Gim002SceneData
+  doll: 0
+  background: 0
+  symbols: 000000000200000004000000i
+  performTrigger: ANIM_OWL_LOOK
+  sentence: "\uBA3C \uACF3\uC744 \uBC14\uB77C\uBCF4\uB294 \uCE5C\uAD6C\uAC00 \uBCC4\uBE5B \uC544\uB798 \uB098\uBB34\uB4E4 \uC0AC\uC774\uC5D0\uC11C \uAE38\uC744 \uCC3E\uC558\uB2E4."

@@ -35,10 +35,10 @@ public class DumbwaiterWindow : MonoBehaviour, IWorldInteractable
     public void Interact(GameObject interactor)
     {
         if (!CanInteract) return;
-        var sync = LGH.DumbwaiterNetworkSync.Instance;
+        var sync = KJH.DumbwaiterNetworkSync.Instance;
         if (sync == null)
         {
-            Debug.LogWarning("[DumbwaiterWindow] 씬에 DumbwaiterNetworkSync가 없습니다 (CandleNetworkSync가 있는 오브젝트에 붙여주세요).", this);
+            Debug.LogWarning("[DumbwaiterWindow] 씬에 DumbwaiterNetworkSync가 없습니다 (DumbwaiterSync 프리팹을 씬에 배치해주세요).", this);
             return;
         }
 
