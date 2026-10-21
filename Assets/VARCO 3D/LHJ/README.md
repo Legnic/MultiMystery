@@ -1,5 +1,3 @@
-# LHJ 캐릭터
-
 MultiMystery에 나오는 2인 협동 캐릭터 **파랑이**와 **주황이**예요.
 
 ![파랑이와 주황이](Docs~/together.png)
