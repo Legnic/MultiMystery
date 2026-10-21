@@ -294,29 +294,14 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 466255245}
-  - component: {fileID: 466255244}
+  - component: {fileID: 466255246}
   m_Layer: 0
-  m_Name: WalkRunToggle
+  m_Name: CharacterKeyMove
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &466255244
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 466255243}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 859073ab5e0ff0f4bbff24012a128f76, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::WalkRunToggle
-  characters:
-  - {fileID: 1105083927}
-  - {fileID: 846713341}
 --- !u!4 &466255245
 Transform:
   m_ObjectHideFlags: 0
@@ -332,6 +317,24 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &466255246
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 466255243}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2499ded2832028e4d98c07b162b6390f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CharacterKeyMove
+  characters:
+  - {fileID: 1105083927}
+  - {fileID: 846713341}
+  walkSpeed: 0.6
+  runSpeed: 1.6
+  turnSpeed: 720
 --- !u!1 &643392401
 GameObject:
   m_ObjectHideFlags: 0
