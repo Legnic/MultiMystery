@@ -13463,7 +13463,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2530146774759637934, guid: bf32f67cbc14d5345ad01d534e27824f, type: 3}
       propertyPath: m_Name
-      value: PotionCraftSync
+      value: PotionCraftSync_KJH
       objectReference: {fileID: 0}
     - target: {fileID: 4407652650363617219, guid: bf32f67cbc14d5345ad01d534e27824f, type: 3}
       propertyPath: m_InScenePlaced
@@ -29728,7 +29728,7 @@ GameObject:
   m_Component:
   - component: {fileID: 880218082}
   m_Layer: 0
-  m_Name: GIM002
+  m_Name: GIM002_KJH
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -32463,7 +32463,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 4195887766314822255, guid: 917abdb29d68bc9449c9da5020428114, type: 3}
       propertyPath: m_Name
-      value: PortraitPuzzleSync
+      value: PortraitPuzzleSync_KJH
       objectReference: {fileID: 0}
     - target: {fileID: 5399114564010094101, guid: 917abdb29d68bc9449c9da5020428114, type: 3}
       propertyPath: m_LocalPosition.x
@@ -53259,7 +53259,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6777811885727370246, guid: cfef38205afe85a428fb5f4fe44a0104, type: 3}
       propertyPath: m_Name
-      value: Gim002Sync
+      value: Gim002Sync_KJH
       objectReference: {fileID: 0}
     - target: {fileID: 8560913006340098214, guid: cfef38205afe85a428fb5f4fe44a0104, type: 3}
       propertyPath: m_InScenePlaced
@@ -55353,7 +55353,7 @@ GameObject:
   - component: {fileID: 1546543543}
   - component: {fileID: 1546543545}
   m_Layer: 0
-  m_Name: PortraitPuzzleScene
+  m_Name: PortraitPuzzleScene_KJH
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -66721,7 +66721,7 @@ GameObject:
   - component: {fileID: 1861839601}
   - component: {fileID: 1861839600}
   m_Layer: 0
-  m_Name: SpawnPoint_Guest
+  m_Name: SpawnPoint_Guest_KJH
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -76809,6 +76809,75 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4871311411079928069, guid: 405f22b7e4628ec44a387277e7b44e7b, type: 3}
   m_PrefabInstance: {fileID: 1301119061}
   m_PrefabAsset: {fileID: 0}
+--- !u!1001 &2123288886311879205
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 914936839761783293, guid: 878f91ecca7deb6439e2045e0c6d94ec, type: 3}
+      propertyPath: m_Name
+      value: DumbwaiterSync_KJH
+      objectReference: {fileID: 0}
+    - target: {fileID: 6909901933605476786, guid: 878f91ecca7deb6439e2045e0c6d94ec, type: 3}
+      propertyPath: m_InScenePlaced
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6909901933605476786, guid: 878f91ecca7deb6439e2045e0c6d94ec, type: 3}
+      propertyPath: GlobalObjectIdHash
+      value: 3332655431
+      objectReference: {fileID: 0}
+    - target: {fileID: 6909901933605476786, guid: 878f91ecca7deb6439e2045e0c6d94ec, type: 3}
+      propertyPath: InScenePlacedSourceGlobalObjectIdHash
+      value: 2454158577
+      objectReference: {fileID: 0}
+    - target: {fileID: 7729856059902228166, guid: 878f91ecca7deb6439e2045e0c6d94ec, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7729856059902228166, guid: 878f91ecca7deb6439e2045e0c6d94ec, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7729856059902228166, guid: 878f91ecca7deb6439e2045e0c6d94ec, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7729856059902228166, guid: 878f91ecca7deb6439e2045e0c6d94ec, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7729856059902228166, guid: 878f91ecca7deb6439e2045e0c6d94ec, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7729856059902228166, guid: 878f91ecca7deb6439e2045e0c6d94ec, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7729856059902228166, guid: 878f91ecca7deb6439e2045e0c6d94ec, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7729856059902228166, guid: 878f91ecca7deb6439e2045e0c6d94ec, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7729856059902228166, guid: 878f91ecca7deb6439e2045e0c6d94ec, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7729856059902228166, guid: 878f91ecca7deb6439e2045e0c6d94ec, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 878f91ecca7deb6439e2045e0c6d94ec, type: 3}
 --- !u!1001 &8199681445599088032
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -76898,3 +76967,4 @@ SceneRoots:
   - {fileID: 943690611}
   - {fileID: 880218082}
   - {fileID: 1467329432}
+  - {fileID: 2123288886311879205}

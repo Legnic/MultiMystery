@@ -3,12 +3,19 @@ using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
-namespace LGH
+namespace KJH
 {
+    // LGH 플레이어 시스템을 쓰므로, 이름이 겹치는 전역 PlayerInventory(KJH 열쇠용) 대신 LGH 것을 명시한다.
+    // (using 별칭을 namespace 안에 두어야 전역 이름보다 우선한다.)
+    using CandleNetworkSync = LGH.CandleNetworkSync;
+    using PlayerInteractor = LGH.PlayerInteractor;
+    using PlayerInventory = LGH.PlayerInventory;
+
     // 씬의 모든 Dumbwaiter(도르래 승강기)를 호스트가 관리하게 하는 동기화 스크립트.
     // CandleNetworkSync/DoorNetworkSync와 같은 방식: 플레이어는 "요청"만 보내고, 호스트가 검사·결정한 뒤 모두에게 결과를 알린다.
     // 나중에 접속한 플레이어는 전체 상태(층/화물)를 받는다.
-    // 사용법: CandleNetworkSync가 붙어 있는(NetworkObject가 있는) 씬 오브젝트에 같이 붙인다.
+    // 사용법: 이 스크립트가 붙은 네트워크 프리팹 Assets/Prefabs/KJH/Dumbwaiter/DumbwaiterSync.prefab을 씬에 하나 둔다.
+    // (씬 관리가 꺼져 있어서 게스트는 씬에 직접 둔 NetworkObject를 지우므로, 반드시 DefaultNetworkPrefabs에 등록된 프리팹이어야 한다.)
     public class DumbwaiterNetworkSync : NetworkBehaviour
     {
         public static DumbwaiterNetworkSync Instance { get; private set; }
