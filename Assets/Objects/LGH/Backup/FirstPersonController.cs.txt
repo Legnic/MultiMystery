@@ -52,7 +52,8 @@ namespace LGH
             var mouse = Mouse.current;
             if (kb == null) return;
 
-            if (kb.escapeKey.wasPressedThisFrame)
+            // Esc that just closed the bag must not also open the pause menu
+            if (kb.escapeKey.wasPressedThisFrame && !PlayerInventory.EscapeConsumed)
             {
                 Cursor.lockState = CursorLockMode.None;
                 Cursor.visible = true;
@@ -74,13 +75,17 @@ namespace LGH
             if (kb.dKey.isPressed) h += 1f;
             if (kb.aKey.isPressed) h -= 1f;
 
+            // typing in a menu text box (nickname) must not walk the player around
+            bool typing = GUIUtility.keyboardControl != 0 && Cursor.lockState != CursorLockMode.Locked;
+            if (typing) { h = 0f; v = 0f; }
+
             Vector3 moveDir = (transform.right * h + transform.forward * v);
             if (moveDir.sqrMagnitude > 1f) moveDir.Normalize();
 
             if (controller.isGrounded)
             {
                 verticalVelocity = -0.5f;
-                if (kb.spaceKey.wasPressedThisFrame)
+                if (kb.spaceKey.wasPressedThisFrame && !typing)
                     verticalVelocity = Mathf.Sqrt(jumpHeight * -2f * gravity);
             }
             else

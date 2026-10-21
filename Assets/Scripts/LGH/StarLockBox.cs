@@ -1,0 +1,140 @@
+using TMPro;
+using UnityEngine;
+
+namespace LGH
+{
+    // Star chest on the study desk. Its lock looks like the telescope eyepiece: a round face cut into
+    // four quadrants (I-IV) by the same red cross, with a number in each quadrant.
+    // Press E on a quadrant to turn its number up (0-9), then press the button beside it.
+    // It opens when every number matches how many stars that quadrant shows in the library telescope.
+    // In a network game the host decides and everyone sees the same numbers / open lid (LockBoxNetworkSync).
+    public partial class StarLockBox : MonoBehaviour, IRoomResettable, IWorldInteractable
+    {
+        [Tooltip("The telescope whose star groups give the code. Found automatically if empty.")]
+        public Telescope telescope;
+        [Tooltip("On: the code is the number of stars in each telescope quadrant. Off: use 'code' below.")]
+        public bool codeFromTelescope = true;
+        public int[] code = { 3, 5, 7, 4 };
+        public TMP_Text[] digitTexts = new TMP_Text[4];
+        public Transform lid;
+        public float openAngle = 105f;
+        public Transform visual;
+        [Tooltip("Objects that only appear once the chest is open (put the reward inside the chest).")]
+        public GameObject[] revealOnOpen = new GameObject[0];
+
+        readonly int[] digits = new int[4];
+        public bool IsOpen { get; private set; }
+        public int Digit(int i) { return i >= 0 && i < 4 ? digits[i] : 0; }
+
+        float lidT, shakeUntil;
+        Vector3 visualHome;
+
+        public int[] Code
+        {
+            get
+            {
+                var c = new int[4];
+                if (telescope == null) telescope = FindAnyObjectByType<Telescope>();
+                for (int i = 0; i < 4; i++)
+                {
+                    if (codeFromTelescope && telescope != null && telescope.quadrants != null && i < telescope.quadrants.Length && telescope.quadrants[i] != null && telescope.quadrants[i].stars != null)
+                        c[i] = Mathf.Clamp(telescope.quadrants[i].stars.Length, 0, 9);
+                    else
+                        c[i] = code != null && i < code.Length ? Mathf.Clamp(code[i], 0, 9) : 0;
+                }
+                return c;
+            }
+        }
+
+        void Awake()
+        {
+            if (visual != null) visualHome = visual.localPosition;
+            Refresh();
+            SetReveal(false);
+        }
+
+        // ---- called by the player (StarLockPart): part 0-3 = quadrant I-IV, 4 = button ----
+        public void Press(int part)
+        {
+            var sync = LockBoxNetworkSync.Instance;
+            if (sync != null && sync.Online) { sync.RequestPress(this, part); return; }
+            ApplyFeedback(Apply(part));
+        }
+
+        // host / single player: change the state. Returns what happened (0 nothing, 1 wrong code, 2 opened, 3 number turned)
+        public int Apply(int part)
+        {
+            if (IsOpen) return 0;
+            if (part >= 0 && part < 4) { digits[part] = (digits[part] + 1) % 10; Refresh(); return 3; }
+            if (part != 4) return 0;
+            var c = Code;
+            for (int i = 0; i < 4; i++) if (digits[i] != c[i]) return 1;
+            IsOpen = true;
+            SetReveal(true);
+            return 2;
+        }
+
+        // everyone else: copy the host's state
+        public void SetState(int d0, int d1, int d2, int d3, bool open)
+        {
+            digits[0] = d0; digits[1] = d1; digits[2] = d2; digits[3] = d3;
+            if (open != IsOpen) { IsOpen = open; SetReveal(open); if (!open) lidT = 0f; }
+            Refresh();
+        }
+
+        public void ApplyFeedback(int fb)
+        {
+            if (fb == 1) { shakeUntil = Time.time + 0.35f; ShowNear("철컥... 열리지 않는다"); }
+            else if (fb == 2) ShowNear("딸깍! 별 상자가 열렸다");
+        }
+
+        void ShowNear(string msg)
+        {
+            var p = PlayerInteractor.Active;
+            if (p != null && Vector3.Distance(p.transform.position, transform.position) < 7f) p.ShowMessage(msg);
+        }
+
+        void Refresh()
+        {
+            for (int i = 0; i < 4 && i < digitTexts.Length; i++)
+                if (digitTexts[i] != null) digitTexts[i].text = digits[i].ToString();
+        }
+
+        void SetReveal(bool on)
+        {
+            var body = GetComponent<BoxCollider>();
+            if (body != null) body.enabled = !on;   // open chest: let the player reach what is inside
+            // the lock's touch spots stick out over the front edge and would catch the aim - switch them off too
+            foreach (var part in GetComponentsInChildren<StarLockPart>(true)) { var c = part.GetComponent<Collider>(); if (c != null) c.enabled = !on; }
+            if (revealOnOpen == null) return;
+            foreach (var g in revealOnOpen) if (g != null) g.SetActive(on);
+        }
+
+        void Update()
+        {
+            InspectUpdate();
+            float target = IsOpen ? 1f : 0f;
+            if (!Mathf.Approximately(lidT, target))
+            {
+                lidT = Mathf.MoveTowards(lidT, target, Time.deltaTime / 1.1f);
+                if (lid != null) lid.localRotation = Quaternion.Euler(openAngle * Mathf.SmoothStep(0f, 1f, lidT), 0f, 0f);
+            }
+            if (visual != null)
+            {
+                if (Time.time < shakeUntil) visual.localPosition = visualHome + new Vector3(Mathf.Sin(Time.time * 70f) * 0.006f, 0f, 0f);
+                else if (visual.localPosition != visualHome) visual.localPosition = visualHome;
+            }
+        }
+
+        public void ResetForNewRoom()
+        {
+            EndInspect();
+            for (int i = 0; i < 4; i++) digits[i] = 0;
+            IsOpen = false;
+            lidT = 0f;
+            if (lid != null) lid.localRotation = Quaternion.identity;
+            Refresh();
+            SetReveal(false);
+        }
+    }
+}
