@@ -67,6 +67,7 @@
     <Compile Include="Assets\Scripts\KJH\PotionCraft\ReadableStation.cs" />
     <Compile Include="Assets\Scripts\KJH\Clue\ParchmentRoller.cs" />
     <Compile Include="Assets\Scripts\KJH\Photo\InteractionController.cs" />
+    <Compile Include="Assets\Scripts\LGH\ItemDatabase.cs" />
     <Compile Include="Assets\Scripts\LGH\CandlePickup.cs" />
     <Compile Include="Assets\Scripts\KJH\Photo\PhotoAcquiredToast.cs" />
     <Compile Include="Assets\Scripts\LGH\PlayerInventory.cs" />
@@ -76,13 +77,18 @@
     <Compile Include="Assets\Scripts\KJH\Puzzle\PortraitPuzzleScene.cs" />
     <Compile Include="Assets\Scripts\KJH\Dumbwaiter\DumbwaiterWindow.cs" />
     <Compile Include="Assets\Scripts\KJH\Dumbwaiter\DumbwaiterNetworkSync.cs" />
+    <Compile Include="Assets\Scripts\KJH\Gim002\Runtime\Gim002KeyItem.cs" />
     <Compile Include="Assets\Scripts\LGH\IRoomResettable.cs" />
+    <Compile Include="Assets\Scripts\KJH\Gim002\Runtime\Gim002KeyData.cs" />
+    <Compile Include="Assets\Scripts\KJH\Gim002\Runtime\Gim002ScreenFlash.cs" />
+    <Compile Include="Assets\Scripts\KJH\Gim002\Runtime\Gim002StageCrank.cs" />
     <Compile Include="Assets\Scripts\LGH\HeldCandle.cs" />
     <Compile Include="Assets\Scripts\KJH\PotionCraft\FinalRecipeData.cs" />
     <Compile Include="Assets\Scripts\KJH\PotionCraft\MixerClearButton.cs" />
     <Compile Include="Assets\Scripts\KJH\Dumbwaiter\IWorldInteractable.cs" />
     <Compile Include="Assets\Scripts\LGH\PlayerInteractor.cs" />
     <Compile Include="Assets\Scripts\KJH\KeySafe\LockedSafe.cs" />
+    <Compile Include="Assets\Scripts\KJH\Gim002\Runtime\Gim002Curtain.cs" />
     <Compile Include="Assets\Scripts\KJH\ObjectEcho\ObjectEchoTarget.cs" />
     <Compile Include="Assets\Scripts\LGH\UiScale.cs" />
     <Compile Include="Assets\Scripts\KJH\Photo\PlayerMovement.cs" />
@@ -95,10 +101,12 @@
     <Compile Include="Assets\Scripts\KJH\KeySafe\InteractionMessageUI.cs" />
     <Compile Include="Assets\Scripts\KJH\PotionCraft\PotionRecipeTable.cs" />
     <Compile Include="Assets\Scripts\LGH\MultiplayerMenu.cs" />
+    <Compile Include="Assets\Scripts\KJH\Common\Hold\IHoldableSocket.cs" />
     <Compile Include="Assets\Scripts\KJH\SoundCue\SpectrumResponseProfile.cs" />
     <Compile Include="Assets\Scripts\KJH\Clue\IModalInteraction.cs" />
     <Compile Include="Assets\Scripts\KJH\PotionCraft\TrashStation.cs" />
     <Compile Include="Assets\Scripts\KSM\UI\TitleMenuUI.cs" />
+    <Compile Include="Assets\Scripts\KJH\Gim002\Runtime\Gim002Controller.cs" />
     <Compile Include="Assets\Scripts\KJH\Clue\ClueJournal.cs" />
     <Compile Include="Assets\Scripts\KWJ\UI\MainMenuButtonHover.cs" />
     <Compile Include="Assets\Scripts\KJH\ObjectEcho\IHandReach.cs" />
@@ -109,35 +117,50 @@
     <Compile Include="Assets\Scripts\LGH\DoorNetworkSync.cs" />
     <Compile Include="Assets\Scripts\LGH\CandleSconce.cs" />
     <Compile Include="Assets\Scripts\KJH\Photo\IPhotoSubject.cs" />
+    <Compile Include="Assets\Scripts\KJH\Gim002\Runtime\Gim002StageItem.cs" />
+    <Compile Include="Assets\Scripts\KJH\Gim002\Runtime\Gim002StageLight.cs" />
     <Compile Include="Assets\Scripts\KSM\Player\ToyActionAnimator.cs" />
     <Compile Include="Assets\Scripts\KJH\KeySafe\SafeClue.cs" />
     <Compile Include="Assets\Scripts\KJH\Photo\FlashEffect.cs" />
     <Compile Include="Assets\Scripts\KSM\Voice\VoiceChatHud.cs" />
     <Compile Include="Assets\Scripts\KSM\Player\ToyFigureSlotAvatar.cs" />
+    <Compile Include="Assets\Scripts\LGH\ItemNetworkSync.cs" />
     <Compile Include="Assets\Scripts\LGH\RoomResetter.cs" />
     <Compile Include="Assets\Scripts\LGH\FirstPersonController.cs" />
+    <Compile Include="Assets\Scripts\KJH\Gim002\Runtime\Gim002IndicatorLamp.cs" />
+    <Compile Include="Assets\Scripts\KJH\Gim002\Runtime\Gim002PianoKey.cs" />
     <Compile Include="Assets\Scripts\KJH\Photo\PhotoCaptureSystem.cs" />
     <Compile Include="Assets\Scripts\KJH\PotionCraft\PotionCraftSync.cs" />
+    <Compile Include="Assets\Scripts\KJH\Common\Hold\HoldableHomeSpot.cs" />
     <Compile Include="Assets\Scripts\KJH\Photo\IInteractable.cs" />
+    <Compile Include="Assets\Scripts\KJH\Common\Hold\HoldableItem.cs" />
+    <Compile Include="Assets\Scripts\KJH\Gim002\Runtime\Gim002Tones.cs" />
     <Compile Include="Assets\Scripts\LGH\PlayerAvatar.cs" />
     <Compile Include="Assets\Scripts\KJH\PotionCraft\PotionVisuals.cs" />
     <Compile Include="Assets\TutorialInfo\Readme.cs" />
     <Compile Include="Assets\Scripts\KJH\Photo\FootstepSound.cs" />
     <Compile Include="Assets\Scripts\KJH\Clue\ViewableClue.cs" />
+    <Compile Include="Assets\Scripts\KJH\Gim002\Runtime\Gim002Scoreboard.cs" />
     <Compile Include="Assets\Scripts\KJH\PotionCraft\RecipeBookData.cs" />
     <Compile Include="Assets\Scripts\KJH\ObjectEcho\IPlayerLock.cs" />
     <Compile Include="Assets\Scripts\KJH\SoundCue\SpectrumOverlay.cs" />
+    <Compile Include="Assets\Scripts\LGH\ItemData.cs" />
     <Compile Include="Assets\Scripts\KJH\Photo\PhotoSpot.cs" />
     <Compile Include="Assets\Scripts\KJH\Clue\ClueHighlighter.cs" />
+    <Compile Include="Assets\Scripts\KJH\Gim002\Runtime\Gim002PlayBook.cs" />
+    <Compile Include="Assets\Scripts\KJH\Gim002\Runtime\IGim002Net.cs" />
+    <Compile Include="Assets\Scripts\KJH\Gim002\Runtime\Gim002NetSync.cs" />
     <Compile Include="Assets\Scripts\KJH\PotionCraft\GrinderStation.cs" />
     <Compile Include="Assets\Scripts\KJH\KeySafe\ISafeOpenSequence.cs" />
     <Compile Include="Assets\Scripts\KJH\ObjectEcho\PlaceholderHandReach.cs" />
     <Compile Include="Assets\Scripts\KSM\UI\MultiplayerMenuUI.cs" />
     <Compile Include="Assets\Scripts\KJH\Puzzle\PortraitPuzzle.cs" />
+    <Compile Include="Assets\Scripts\KJH\Gim002\Runtime\Gim002Puppet.cs" />
     <Compile Include="Assets\Scripts\KJH\PotionCraft\SupplyStation.cs" />
     <Compile Include="Assets\Scripts\KJH\GameTime\TimeUnlock.cs" />
     <Compile Include="Assets\Scripts\KJH\Photo\CameraModeController.cs" />
     <Compile Include="Assets\Scripts\KJH\PotionCraft\PotionStation.cs" />
+    <Compile Include="Assets\Scripts\KJH\Gim002\Runtime\Gim002FeedbackSpeaker.cs" />
     <Compile Include="Assets\Scripts\KJH\Common\PlayerAbilities.cs" />
     <Compile Include="Assets\Scripts\KJH\Photo\PhotoItemData.cs" />
     <Compile Include="Assets\Scripts\KSM\Voice\VoiceChatManager.cs" />
@@ -145,21 +168,26 @@
     <Compile Include="Assets\Scripts\KJH\Clue\InspectableClue.cs" />
     <Compile Include="Assets\Scripts\KJH\Photo\PhotoInventory.cs" />
     <Compile Include="Assets\Scripts\KJH\Common\PlayerAbility.cs" />
+    <Compile Include="Assets\Scripts\KJH\Gim002\Runtime\LocalGim002Net.cs" />
     <Compile Include="Assets\Scripts\KJH\Common\IInteractionCondition.cs" />
     <Compile Include="Assets\Scripts\KJH\SoundCue\SoundCue.cs" />
+    <Compile Include="Assets\Scripts\KJH\Common\Hold\PlayerHand.cs" />
     <Compile Include="Assets\Scripts\KJH\ObjectEcho\ObjectEchoController.cs" />
     <Compile Include="Assets\Scripts\KJH\Clue\ClueViewerUI.cs" />
     <Compile Include="Assets\Scripts\KJH\SoundCue\InkWaveformGraphic.cs" />
+    <Compile Include="Assets\Scripts\LGH\WorldItem.cs" />
     <Compile Include="Assets\Scripts\KJH\Dumbwaiter\DumbwaiterButton.cs" />
     <Compile Include="Assets\Scripts\KJH\GameTime\GameClock.cs" />
     <Compile Include="Assets\Scripts\KSM\Player\ProceduralToyAnimator.cs" />
     <Compile Include="Assets\Scripts\KJH\Puzzle\KeyBoxLid.cs" />
     <Compile Include="Assets\Scripts\KJH\GameTime\TimePhase.cs" />
+    <Compile Include="Assets\Scripts\KJH\Gim002\Runtime\Gim002KeyTarget.cs" />
     <Compile Include="Assets\Scripts\LGH\CandleNetworkSync.cs" />
     <Compile Include="Assets\Scripts\LGH\NetworkPlayer.cs" />
     <Compile Include="Assets\Scripts\KJH\KeySafe\KeyData.cs" />
     <Compile Include="Assets\Scripts\KJH\Dumbwaiter\Dumbwaiter.cs" />
     <Compile Include="Assets\Scripts\KJH\Map\PlayerSpawnPoint.cs" />
+    <Compile Include="Assets\Scripts\KJH\Gim002\Runtime\Gim002StageSlot.cs" />
     <Compile Include="Assets\Scripts\LGH\DayNightCycle.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -179,6 +207,7 @@
     <None Include="Assets\AssetPacks\Pine Forest_LowPoly\Shaders\Mobile_Vtx_Cutout.shader" />
     <None Include="Assets\AssetPacks\Pine Forest_LowPoly\Shaders\Mobile_Vtx_Cutout_Wind.shader" />
     <None Include="Assets\TextMesh Pro\Shaders\SDFFunctions.hlsl" />
+    <None Include="Assets\Objects\LGH\Backup\FirstPersonController.cs.txt" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Surface.shader" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_Bitmap-Custom-Atlas.shader" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF.shader" />
@@ -189,8 +218,10 @@
     <None Include="Assets\TextMesh Pro\Shaders\TMPro_Surface.cginc" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile SpaceWarp.shader" />
     <None Include="Assets\TextMesh Pro\Resources\LineBreaking Following Characters.txt" />
+    <None Include="Assets\Objects\LGH\Backup\PlayerInventory.cs.txt" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF SSD SpaceWarp.shader" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile Masking.shader" />
+    <None Include="Assets\Objects\LGH\Backup\MultiplayerMenu.cs.txt" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF Overlay.shader" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_Bitmap-Mobile.shader" />
     <None Include="Assets\TextMesh Pro\Fonts\LiberationSans - OFL.txt" />
@@ -1874,6 +1905,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="Gim002.Core.csproj" />
   </ItemGroup>
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
   <ItemGroup>
