@@ -127,6 +127,27 @@ git에 커밋되어 팀원 전원이 같은 내용을 공유합니다. 개인적
 - 씬 배치는 `Tools/KJH/GIM-002/Build All`(재실행 가능, GIM002 루트를 지우고 다시 만듦, 데이터 에셋은 없을 때만 생성 → 튜닝 값 보존). 기존 오브젝트에도 컴포넌트를 붙인다: 음악실 문 2개(`Gim002KeyTarget`, 열쇠 쓰기 전 잠김), `Key_Behind_E3`/`Key_Behind_2F`(`Gim002KeyItem` + BoxCollider).
 - 검증 한계: Play 모드에서 `StartHost()` 로컬 호스트로 GIM-001 해결 → 열쇠 2개 → 장면 1~3 → Complete까지 통과(오답·재접속 리셋 포함, 콘솔 에러 0). 단 `simulate_key`/`QueueStateEvent` 키 입력이 Game 뷰 포커스 문제로 들어가지 않아 **손잡이 2초 누르기와 놀이책 F/←/→ 입력은 직접 플레이로 확인 필요**, 두 클라이언트 동시 테스트도 미실행.
 
+## 네트워크 동기화 정책 — "전면 재구축" 대신 "규칙 + 검사" (2026-10-21)
+팀원들과 실제 멀티플레이 플레이테스트를 하면서 같은 유형의 버그가 반복 발견됐다: `DumbwaiterSync_KJH`, `PortraitPuzzleSync_KJH`, `DoorSync_LGH`(+빠진 `CandleNetworkSync`) 전부 **코드 로직 자체는 멀쩡했는데, Develop 씬에 프리팹이 아닌 맨몸 오브젝트로 배치**돼 있었다. `NetworkManager`의 `EnableSceneManagement=False`라서, 게스트가 접속하면 씬에 맨몸으로 둔 `NetworkObject`(또는 `DefaultNetworkPrefabs`에 등록 안 된 프리팹)를 전부 지우고 호스트가 보낸 정보로 "등록된 프리팹"만 다시 만들기 때문이다. 호스트 혼자 테스트하면 멀쩡해 보여서 게스트 접속 전까지 못 알아챈다.
+
+이걸 계기로 "Develop에서 네트워크 동기화 전체를 처음부터 새로 구축할지" 논의했고, **하지 않기로 결정**했다. 이유:
+- 각 기믹의 동기화 로직(`DumbwaiterNetworkSync`, `PortraitPuzzle`, `DoorNetworkSync`, `PotionCraftSync`, `Gim002NetSync` 등, 전부 KJH/LGH 개인 폴더 소속)은 이미 잘 설계돼 있다 — 문제는 로직이 아니라 Develop에 배치하는 절차였다.
+- 전면 재구축은 각 담당자(KJH·LGH)의 개인 폴더 파일을 직접 고치게 될 가능성이 커서, 팀 작업 공간 분리 원칙("Assets 폴더 구조" 섹션)에 어긋난다.
+- 로직을 텍스트로 복사해 Develop 전용 통합 스크립트로 재조립하는 방식도 기각했다 — 원본과 복사본 두 군데에 같은 로직이 생겨서, 담당자가 원본을 고쳐도 Develop 복사본엔 반영이 안 되는(이번에 반복된 바로 그) 포팅 누락 버그를 구조적으로 고정시키기 때문이다.
+
+**대신 택한 방식 — 규칙 + 기존 자동 검사 도구 활용**:
+1. 동기화 스크립트는 앞으로도 KJH·LGH님이 각자 씬에서 작성·테스트한다. Develop은 그 **프리팹 에셋을 그대로 인스턴스화**해서 가져다 쓴다(텍스트 복사 금지 — 반드시 같은 프리팹 원본을 참조).
+2. 규칙: **씬에 두는 모든 `NetworkObject`는 프리팹이어야 하고, `Assets/DefaultNetworkPrefabs.asset`에 등록돼 있어야 한다.**
+3. 이 규칙은 이미 `Assets/Scripts/KJH/Common/Editor/NetworkSceneObjectValidator.cs`가 자동으로 검사한다 — Play 모드 진입 직전, 빌드 직전, 메뉴 `Tools/Network/Validate Scene NetworkObjects` 세 시점에 돌며 위반 시 콘솔에 `[NetworkSceneValidator]` Error로 찍는다(Play/빌드를 막지는 않음 — 그래서 지금까지 놓쳤다).
+4. **새 체크리스트 — 누군가의 브랜치를 Develop에 merge할 때마다**: merge 직후 Unity 에디터에서 Develop 씬을 열고 한 번 Play 모드에 진입(또는 `Tools/Network/Validate Scene NetworkObjects` 메뉴 실행)해서 콘솔에 `[NetworkSceneValidator]` 에러가 0개인지 확인한 뒤에 merge 완료로 친다. 에러가 있으면 그 오브젝트를 원본 프리팹 인스턴스로 교체하고 `DefaultNetworkPrefabs`에 등록.
+
+## 팀 플레이테스트 발견 버그 수정 (2026-10-21, 두 번째 라운드)
+실제 호스트+게스트 플레이테스트에서 "한 사람이 문을 열고 닫아도 다른 사람 화면에는 변화가 없다"는 버그를 보고받음. 원인은 이미 같은 날 앞서 고친 것과 동일한 패턴(`DoorSync_LGH`가 프리팹이 아닌 씬 오브젝트였고 `CandleNetworkSync`가 통째로 빠져 있었음, 위 "네트워크 동기화 정책" 섹션 참고)일 가능성이 높음 — 이 세션 환경은 에디터 1개로는 호스트+게스트 동시 테스트가 불가능해서(빌드 1개 + 에디터 Play 1개 필요) 100% 확답은 못 함. **다음 실제 2인 플레이테스트에서 문 동기화를 다시 확인해줄 것.**
+
+같은 보고를 계기로 "이것과 비슷하게 동기화 안 되는 게 더 있을 것"이라는 우려에 따라 두 가지를 점검·조치함:
+- **`DayNightCycle`(낮밤 주기, `Assets/Scripts/LGH/DayNightCycle.cs`) — 실제로 동기화 안 되고 있었음, 수정 완료**: 기존엔 순수 `MonoBehaviour`라 각 클라이언트가 자기 타이머를 따로 돌렸음(호스트·게스트가 서로 다른 시각을 보게 됨). `NetworkBehaviour`로 바꾸고 `NetworkVariable<float> syncedT01`(host-write, everyone-read)을 추가 — 호스트(또는 네트워크 꺼진 싱글)만 `t01`을 실제로 흘려보내 `syncedT01`에 써주고, 게스트는 받은 값을 그대로 반영만 함(`DrivesTime = !IsSpawned || IsServer`). 기존 다른 동기화 매니저와 같은 패턴으로 프리팹화: `Assets/Objects/LGH/DayNightSync_LGH.prefab` 생성(`DefaultNetworkPrefabs`엔 Unity Netcode가 자동 등록), 씬의 기존 `DayNightCycle_LGH` 오브젝트를 그 프리팹에 연결(`SaveAsPrefabAssetAndConnect`)하고 중복으로 남아있던 비활성 `DayNightCycle` 오브젝트는 삭제. Play 모드에서 호스트로 직접 검증: `freezeTime`을 잠깐 풀어서 `t01`이 흐르는 동안 `syncedT01.Value`가 정확히 같이 움직이는 것 확인, 다시 `freezeTime=true`로 복원. `NetworkSceneObjectValidator` 0건, 콘솔 에러 0건.
+- **서랍(`InteractableDrawer`) — 점검해보니 이미 정상 동작 중, 수정 불필요(이전 보고 정정)**: 직전 턴에서 "상호작용 트리거가 없다"고 보고했던 건 제 점검 실수였음 — `Drawer0` 오브젝트 자체의 컴포넌트만 보고 판단해서 놓쳤는데, 실제로는 `PlayerInteractor.cs`가 레이캐스트에서 `InteractableDrawer`를 타입째로 찾아 `CandleNetworkSync.RequestDrawer()`로 넘기고, `CandleNetworkSync`가 `Awake()`에서 씬의 모든 `InteractableDrawer`(이 나이트스탠드 서랍 2개 포함)를 자동으로 찾아 인덱스를 매겨 완전히 동기화(RPC + 늦은 접속자 전체 상태 수신)하고 있었음. Play 모드에서 `CandleNetworkSync.Instance.RequestDrawer(drawer)`를 직접 호출해 실제로 열리고 닫히는 것까지 확인함.
+
 ## 사용 가능한 Unity 전용 스킬
 이 환경에는 `unity:` 접두사의 스킬들(unity-cli, ui, urp-postprocessing, physics-3d-collision 등)이 이미 연결되어 있습니다. 관련 작업을 할 때는 먼저 해당 스킬을 확인하세요.
 

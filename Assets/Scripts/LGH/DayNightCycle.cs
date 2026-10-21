@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using Unity.Netcode;
+using UnityEngine;
 
 namespace LGH
 {
@@ -6,8 +7,10 @@ namespace LGH
     // The window wall (+Z) is treated as the 'south' face, so the sun arcs from East(+X) through
     // South(+Z, noon, strongest beam through the window) to West(-X) during the day half of the cycle,
     // and dips below the horizon (elevation goes negative) during the night half.
-    // Play-mode-only helper script for visual testing.
-    public class DayNightCycle : MonoBehaviour
+    //
+    // 2인 협동 동기화: 호스트(또는 오프라인 싱글)만 t01을 실제로 흘려보내고 NetworkVariable로 방송한다.
+    // 게스트는 받은 값을 그대로 자기 t01에 반영하기만 한다 — 그래야 두 화면의 조명/시간이 어긋나지 않는다.
+    public class DayNightCycle : NetworkBehaviour
     {
         [Header("Targets")]
         public Light sunLight;
@@ -26,6 +29,12 @@ namespace LGH
 
         [HideInInspector] public float t01;
 
+        readonly NetworkVariable<float> syncedT01 = new NetworkVariable<float>(
+            0f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+
+        // 오프라인(싱글/네트워크 꺼짐)이거나 호스트일 때만 이 컴퓨터가 시간을 직접 흘려보낸다. 게스트는 받기만 한다.
+        bool DrivesTime { get { return !IsSpawned || IsServer; } }
+
         Gradient sunColor;
         AnimationCurve sunIntensity;
         Gradient ambientColor;
@@ -40,6 +49,12 @@ namespace LGH
                 if (go != null) sunLight = go.GetComponent<Light>();
             }
             BuildGradients();
+        }
+
+        public override void OnNetworkSpawn()
+        {
+            if (IsServer) syncedT01.Value = t01;
+            else t01 = syncedT01.Value;
         }
 
         void BuildGradients()
@@ -95,10 +110,18 @@ namespace LGH
         void Update()
         {
             if (dayLengthSeconds <= 0f) return;
-            if (!freezeTime)
+            if (DrivesTime)
             {
-                t01 += Time.deltaTime / dayLengthSeconds;
-                if (t01 > 1f) t01 -= 1f;
+                if (!freezeTime)
+                {
+                    t01 += Time.deltaTime / dayLengthSeconds;
+                    if (t01 > 1f) t01 -= 1f;
+                }
+                if (IsSpawned && IsServer) syncedT01.Value = t01;
+            }
+            else
+            {
+                t01 = syncedT01.Value;
             }
 
             // Azimuth sweeps East(90) -> South(0, noon) -> West(-90) -> ... ; elevation follows one sine cycle (up in day, below horizon at night).
