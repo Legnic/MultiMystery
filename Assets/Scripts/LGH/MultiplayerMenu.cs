@@ -5,6 +5,8 @@ using Unity.Services.Authentication;
 using Unity.Services.Core;
 using Unity.Services.Multiplayer;
 using UnityEngine;
+using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.LowLevel;
 
 namespace LGH
 {
@@ -21,6 +23,17 @@ namespace LGH
         ISession session;
         string joinCode = "";
         string roomName = "";
+        string nickname = "";
+        // the name this player uses in the room (saved on this PC, shown above the head to the other player)
+        public static string Nickname { get; private set; } = "";
+        // IMGUI's TextField can't compose Korean, so the name boxes read typed text from the Input System instead.
+        // 0 = no box focused, 1 = nickname, 2 = room name
+        int imeFocus;
+        string imeComposing = "";
+        int imeCompFrame = -10;
+        bool imeOn;
+        // true while the player is typing in one of these boxes (game keys must ignore the keyboard then)
+        public static bool Typing { get; private set; }
         string status = "온라인 서비스에 연결 중...";
         bool ready, busy, paused, querying;
         float nextRefresh;
@@ -34,10 +47,15 @@ namespace LGH
         async void Start()
         {
             ShowCursor(true);
+            var kbd = Keyboard.current;
+            if (kbd != null) { kbd.onTextInput += OnTextInput; kbd.onIMECompositionChange += OnImeComposition; }
             // keep the game (and the host's network loop) running when its window is not focused,
             // otherwise a second window on the same PC freezes and the join times out
             Application.runInBackground = true;
             roomName = "저택 " + UnityEngine.Random.Range(100, 1000);
+            nickname = PlayerPrefs.GetString("LGH_Nickname", "");
+            if (string.IsNullOrWhiteSpace(nickname)) nickname = "탐정 " + UnityEngine.Random.Range(100, 1000);
+            Nickname = nickname.Trim();
             try
             {
                 var options = new InitializationOptions();
@@ -63,6 +81,9 @@ namespace LGH
 
         void OnDestroy()
         {
+            var kbd = Keyboard.current;
+            if (kbd != null) { kbd.onTextInput -= OnTextInput; kbd.onIMECompositionChange -= OnImeComposition; }
+            Typing = false;
             if (NetworkManager.Singleton != null)
                 NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientDisconnect;
         }
@@ -81,6 +102,7 @@ namespace LGH
                 menuCamera.gameObject.SetActive(!InGame);
             // FirstPersonController unlocks the cursor on Esc; treat that as the pause menu
             paused = InGame && Cursor.lockState != CursorLockMode.Locked && !PlayerInventory.UiOpen;
+            UpdateIme();
 
             if (InLobbyMenu && !busy && Time.unscaledTime >= nextRefresh) RefreshRooms();
         }
@@ -206,6 +228,101 @@ namespace LGH
             }
         }
 
+        void SetNickname(string value)
+        {
+            nickname = value;
+            Nickname = string.IsNullOrWhiteSpace(value) ? "플레이어" : value.Trim();
+            PlayerPrefs.SetString("LGH_Nickname", nickname);
+            if (NetworkPlayer.Local != null) NetworkPlayer.Local.SetNickname(Nickname);
+        }
+
+        // e.g. "나: 홍길동   ·   상대: 김철수"
+        static string PlayerNames()
+        {
+            string me = null, other = null;
+            foreach (var p in NetworkPlayer.All)
+            {
+                if (p == null || !p.IsSpawned) continue;
+                if (p.IsOwner) me = p.Nickname; else other = other == null ? p.Nickname : other + ", " + p.Nickname;
+            }
+            string s = me != null ? "나: " + me : "";
+            if (other != null) s += (s.Length > 0 ? "   ·   " : "") + "상대: " + other;
+            return s;
+        }
+
+        void UpdateIme()
+        {
+            if (imeFocus != 0 && InGame && !paused) imeFocus = 0;   // back in the game: stop typing
+            Typing = imeFocus != 0;
+            var kbd = Keyboard.current;
+            if (kbd != null)
+            {
+                if (imeOn != Typing) { kbd.SetIMEEnabled(Typing); imeOn = Typing; }
+                if (Typing && imeComposing.Length == 0 && Time.frameCount - imeCompFrame > 1)
+                {
+                    if (kbd.backspaceKey.wasPressedThisFrame) EditIme(-1, ' ');
+                    if (kbd.enterKey.wasPressedThisFrame || kbd.numpadEnterKey.wasPressedThisFrame || kbd.escapeKey.wasPressedThisFrame) imeFocus = 0;
+                }
+            }
+            Input.imeCompositionMode = Typing ? IMECompositionMode.On : IMECompositionMode.Auto;
+        }
+
+        void OnTextInput(char c)
+        {
+            if (imeFocus == 0 || char.IsControl(c)) return;
+            imeComposing = "";
+            EditIme(1, c);
+        }
+
+        void OnImeComposition(IMECompositionString s)
+        {
+            imeComposing = s.ToString();
+            imeCompFrame = Time.frameCount;
+        }
+
+        // dir 1: add c at the end, -1: delete the last letter
+        void EditIme(int dir, char c)
+        {
+            string cur = imeFocus == 1 ? nickname : roomName;
+            int max = imeFocus == 1 ? 12 : 20;
+            if (dir < 0) { if (cur.Length > 0) cur = cur.Substring(0, cur.Length - 1); }
+            else if (cur.Length < max) cur += c;
+            if (imeFocus == 1) SetNickname(cur); else if (imeFocus == 2) roomName = cur;
+        }
+
+        // text box that works with the Korean IME: click it to type, Enter (or a click elsewhere) to finish
+        void ImeField(int id, string value, params GUILayoutOption[] opts)
+        {
+            Rect r = GUILayoutUtility.GetRect(new GUIContent(value), field, opts);
+            var e = Event.current;
+            if (e.type == EventType.MouseDown && GUI.enabled)
+            {
+                if (r.Contains(e.mousePosition)) { imeFocus = id; imeComposing = ""; GUIUtility.keyboardControl = 0; e.Use(); }
+                else if (imeFocus == id) imeFocus = 0;
+            }
+            if (e.type != EventType.Repaint) return;
+            bool focused = imeFocus == id;
+            string shown = value + (focused ? imeComposing : "");
+            if (focused && ((int)(Time.unscaledTime * 2f)) % 2 == 0) shown += "|";
+            field.Draw(r, new GUIContent(shown), r.Contains(e.mousePosition), false, false, focused);
+            if (focused)
+            {
+                // put the IME candidate window under the box
+                Vector2 p = GUIUtility.GUIToScreenPoint(new Vector2(r.center.x, r.yMax));
+                Input.compositionCursorPos = p;
+                var kbd = Keyboard.current;
+                if (kbd != null) kbd.SetIMECursorPosition(new Vector2(p.x, Screen.height - p.y));
+            }
+        }
+
+        void NicknameRow()
+        {
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("닉네임", small, GUILayout.Width(70), GUILayout.Height(38));
+            ImeField(1, nickname, GUILayout.Height(38));
+            GUILayout.EndHorizontal();
+        }
+
         static void ShowCursor(bool show)
         {
             Cursor.lockState = show ? CursorLockMode.None : CursorLockMode.Locked;
@@ -243,13 +360,15 @@ namespace LGH
                 if (session != null)
                 {
                     string info = session.Name + "   참가 코드 " + session.Code + "   " + session.PlayerCount + "/" + session.MaxPlayers + "명";
+                    string names = PlayerNames();
+                    if (names.Length > 0) info += "      " + names;
                     GUI.Label(new Rect(14, 8, w - 28, 28), info, small);
                     if (session.IsHost && session.PlayerCount < 2) GUI.Label(new Rect(14, 34, w - 28, 28), "상대를 기다리는 중... 상대는 방 목록에서 이 방을 누르면 들어와요", small);
                 }
                 return;
             }
 
-            float pw = 520f, ph = gInGame ? 220f : Mathf.Min(620f, h - 40f);
+            float pw = 520f, ph = gInGame ? 280f : Mathf.Min(680f, h - 40f);
             var r = new Rect((w - pw) / 2f, (h - ph) / 2f, pw, ph);
             GUI.Box(r, GUIContent.none, box);
             GUILayout.BeginArea(new Rect(r.x + 24, r.y + 16, pw - 48, ph - 32));
@@ -258,8 +377,10 @@ namespace LGH
             {
                 GUILayout.Label("일시정지", title, GUILayout.Height(48));
                 if (gHasSession) GUILayout.Label(session != null ? session.Name + "  (참가 코드: " + session.Code + ")" : "", label);
-                GUILayout.Space(12);
-                if (GUILayout.Button("계속하기", button, GUILayout.Height(42))) ShowCursor(false);
+                GUILayout.Space(8);
+                NicknameRow();
+                GUILayout.Space(8);
+                if (GUILayout.Button("계속하기", button, GUILayout.Height(42))) { GUIUtility.keyboardControl = 0; imeFocus = 0; ShowCursor(false); }
                 GUILayout.Space(6);
                 GUI.enabled = !busy;
                 if (GUILayout.Button("방 나가기", button, GUILayout.Height(42))) LeaveRoom();
@@ -271,12 +392,15 @@ namespace LGH
                 GUILayout.Label("2인 협동 방탈출", label);
                 GUILayout.Space(10);
 
+                NicknameRow();
+                GUILayout.Space(8);
+
                 bool canAct = ready && !busy && session == null;
                 GUI.enabled = canAct;
 
                 // create
                 GUILayout.BeginHorizontal();
-                roomName = GUILayout.TextField(roomName, 20, field, GUILayout.Height(42), GUILayout.Width(250));
+                ImeField(2, roomName, GUILayout.Height(42), GUILayout.Width(250));
                 if (GUILayout.Button("방 만들기", button, GUILayout.Height(42))) CreateRoom();
                 GUILayout.EndHorizontal();
 
