@@ -55,9 +55,9 @@ namespace LGH
         public bool IsOpen { get { return open || reading != null; } }
 
         // true while the local bag (or something read from it) is on screen - the mouse belongs to the UI then
-        public static bool UiOpen { get { return Local != null && Local.IsOpen; } }
+        public static bool UiOpen { get { return (Local != null && Local.IsOpen) || StarLockBox.Inspecting != null || Telescope.Viewing || PaperNote.Current != null; } }
         // Esc pressed this frame was used by the bag (to close it), so it must not open the pause menu
-        public static bool EscapeConsumed { get { return Local != null && (Local.IsOpen || Local.escFrame == Time.frameCount); } }
+        public static bool EscapeConsumed { get { return (Local != null && (Local.IsOpen || Local.escFrame == Time.frameCount)) || StarLockBox.BlocksPause || PaperNote.BlocksPause; } }
 
         public int StackCount { get { return IsSpawned ? items.Count : offlineItems.Count; } }
         public ItemStack StackAt(int i) { return IsSpawned ? items[i] : offlineItems[i]; }
@@ -530,6 +530,11 @@ namespace LGH
             Fill(r, new Color(0.86f, 0.80f, 0.66f, 0.98f));
             Frame(r, new Color(0.45f, 0.33f, 0.18f, 1f), 3f);
             Frame(new Rect(r.x + 8f, r.y + 8f, r.width - 16f, r.height - 16f), new Color(0.55f, 0.42f, 0.25f, 0.6f), 1f);
+            // keep the ink dark in every state (the skin's hover/focus colours are white)
+            GUI.color = Color.white; GUI.contentColor = Color.white;
+            var ink = readStyle.normal.textColor;
+            readStyle.hover.textColor = readStyle.active.textColor = readStyle.focused.textColor = ink;
+            readStyle.onNormal.textColor = readStyle.onHover.textColor = readStyle.onActive.textColor = readStyle.onFocused.textColor = ink;
             var head = new GUIStyle(readStyle) { fontSize = 22, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter };
             GUI.Label(new Rect(r.x + 30f, r.y + 20f, r.width - 60f, 34f), reading.NameOrFallback, head);
             GUI.Label(new Rect(r.x + 40f, r.y + 70f, r.width - 80f, r.height - 120f), reading.readText, readStyle);

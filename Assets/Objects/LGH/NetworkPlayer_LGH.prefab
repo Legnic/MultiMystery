@@ -2350,6 +2350,7 @@ GameObject:
   - component: {fileID: 5591910756627020187}
   - component: {fileID: 7066552292861132684}
   - component: {fileID: 1676321528733711584}
+  - component: {fileID: 2702854418952537749}
   m_Layer: 0
   m_Name: NetworkPlayer_LGH
   m_TagString: Untagged
@@ -2547,6 +2548,7 @@ MonoBehaviour:
   - {x: 43, y: 0.05, z: 14.6}
   - {x: 45, y: 0.05, z: 14.6}
   spawnYaw: 180
+  nameDistance: 14
 --- !u!114 &7066552292861132684
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2658,6 +2660,27 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &2702854418952537749
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8036117278228202970}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9c775d55312fb241a64c9295f46a924, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LGH.PistolLoader
+  ShowTopMostFoldoutHeaderGroup: 1
+  pistol: {fileID: 11400000, guid: 05e893f3f6ac5b94d9ab1cb6c47b55d1, type: 2}
+  viewModel: {fileID: 919132149155446097, guid: 30f96c80f02c47c49bcbc550384009d6, type: 3}
+  viewModelMaterial: {fileID: 2100000, guid: bbd04de35a30ad74db39d1338f43972c, type: 2}
+  loadSeconds: 90
+  hearDistance: 14
+  volume: 0.9
+  moveWhileLoading: 0.35
+  range: 60
 --- !u!1 &8037936713396548850
 GameObject:
   m_ObjectHideFlags: 0

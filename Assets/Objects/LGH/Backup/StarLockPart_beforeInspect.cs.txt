@@ -1,0 +1,27 @@
+using UnityEngine;
+
+namespace LGH
+{
+    // One touchable spot on the star chest: a quadrant number (index 0-3 = I-IV) or the open button (index 4).
+    public class StarLockPart : MonoBehaviour, IWorldInteractable
+    {
+        public StarLockBox box;
+        [Tooltip("0-3 = quadrant I, II, III, IV   4 = the button")]
+        public int index;
+
+        static readonly string[] Names = { "I", "II", "III", "IV" };
+
+        public bool CanInteract { get { return box != null && !box.IsOpen; } }
+
+        public string InteractPrompt
+        {
+            get
+            {
+                if (box == null) return null;
+                return index < 4 ? "[E] " + Names[index] + " 칸 숫자 올리기  (지금 " + box.Digit(index) + ")" : "[E] 잠금 버튼 누르기";
+            }
+        }
+
+        public void Interact(GameObject interactor) { if (box != null) box.Press(index); }
+    }
+}

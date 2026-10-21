@@ -29,7 +29,7 @@ namespace LGH
         HeldCandle held;
         string message;
         float messageUntil;
-        GUIStyle style;
+        GUIStyle style, wrapStyle;
 
         void Awake()
         {
@@ -68,7 +68,7 @@ namespace LGH
             focusedWorld = null;
             if (viewCamera == null) return;
             if (PortraitTilt.Current != null) return; // 액자를 살펴보는 동안은 그쪽이 입력(Q/E/F)을 가져간다
-            if (Physics.Raycast(viewCamera.position, viewCamera.forward, out RaycastHit hit, reach, mask, QueryTriggerInteraction.Ignore))
+            if (RaycastIgnoringSelf(out RaycastHit hit))
             {
                 var c = hit.collider;
                 focusedPickup = c.GetComponentInParent<CandlePickup>();
@@ -92,8 +92,9 @@ namespace LGH
 
             var kb = Keyboard.current;
             if (kb == null) return;
+            if ((MultiplayerMenu.Typing || GUIUtility.keyboardControl != 0) && Cursor.lockState != CursorLockMode.Locked) return; // typing in a menu text box
             var candles = CandleNetworkSync.Instance;
-            if (kb.rKey.wasPressedThisFrame && candles != null)
+            if (kb.rKey.wasPressedThisFrame && candles != null && !PistolLoader.WantsR)   // R loads the pistol while you carry it unloaded
             {
                 string swapMsg = candles.RequestSwapHeld(inventory);
                 if (!string.IsNullOrEmpty(swapMsg)) ShowMessage(swapMsg);
@@ -133,6 +134,21 @@ namespace LGH
             }
         }
 
+        // looking straight down (e.g. standing on a desk) the ray used to hit our own body first
+        bool RaycastIgnoringSelf(out RaycastHit best)
+        {
+            best = default;
+            var hits = Physics.RaycastAll(viewCamera.position, viewCamera.forward, reach, mask, QueryTriggerInteraction.Ignore);
+            float d = float.MaxValue;
+            bool any = false;
+            foreach (var h in hits)
+            {
+                if (h.collider.transform.IsChildOf(transform)) continue;
+                if (h.distance < d) { d = h.distance; best = h; any = true; }
+            }
+            return any;
+        }
+
         string Prompt()
         {
             if (PortraitTilt.Current != null) return PortraitTilt.Current.ViewPrompt;
@@ -163,10 +179,14 @@ namespace LGH
 
             string text = Time.time < messageUntil ? message : Prompt();
             if (text == null) return;
+            // long messages wrap onto more lines instead of being cut off
+            if (wrapStyle == null) wrapStyle = new GUIStyle(style) { wordWrap = true };
+            float bw = Mathf.Min(w - 40f, 820f);
+            float bh = Mathf.Max(32f, wrapStyle.CalcHeight(new GUIContent(text), bw));
             GUI.color = new Color(0f, 0f, 0f, 0.7f);
-            GUI.Label(new Rect(w / 2f - 299f, h * 0.62f + 2f, 600f, 32f), text, style);
+            GUI.Label(new Rect(w / 2f - bw / 2f + 1f, h * 0.62f + 2f, bw, bh), text, wrapStyle);
             GUI.color = Color.white;
-            GUI.Label(new Rect(w / 2f - 300f, h * 0.62f, 600f, 32f), text, style);
+            GUI.Label(new Rect(w / 2f - bw / 2f, h * 0.62f, bw, bh), text, wrapStyle);
         }
     }
 }

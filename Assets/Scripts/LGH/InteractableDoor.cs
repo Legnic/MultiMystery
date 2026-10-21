@@ -14,6 +14,8 @@ namespace LGH
         [Header("Motion")]
         public float openAngle = 95f;
         public float swingSpeed = 220f;         // degrees per second
+        [Tooltip("On: always swings by openAngle (trapdoors / hatches). Off: swings away from the player.")]
+        public bool fixedSwing = false;
 
         [Header("Lock")]
         public bool locked = false;
@@ -72,6 +74,7 @@ namespace LGH
         {
             Init();
             if (!open) return 0f;
+            if (fixedSwing) return openAngle;
             Vector3 leafDir = hinge.parent != null ? hinge.parent.TransformDirection(leafDirParent) : leafDirParent;
             Vector3 normal = Vector3.Cross(Vector3.up, leafDir);
             float userSide = Mathf.Sign(Vector3.Dot(userPosition - hinge.position, normal));

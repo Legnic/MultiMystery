@@ -1,0 +1,277 @@
+using System;
+using UnityEngine;
+using UnityEngine.InputSystem;
+
+namespace LGH
+{
+    // Brass telescope by the library window. Look at it and press E to look through it:
+    // the eyepiece view is split into four quadrants (I-IV) and each quadrant shows its own group of stars.
+    // E / Q / Esc puts it down again. Each player sees it on their own screen (nothing is synced).
+    // The star groups are set in the Inspector (positions 0..1 inside the quadrant, lines = pairs of star numbers).
+    public class Telescope : MonoBehaviour, IWorldInteractable
+    {
+        [Serializable]
+        public class StarQuadrant
+        {
+            public string label = "I";
+            [Tooltip("Star positions inside this quadrant, 0..1 (x right, y down).")]
+            public Vector2[] stars = new Vector2[0];
+            [Tooltip("Pairs of star numbers to join with a faint line (0-1, 1-2 ...). Leave empty for no lines.")]
+            public int[] lines = new int[0];
+            [Range(0.5f, 2f)] public float brightness = 1f;
+        }
+
+        [Tooltip("Quadrants in order I (top right), II (top left), III (bottom left), IV (bottom right).")]
+        public StarQuadrant[] quadrants = DefaultQuadrants();
+        [Tooltip("Faint background stars scattered over the whole view.")]
+        public int backgroundStars = 420;
+        public int seed = 1887;
+        public string prompt = "[E] 망원경 들여다보기";
+
+        public static Telescope Current { get; private set; }
+        public static bool Viewing { get { return Current != null; } }
+
+        FirstPersonController lockedMove;
+        int openedFrame;
+        Texture2D sky, glow;
+        GUIStyle labelStyle, hintStyle;
+
+        public bool CanInteract { get { return Current == null || Current == this; } }
+        public string InteractPrompt { get { return Current == this ? "[E] 망원경에서 눈 떼기" : prompt; } }
+
+        public void Interact(GameObject interactor)
+        {
+            if (Current == this) { if (Time.frameCount != openedFrame) Close(); return; }
+            if (Current != null) return;
+            Current = this;
+            openedFrame = Time.frameCount;
+            lockedMove = interactor != null ? interactor.GetComponent<FirstPersonController>() : null;
+            if (lockedMove != null) lockedMove.enabled = false;
+        }
+
+        void Close()
+        {
+            if (lockedMove != null) lockedMove.enabled = true;
+            lockedMove = null;
+            if (Current == this) Current = null;
+        }
+
+        void OnDisable() { if (Current == this) Close(); }
+
+        void Update()
+        {
+            if (Current != this) return;
+            var kb = Keyboard.current;
+            if (kb == null) return;
+            if (kb.qKey.wasPressedThisFrame || kb.escapeKey.wasPressedThisFrame) Close();
+        }
+
+        // ---------------- drawing ----------------
+
+        static void Fill(Rect r, Color c)
+        {
+            var old = GUI.color;
+            GUI.color = c;
+            GUI.DrawTexture(r, Texture2D.whiteTexture);
+            GUI.color = old;
+        }
+
+        static void Line(Vector2 a, Vector2 b, float width, Color c)
+        {
+            Vector2 d = b - a;
+            float len = d.magnitude;
+            if (len < 0.5f) return;
+            // straight lines need no rotation (the cross itself)
+            if (Mathf.Abs(d.y) < 0.01f) { Fill(new Rect(Mathf.Min(a.x, b.x), a.y - width * 0.5f, len, width), c); return; }
+            if (Mathf.Abs(d.x) < 0.01f) { Fill(new Rect(a.x - width * 0.5f, Mathf.Min(a.y, b.y), width, len), c); return; }
+            // slanted lines: rotate inside the UI-scaled space (GUIUtility.RotateAroundPivot puts the pivot in the wrong place when the UI is scaled)
+            var m = GUI.matrix;
+            float ang = Mathf.Atan2(d.y, d.x) * Mathf.Rad2Deg;
+            GUI.matrix = m * Matrix4x4.TRS(new Vector3(a.x, a.y, 0f), Quaternion.Euler(0f, 0f, ang), Vector3.one) * Matrix4x4.TRS(new Vector3(-a.x, -a.y, 0f), Quaternion.identity, Vector3.one);
+            Fill(new Rect(a.x, a.y - width * 0.5f, len, width), c);
+            GUI.matrix = m;
+        }
+
+        void OnGUI()
+        {
+            if (Current != this) return;
+            GUI.depth = -100;   // over the crosshair and prompts
+            Build();
+            var v = UiScale.Apply();
+            float w = v.x, h = v.y;
+            Fill(new Rect(0, 0, w, h), Color.black);
+
+            float S = Mathf.Min(w, h) * 0.9f;
+            var c = new Vector2(w * 0.5f, h * 0.5f - 10f);
+            var skyRect = new Rect(c.x - S * 0.5f, c.y - S * 0.5f, S, S);
+            GUI.DrawTexture(skyRect, sky);
+
+            // star groups
+            float t = Time.unscaledTime;
+            for (int q = 0; q < 4 && q < quadrants.Length; q++)
+            {
+                var quad = quadrants[q];
+                if (quad == null || quad.stars == null) continue;
+                var pts = new Vector2[quad.stars.Length];
+                for (int i = 0; i < pts.Length; i++) pts[i] = ToScreen(q, quad.stars[i], c, S);
+                if (quad.lines != null)
+                    for (int i = 0; i + 1 < quad.lines.Length; i += 2)
+                    {
+                        int a = quad.lines[i], b = quad.lines[i + 1];
+                        if (a >= 0 && b >= 0 && a < pts.Length && b < pts.Length) Line(pts[a], pts[b], 1.2f, new Color(0.62f, 0.74f, 1f, 0.28f));
+                    }
+                for (int i = 0; i < pts.Length; i++)
+                {
+                    float tw = 0.82f + 0.18f * Mathf.Sin(t * (2.1f + i * 0.37f) + q * 1.7f + i);
+                    float size = S * 0.05f * quad.brightness * (0.85f + 0.15f * tw);
+                    var old = GUI.color;
+                    GUI.color = new Color(1f, 0.97f, 0.88f, tw);
+                    GUI.DrawTexture(new Rect(pts[i].x - size * 0.5f, pts[i].y - size * 0.5f, size, size), glow);
+                    GUI.color = old;
+                }
+            }
+
+            // reticle: a built-in cross like a real telescope (dark posts from the rim, lit red hairlines through the middle)
+            float R = S * 0.478f;
+            float post = R * 0.62f;                       // posts run from the rim to here
+            var shade = new Color(0.01f, 0.01f, 0.015f, 0.92f);
+            var red = new Color(0.95f, 0.28f, 0.18f, 0.95f);
+            var redSoft = new Color(0.95f, 0.28f, 0.18f, 0.22f);
+            Vector2[] dirs = { Vector2.right, Vector2.left, Vector2.up, Vector2.down };
+            foreach (var dv in dirs)
+            {
+                Vector2 rim = c + dv * R, inner = c + dv * (R - post);
+                Line(inner, rim, 16f, shade);                // thick dark post
+                Line(inner, rim, 4f, red);                // lit core
+                Line(c, inner, 8f, redSoft);                // glow around the hairline
+                Line(c, inner, 2.6f, red);                    // hairline through the centre
+            }
+            // tick marks along the hairlines
+            for (int k = 1; k <= 4; k++)
+            {
+                float o = k * (R - post) / 5f;
+                foreach (float sgn in new[] { 1f, -1f })
+                {
+                    Line(new Vector2(c.x + sgn * o, c.y - 6f), new Vector2(c.x + sgn * o, c.y + 6f), 1.6f, red);
+                    Line(new Vector2(c.x - 6f, c.y + sgn * o), new Vector2(c.x + 6f, c.y + sgn * o), 1.6f, red);
+                }
+            }
+            // small centre ring
+            for (int k = 0; k < 24; k++)
+            {
+                float a0 = k * Mathf.PI * 2f / 24f, a1 = (k + 1) * Mathf.PI * 2f / 24f;
+                float rr = S * 0.018f;
+                Line(c + new Vector2(Mathf.Cos(a0), Mathf.Sin(a0)) * rr, c + new Vector2(Mathf.Cos(a1), Mathf.Sin(a1)) * rr, 1.6f, red);
+            }
+
+            // quadrant numbers
+            if (labelStyle == null)
+            {
+                labelStyle = new GUIStyle(GUI.skin.label) { fontSize = 26, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter };
+                labelStyle.normal.textColor = new Color(0.95f, 0.55f, 0.42f, 0.85f);
+                hintStyle = new GUIStyle(GUI.skin.label) { fontSize = 16, alignment = TextAnchor.MiddleCenter };
+                hintStyle.normal.textColor = new Color(0.75f, 0.72f, 0.66f);
+            }
+            float L = R * 0.62f;
+            Vector2[] lp = { new Vector2(c.x + L, c.y - L), new Vector2(c.x - L, c.y - L), new Vector2(c.x - L, c.y + L), new Vector2(c.x + L, c.y + L) };
+            for (int q = 0; q < 4 && q < quadrants.Length; q++)
+            {
+                string label = quadrants[q] != null && !string.IsNullOrEmpty(quadrants[q].label) ? quadrants[q].label : new[] { "I", "II", "III", "IV" }[q];
+                GUI.Label(new Rect(lp[q].x - 40f, lp[q].y - 20f, 80f, 40f), label, labelStyle);
+            }
+            GUI.Label(new Rect(0, h - 40f, w, 28f), "[E] / [Q] 망원경에서 눈 떼기", hintStyle);
+        }
+
+        // quadrant q (I top-right, II top-left, III bottom-left, IV bottom-right), uv 0..1 inside it
+        static Vector2 ToScreen(int q, Vector2 uv, Vector2 c, float S)
+        {
+            float a = S * 0.06f, span = S * 0.27f;   // gap from the cross lines, size of the star area
+            float u = Mathf.Clamp01(uv.x), v = Mathf.Clamp01(uv.y);
+            bool right = q == 0 || q == 3, top = q == 0 || q == 1;
+            float px = right ? c.x + a + u * span : c.x - a - (1f - u) * span;
+            float py = top ? c.y - a - (1f - v) * span : c.y + a + v * span;
+            return new Vector2(px, py);
+        }
+
+        // round eyepiece texture: night sky, faint stars, dark soft edge
+        void Build()
+        {
+            if (sky != null) return;
+            const int N = 512;
+            sky = new Texture2D(N, N, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
+            var px = new Color[N * N];
+            for (int y = 0; y < N; y++)
+            for (int x = 0; x < N; x++)
+            {
+                float dx = (x + 0.5f) / N * 2f - 1f, dy = (y + 0.5f) / N * 2f - 1f;
+                float r = Mathf.Sqrt(dx * dx + dy * dy);
+                var col = Color.Lerp(new Color(0.035f, 0.05f, 0.11f), new Color(0.005f, 0.008f, 0.02f), Mathf.Clamp01(r));
+                float edge = Mathf.Clamp01((0.98f - r) / 0.06f);
+                col *= Mathf.Lerp(0.25f, 1f, Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((1f - r) / 0.35f)));
+                col.a = edge;
+                // thin brass ring at the rim
+                if (r > 0.955f && r < 0.985f) col = Color.Lerp(col, new Color(0.35f, 0.26f, 0.12f, 1f), 0.6f);
+                px[y * N + x] = col;
+            }
+            var rnd = new System.Random(seed);
+            for (int i = 0; i < backgroundStars; i++)
+            {
+                float ang = (float)rnd.NextDouble() * Mathf.PI * 2f, rad = Mathf.Sqrt((float)rnd.NextDouble()) * 0.93f;
+                int sx = Mathf.RoundToInt((Mathf.Cos(ang) * rad * 0.5f + 0.5f) * (N - 1)), sy = Mathf.RoundToInt((Mathf.Sin(ang) * rad * 0.5f + 0.5f) * (N - 1));
+                float b = 0.15f + (float)Math.Pow(rnd.NextDouble(), 3) * 0.6f;
+                var tint = Color.Lerp(new Color(0.75f, 0.82f, 1f), new Color(1f, 0.9f, 0.75f), (float)rnd.NextDouble());
+                int idx = sy * N + sx;
+                var p = px[idx];
+                px[idx] = new Color(Mathf.Min(1f, p.r + tint.r * b), Mathf.Min(1f, p.g + tint.g * b), Mathf.Min(1f, p.b + tint.b * b), p.a);
+                if (b > 0.45f)
+                    foreach (var o in new[] { 1, -1, N, -N })
+                    {
+                        int j = idx + o;
+                        if (j < 0 || j >= px.Length) continue;
+                        var q = px[j];
+                        px[j] = new Color(Mathf.Min(1f, q.r + tint.r * b * 0.35f), Mathf.Min(1f, q.g + tint.g * b * 0.35f), Mathf.Min(1f, q.b + tint.b * b * 0.35f), q.a);
+                    }
+            }
+            sky.SetPixels(px);
+            sky.Apply();
+
+            const int G = 64;
+            glow = new Texture2D(G, G, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp };
+            var gp = new Color[G * G];
+            for (int y = 0; y < G; y++)
+            for (int x = 0; x < G; x++)
+            {
+                float dx = (x + 0.5f) / G * 2f - 1f, dy = (y + 0.5f) / G * 2f - 1f;
+                float r = Mathf.Sqrt(dx * dx + dy * dy);
+                float core = Mathf.Clamp01(1f - r * 4f);
+                float halo = Mathf.Pow(Mathf.Clamp01(1f - r), 3f) * 0.55f;
+                float spike = (Mathf.Clamp01(1f - Mathf.Abs(dx) * 22f) + Mathf.Clamp01(1f - Mathf.Abs(dy) * 22f)) * Mathf.Clamp01(1f - r) * 0.35f;
+                float a = Mathf.Clamp01(core + halo + spike);
+                gp[y * G + x] = new Color(1f, 1f, 1f, a);
+            }
+            glow.SetPixels(gp);
+            glow.Apply();
+        }
+
+        void OnDestroy()
+        {
+            if (sky != null) Destroy(sky);
+            if (glow != null) Destroy(glow);
+        }
+
+        static StarQuadrant[] DefaultQuadrants()
+        {
+            return new[]
+            {
+                // I: a small triangle (3 stars)
+                new StarQuadrant { label = "I", stars = new[] { new Vector2(0.25f, 0.35f), new Vector2(0.75f, 0.25f), new Vector2(0.5f, 0.78f) }, lines = new[] { 0, 1, 1, 2, 2, 0 } },
+                // II: a W like Cassiopeia (5 stars)
+                new StarQuadrant { label = "II", stars = new[] { new Vector2(0.05f, 0.35f), new Vector2(0.27f, 0.65f), new Vector2(0.5f, 0.4f), new Vector2(0.73f, 0.68f), new Vector2(0.95f, 0.32f) }, lines = new[] { 0, 1, 1, 2, 2, 3, 3, 4 } },
+                // III: a dipper (7 stars)
+                new StarQuadrant { label = "III", stars = new[] { new Vector2(0.02f, 0.2f), new Vector2(0.2f, 0.28f), new Vector2(0.38f, 0.36f), new Vector2(0.55f, 0.45f), new Vector2(0.58f, 0.78f), new Vector2(0.95f, 0.8f), new Vector2(0.92f, 0.47f) }, lines = new[] { 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 3 } },
+                // IV: a square (4 stars)
+                new StarQuadrant { label = "IV", stars = new[] { new Vector2(0.22f, 0.22f), new Vector2(0.8f, 0.28f), new Vector2(0.75f, 0.82f), new Vector2(0.18f, 0.76f) }, lines = new[] { 0, 1, 1, 2, 2, 3, 3, 0 } },
+            };
+        }
+    }
+}

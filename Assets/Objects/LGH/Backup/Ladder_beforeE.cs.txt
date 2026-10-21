@@ -1,0 +1,51 @@
+using System.Collections.Generic;
+using UnityEngine;
+
+namespace LGH
+{
+    // A ladder you climb with W / S. The BoxCollider (trigger) is the climbing space.
+    // While the player's body is inside it, gravity is off: W climbs up, S climbs down.
+    // The player can only step off sideways once their feet are above exitHeight (the floor at the top).
+    [RequireComponent(typeof(BoxCollider))]
+    public class Ladder : MonoBehaviour
+    {
+        public static readonly List<Ladder> All = new List<Ladder>();
+
+        public float climbSpeed = 2.2f;
+        [Tooltip("World height of the floor at the top. Below it the player is kept inside the ladder space.")]
+        public float exitHeight = 7.78f;
+
+        BoxCollider zone;
+
+        public Bounds Area { get { if (zone == null) zone = GetComponent<BoxCollider>(); return zone.bounds; } }
+
+        void OnEnable() { zone = GetComponent<BoxCollider>(); zone.isTrigger = true; if (!All.Contains(this)) All.Add(this); }
+        void OnDisable() { All.Remove(this); }
+
+        public static Ladder At(CharacterController cc)
+        {
+            if (cc == null) return null;
+            Vector3 p = cc.bounds.center;
+            for (int i = 0; i < All.Count; i++)
+                if (All[i] != null && All[i].Area.Contains(p)) return All[i];
+            return null;
+        }
+
+        // movement for one frame while on the ladder
+        public Vector3 ClimbVelocity(CharacterController cc, Vector3 moveDir, float v, float walkSpeed, float dt)
+        {
+            Vector3 vel = moveDir * walkSpeed * 0.45f;
+            vel.y = v * climbSpeed;
+            if (cc.bounds.min.y < exitHeight && dt > 0f)
+            {
+                var b = Area;
+                float r = Mathf.Min(cc.radius, Mathf.Min(b.extents.x, b.extents.z) - 0.01f);
+                Vector3 c = cc.bounds.center;
+                Vector3 next = c + vel * dt;
+                if ((next.x < b.min.x + r && vel.x < 0f) || (next.x > b.max.x - r && vel.x > 0f)) vel.x = 0f;
+                if ((next.z < b.min.z + r && vel.z < 0f) || (next.z > b.max.z - r && vel.z > 0f)) vel.z = 0f;
+            }
+            return vel;
+        }
+    }
+}

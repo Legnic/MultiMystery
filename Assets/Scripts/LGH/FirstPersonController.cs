@@ -26,6 +26,26 @@ namespace LGH
             if (cameraTransform != null) cameraTransform.localRotation = Quaternion.Euler(pitch, 0f, 0f);
         }
 
+        // ladder the player is holding on to (null = walking)
+        public Ladder Climbing { get; private set; }
+
+        public void StartClimb(Ladder ladder)
+        {
+            if (ladder == null || controller == null) return;
+            Vector3 delta = ladder.GrabPoint(controller) - controller.bounds.center;
+            controller.enabled = false;
+            transform.position += delta;
+            controller.enabled = true;
+            verticalVelocity = 0f;
+            Climbing = ladder;
+            climbFrame = Time.frameCount;
+        }
+
+        public void StopClimb() { Climbing = null; verticalVelocity = 0f; climbFrame = Time.frameCount; }
+        int climbFrame = -1;
+        // true on the frame the player got on / off, so the same E press is not used twice
+        public bool ClimbChangedThisFrame { get { return climbFrame == Time.frameCount; } }
+
         private CharacterController controller;
         private float verticalVelocity;
         private float pitch;
@@ -75,13 +95,33 @@ namespace LGH
             if (kb.dKey.isPressed) h += 1f;
             if (kb.aKey.isPressed) h -= 1f;
 
+            // typing in a menu text box (nickname) must not walk the player around
+            bool typing = (MultiplayerMenu.Typing || GUIUtility.keyboardControl != 0) && Cursor.lockState != CursorLockMode.Locked;
+            if (typing) { h = 0f; v = 0f; }
+
             Vector3 moveDir = (transform.right * h + transform.forward * v);
             if (moveDir.sqrMagnitude > 1f) moveDir.Normalize();
+
+            // on a ladder (got on with E): W / S climb, no gravity
+            if (Climbing != null)
+            {
+                bool letGo = !Climbing.isActiveAndEnabled || !Climbing.Holds(controller)
+                             || (controller.isGrounded && (v < 0f || h != 0f))          // at the bottom: step back / sideways
+                             || (kb.spaceKey.wasPressedThisFrame && !typing)
+                             || (kb.eKey.wasPressedThisFrame && !typing && Time.frameCount != climbFrame);   // E lets go anywhere
+                if (letGo) StopClimb();
+                else
+                {
+                    verticalVelocity = 0f;
+                    controller.Move(Climbing.ClimbVelocity(controller, moveDir, v, moveSpeed, Time.deltaTime) * SpeedMultiplier * Time.deltaTime);
+                    return;
+                }
+            }
 
             if (controller.isGrounded)
             {
                 verticalVelocity = -0.5f;
-                if (kb.spaceKey.wasPressedThisFrame)
+                if (kb.spaceKey.wasPressedThisFrame && !typing)
                     verticalVelocity = Mathf.Sqrt(jumpHeight * -2f * gravity);
             }
             else

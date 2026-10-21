@@ -1,0 +1,83 @@
+using System;
+using Unity.Netcode;
+using UnityEngine;
+
+namespace LGH
+{
+    // Keeps every StarLockBox the same for both players (lives next to DoorNetworkSync on DoorSync_LGH).
+    // A player asks the host to turn a number / press the button; the host decides and tells everyone.
+    public class LockBoxNetworkSync : NetworkBehaviour
+    {
+        public static LockBoxNetworkSync Instance { get; private set; }
+
+        StarLockBox[] boxes = new StarLockBox[0];
+
+        void Awake()
+        {
+            Instance = this;
+            boxes = FindObjectsByType<StarLockBox>(FindObjectsInactive.Include);
+            Array.Sort(boxes, (a, b) => string.CompareOrdinal(PathOf(a.transform), PathOf(b.transform)));
+        }
+
+        public override void OnDestroy()
+        {
+            if (Instance == this) Instance = null;
+            base.OnDestroy();
+        }
+
+        static string PathOf(Transform t)
+        {
+            string p = t.name;
+            while (t.parent != null) { t = t.parent; p = t.name + "/" + p; }
+            return p;
+        }
+
+        public bool Online { get { return IsSpawned && NetworkManager != null && NetworkManager.IsListening; } }
+
+        public override void OnNetworkSpawn()
+        {
+            if (!IsServer) RequestFullStateRpc();
+        }
+
+        public void RequestPress(StarLockBox box, int part)
+        {
+            int i = Array.IndexOf(boxes, box);
+            if (i >= 0) PressRpc(i, part);
+        }
+
+        [Rpc(SendTo.Server)]
+        void PressRpc(int box, int part)
+        {
+            if (box < 0 || box >= boxes.Length) return;
+            var b = boxes[box];
+            int fb = b.Apply(part);
+            if (fb == 0) return;
+            StateRpc(box, b.Digit(0), b.Digit(1), b.Digit(2), b.Digit(3), b.IsOpen, fb);
+        }
+
+        [Rpc(SendTo.ClientsAndHost)]
+        void StateRpc(int box, int d0, int d1, int d2, int d3, bool open, int feedback)
+        {
+            if (box < 0 || box >= boxes.Length) return;
+            if (!IsServer) boxes[box].SetState(d0, d1, d2, d3, open);
+            boxes[box].ApplyFeedback(feedback);
+        }
+
+        [Rpc(SendTo.Server)]
+        void RequestFullStateRpc(RpcParams rpcParams = default)
+        {
+            ulong to = rpcParams.Receive.SenderClientId;
+            for (int i = 0; i < boxes.Length; i++)
+            {
+                var b = boxes[i];
+                OneStateRpc(i, b.Digit(0), b.Digit(1), b.Digit(2), b.Digit(3), b.IsOpen, RpcTarget.Single(to, RpcTargetUse.Temp));
+            }
+        }
+
+        [Rpc(SendTo.SpecifiedInParams)]
+        void OneStateRpc(int box, int d0, int d1, int d2, int d3, bool open, RpcParams rpcParams)
+        {
+            if (box >= 0 && box < boxes.Length) boxes[box].SetState(d0, d1, d2, d3, open);
+        }
+    }
+}

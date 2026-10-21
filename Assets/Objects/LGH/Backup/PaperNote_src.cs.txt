@@ -1,0 +1,147 @@
+using UnityEngine;
+using UnityEngine.InputSystem;
+
+namespace LGH
+{
+    // A sheet of paper lying in the world. Look at it and press E to read it on screen.
+    // Optionally it offers two choices (e.g. keep the attic key a secret / tell everyone):
+    //  - choice A shows privateMessageA only to you
+    //  - choice B sends announceB to every player ({name} = your nickname)
+    // Each player chooses once (until a new room is made). Esc / E / Q / right click closes it.
+    public class PaperNote : MonoBehaviour, IWorldInteractable, IRoomResettable
+    {
+        public string title = "쪽지";
+        [TextArea(4, 20)] public string body = "";
+        public string prompt = "[E] 종이 펼쳐보기";
+
+        [Header("Choice (leave choiceA empty for a plain note)")]
+        public string choiceA = "";
+        public string choiceB = "";
+        [TextArea(1, 4)] public string privateMessageA = "";
+        [TextArea(1, 4)] public string privateMessageB = "";
+        [Tooltip("Shown to every player when this player picks B. {name} = nickname.")]
+        [TextArea(1, 4)] public string announceB = "";
+
+        public static PaperNote Current { get; private set; }
+        static int escFrame = -1;
+        public static bool BlocksPause { get { return Current != null || escFrame == Time.frameCount; } }
+
+        public bool HasChoice { get { return !string.IsNullOrEmpty(choiceA) && !string.IsNullOrEmpty(choiceB); } }
+        int chosen = -1;            // this player's answer (-1 none, 0 = A, 1 = B)
+        int openedFrame;
+        FirstPersonController lockedMove;
+        GUIStyle titleStyle, bodyStyle, buttonStyle, smallStyle;
+        Texture2D paperTex;
+
+        public bool CanInteract { get { return Current == null || Current == this; } }
+        public string InteractPrompt { get { return Current == this ? "[E] 종이 내려놓기" : prompt; } }
+
+        public void Interact(GameObject interactor)
+        {
+            if (Current == this) { if (Time.frameCount != openedFrame) Close(); return; }
+            if (Current != null || Telescope.Viewing || StarLockBox.Inspecting != null) return;
+            Current = this;
+            openedFrame = Time.frameCount;
+            lockedMove = interactor != null ? interactor.GetComponentInParent<FirstPersonController>() : null;
+            if (lockedMove == null && interactor != null) lockedMove = interactor.GetComponentInChildren<FirstPersonController>();
+            if (lockedMove != null) lockedMove.enabled = false;
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+        }
+
+        void Close()
+        {
+            if (Current != this) return;
+            Current = null;
+            if (lockedMove != null) lockedMove.enabled = true;
+            lockedMove = null;
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+        }
+
+        void OnDisable() { Close(); }
+
+        void Update()
+        {
+            if (Current != this) return;
+            var kb = Keyboard.current;
+            var mouse = Mouse.current;
+            if (kb != null && (kb.escapeKey.wasPressedThisFrame || kb.qKey.wasPressedThisFrame))
+            {
+                if (kb.escapeKey.wasPressedThisFrame) escFrame = Time.frameCount;
+                Close();
+                return;
+            }
+            if (mouse != null && mouse.rightButton.wasPressedThisFrame) { Close(); return; }
+            if (Cursor.lockState != CursorLockMode.None) { Cursor.lockState = CursorLockMode.None; Cursor.visible = true; }
+        }
+
+        void Choose(int c)
+        {
+            if (chosen >= 0) return;
+            chosen = c;
+            string mine = c == 0 ? privateMessageA : privateMessageB;
+            var pi = PlayerInteractor.Active;
+            if (pi != null && !string.IsNullOrEmpty(mine)) pi.ShowMessage(mine, 5f);
+            if (c == 1 && !string.IsNullOrEmpty(announceB))
+            {
+                string who = string.IsNullOrEmpty(MultiplayerMenu.Nickname) ? "누군가" : MultiplayerMenu.Nickname;
+                string msg = announceB.Replace("{name}", who);
+                var sync = LockBoxNetworkSync.Instance;
+                if (sync != null && sync.Online) sync.Announce(msg);
+                else if (pi != null) pi.ShowMessage(msg, 6f);
+            }
+            Close();
+        }
+
+        public void ResetForNewRoom() { chosen = -1; Close(); }
+
+        void OnGUI()
+        {
+            if (Current != this) return;
+            GUI.depth = -60;
+            var v = UiScale.Apply();
+            if (titleStyle == null)
+            {
+                var ink = new Color(0.18f, 0.12f, 0.07f);
+                titleStyle = new GUIStyle(GUI.skin.label) { fontSize = 22, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter };
+                titleStyle.normal.textColor = ink;
+                bodyStyle = new GUIStyle(GUI.skin.label) { fontSize = 16, wordWrap = true, alignment = TextAnchor.UpperLeft, richText = true };
+                bodyStyle.normal.textColor = ink;
+                smallStyle = new GUIStyle(GUI.skin.label) { fontSize = 13, alignment = TextAnchor.MiddleCenter };
+                smallStyle.normal.textColor = new Color(0.35f, 0.27f, 0.18f);
+                buttonStyle = new GUIStyle(GUI.skin.button) { fontSize = 16, fontStyle = FontStyle.Bold };
+                paperTex = new Texture2D(1, 1); paperTex.SetPixel(0, 0, new Color(0.93f, 0.87f, 0.72f)); paperTex.Apply();
+            }
+            var old = GUI.color;
+            GUI.color = new Color(0f, 0f, 0f, 0.6f);
+            GUI.DrawTexture(new Rect(0, 0, v.x, v.y), Texture2D.whiteTexture);
+            GUI.color = old;
+
+            float w = Mathf.Min(460f, v.x - 40f), h = Mathf.Min(HasChoice ? 420f : 380f, v.y - 40f);
+            var r = new Rect((v.x - w) * 0.5f, (v.y - h) * 0.5f, w, h);
+            GUI.color = new Color(0.3f, 0.2f, 0.1f, 1f);
+            GUI.DrawTexture(new Rect(r.x - 3, r.y - 3, r.width + 6, r.height + 6), Texture2D.whiteTexture);
+            GUI.color = old;
+            GUI.DrawTexture(r, paperTex);
+
+            GUI.Label(new Rect(r.x, r.y + 14, r.width, 32), title, titleStyle);
+            float bodyBottom = HasChoice ? r.yMax - 110f : r.yMax - 50f;
+            GUI.Label(new Rect(r.x + 28, r.y + 56, r.width - 56, bodyBottom - (r.y + 56)), body, bodyStyle);
+
+            if (HasChoice)
+            {
+                if (chosen < 0)
+                {
+                    float bw = (r.width - 28 * 2 - 16) * 0.5f;
+                    if (GUI.Button(new Rect(r.x + 28, r.yMax - 100, bw, 44), choiceA, buttonStyle)) Choose(0);
+                    if (GUI.Button(new Rect(r.x + 28 + bw + 16, r.yMax - 100, bw, 44), choiceB, buttonStyle)) Choose(1);
+                }
+                else GUI.Label(new Rect(r.x, r.yMax - 96, r.width, 40), "이미 정했다: " + (chosen == 0 ? choiceA : choiceB), titleStyle);
+            }
+            GUI.Label(new Rect(r.x, r.yMax - 40, r.width, 30), "E / Esc / 우클릭: 내려놓기", smallStyle);
+        }
+
+        void OnDestroy() { if (paperTex != null) Destroy(paperTex); }
+    }
+}
