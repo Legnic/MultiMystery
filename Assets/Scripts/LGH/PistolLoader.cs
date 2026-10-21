@@ -14,7 +14,7 @@ namespace LGH
     {
         public static PistolLoader Local { get; private set; }
         // true when R belongs to loading (so the candle swap stays out of the way)
-        public static bool WantsR { get { return Local != null && Local.HasGun && !Local.Loaded && !Local.spent; } }
+        public static bool WantsR { get { return Local != null && Local.Equipped && !Local.Loaded && !Local.spent; } }
         // the front door has opened: guns may be fired
         public static bool GunPhase { get; private set; }
         public static bool EndingShown { get { return endingTitle != null; } }
@@ -22,6 +22,7 @@ namespace LGH
         public ItemData pistol;
         public GameObject viewModel;            // the pistol model shown in your hand while aiming
         public Material viewModelMaterial;
+        public Material ramrodMaterial;
         public float loadSeconds = 90f;
         [Tooltip("How far away other players can hear the loading noise (metres).")]
         public float hearDistance = 14f;
@@ -54,6 +55,16 @@ namespace LGH
         public float Progress { get { return Mine ? progress : progressNet.Value; } }
         public bool Loaded { get { return !spent && Progress >= 1f; } }
         public bool HasGun { get { return inventory != null && pistol != null && inventory.HasItem(pistol); } }
+        // taken in hand from the inventory (select it, then the "손에 들기" button or a double click)
+        bool equipped;
+        public bool Equipped { get { return equipped && HasGun; } }
+        public bool IsPistol(ItemData d) { return d != null && pistol != null && d == pistol; }
+        public void SetEquipped(bool on)
+        {
+            equipped = on && HasGun;
+            var pi = PlayerInteractor.Active;
+            if (pi != null) pi.ShowMessage(equipped ? (spent ? "권총을 들었다. 총알은 없다." : Loaded ? "권총을 들었다. 장전되어 있다." : "권총을 들었다. [R] 길게 눌러 장전") : "권총을 숨겼다. [H] 다시 꺼내기", 2.5f);
+        }
         public bool IsLoading { get { return Mine ? loadingLocal : loadingNet.Value; } }
         bool Mine { get { return IsSpawned ? IsOwner : true; } }
 
@@ -142,12 +153,16 @@ namespace LGH
             {
                 phaseAnnounced = true;
                 var pi = PlayerInteractor.Active;
-                if (pi != null && HasGun)
+                if (pi != null && HasGun && !Equipped && Loaded) pi.ShowMessage("정문이 열렸다. 지금이라면 총을 쓸 수 있다. 인벤토리에서 권총을 들어라.".Replace('"', ' ').Trim(), 5f);
+                else if (pi != null && HasGun)
                     pi.ShowMessage(Loaded ? "정문이 열렸다. 지금이라면 총을 쓸 수 있다.  [우클릭] 조준  [좌클릭] 발사" : "정문이 열렸다. 총이 장전되어 있었다면...", 5f);
             }
 
+            // H: put the pistol away / take it out again (hide it from the others)
+            if (kb != null && kb.hKey.wasPressedThisFrame && HasGun && !busy) SetEquipped(!Equipped);
+
             // loading
-            bool want = HasGun && !spent && progress < 1f && !aiming && kb != null && kb.rKey.isPressed && !busy;
+            bool want = Equipped && !spent && progress < 1f && !aiming && kb != null && kb.rKey.isPressed && !busy;
             if (want)
             {
                 progress = Mathf.Min(1f, progress + Time.deltaTime / Mathf.Max(1f, loadSeconds));
@@ -167,10 +182,11 @@ namespace LGH
             if (IsSpawned && Mathf.Abs(progressNet.Value - progress) > 0.01f) progressNet.Value = progress;
 
             // aiming / firing
-            bool canShoot = GunPhase && HasGun && Loaded && !busy;
+            bool canShoot = GunPhase && Equipped && Loaded && !busy;
             SetAim(canShoot && mouse != null && mouse.rightButton.isPressed);
             if (aiming && mouse.leftButton.wasPressedThisFrame) Fire();
 
+            UpdateHeld();
             if (move != null && !EndingShown) move.SpeedMultiplier = loadingLocal ? moveWhileLoading : aiming ? 0.5f : 1f;
             if (cam != null)
             {
@@ -180,16 +196,20 @@ namespace LGH
             }
         }
 
-        void SetAim(bool on)
+        void SetAim(bool on) { aiming = on; }
+
+        // the pistol is in your (left) hand whenever you carry it: lowered while walking,
+        // turned up to your face while loading, raised to the centre while aiming
+        float holdBlend;
+        Vector3 holdPos;
+        Quaternion holdRot = Quaternion.identity;
+        void UpdateHeld()
         {
-            if (aiming == on) return;
-            aiming = on;
-            if (on && heldGun == null && viewModel != null && cam != null)
+            bool show = Equipped && !EndingShown && StarLockBox.Inspecting == null && !Telescope.Viewing && cam != null && viewModel != null;
+            if (show && heldGun == null)
             {
                 heldGun = Instantiate(viewModel, cam.transform);
                 heldGun.name = "HeldPistol";
-                heldGun.transform.localPosition = new Vector3(0.17f, -0.15f, 0.42f);
-                heldGun.transform.localRotation = Quaternion.Euler(0f, 90f, 0f) * viewModel.transform.localRotation;
                 heldGun.transform.localScale = Vector3.one * 0.38f;
                 foreach (var r in heldGun.GetComponentsInChildren<Renderer>())
                 {
@@ -197,9 +217,86 @@ namespace LGH
                     r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
                 }
                 foreach (var c in heldGun.GetComponentsInChildren<Collider>()) Destroy(c);
+                MakeRamrod();
+                holdPos = new Vector3(-0.22f, -0.32f, 0.5f);
+                holdRot = Quaternion.Euler(28f, 14f, 0f) * Quaternion.Euler(0f, 90f, 0f) * viewModel.transform.localRotation;
             }
-            if (heldGun != null) heldGun.SetActive(on);
+            if (heldGun == null) return;
+            if (heldGun.activeSelf != show) heldGun.SetActive(show);
+            if (!show) return;
+            Quaternion baseRot = Quaternion.Euler(0f, 90f, 0f) * viewModel.transform.localRotation;
+            Vector3 pos; Quaternion rot;
+            if (aiming) { pos = new Vector3(0.1f, -0.14f, 0.42f); rot = baseRot; }
+            else if (loadingLocal)
+            {
+                float bob = Mathf.Sin(Time.time * 3.2f) * 0.01f;   // the hand moves with each ramrod stroke
+                pos = new Vector3(-0.14f, -0.1f + bob, 0.5f); rot = Quaternion.Euler(-58f, 18f, 0f) * baseRot;
+            }
+            else
+            {
+                float sway = (move != null && move.enabled) ? Mathf.Sin(Time.time * 6f) * 0.006f : 0f;
+                pos = new Vector3(-0.2f, -0.21f + sway, 0.46f); rot = Quaternion.Euler(14f, 10f, 0f) * baseRot;
+            }
+            float k = 1f - Mathf.Exp(-Time.deltaTime * 14f);
+            holdPos = Vector3.Lerp(holdPos, pos, k);
+            holdRot = Quaternion.Slerp(holdRot, rot, k);
+            heldGun.transform.localPosition = holdPos;
+            heldGun.transform.localRotation = holdRot;
+            // ramrod strokes while loading: pushed down the barrel, pulled back out
+            if (ramrod != null)
+            {
+                ramrod.gameObject.SetActive(loadingLocal);
+                if (loadingLocal)
+                {
+                    float stroke = 0.5f - 0.5f * Mathf.Cos(Time.time * 3.2f);          // 0 = out, 1 = pushed in
+                    float len = ramrodLen, inDepth = len * 0.62f * stroke;
+                    ramrod.localPosition = muzzleLocal + muzzleDir * (len * 0.5f - inDepth);
+                }
+            }
         }
+
+        Transform ramrod;
+        Vector3 muzzleLocal, muzzleDir;
+        float ramrodLen;
+        void MakeRamrod()
+        {
+            // where the muzzle is: the gun points along camera-forward in its aiming pose, the barrel is the top of the profile
+            Quaternion baseRot = Quaternion.Euler(0f, 90f, 0f) * viewModel.transform.localRotation;
+            var inv = Matrix4x4.TRS(Vector3.zero, baseRot, Vector3.one * 0.38f).inverse;
+            var b = new Bounds(); bool first = true;
+            foreach (var mf in heldGun.GetComponentsInChildren<MeshFilter>())
+            {
+                if (mf.sharedMesh == null) continue;
+                var m = heldGun.transform.worldToLocalMatrix * mf.transform.localToWorldMatrix;
+                var mb = mf.sharedMesh.bounds;
+                for (int i = 0; i < 8; i++)
+                {
+                    var c = mb.center + Vector3.Scale(mb.extents, new Vector3((i & 1) == 0 ? -1 : 1, (i & 2) == 0 ? -1 : 1, (i & 4) == 0 ? -1 : 1));
+                    var lp = m.MultiplyPoint3x4(c);
+                    var cp = Matrix4x4.TRS(Vector3.zero, baseRot, Vector3.one * 0.38f).MultiplyPoint3x4(lp);   // in camera-aligned space
+                    if (first) { b = new Bounds(cp, Vector3.zero); first = false; } else b.Encapsulate(cp);
+                }
+            }
+            if (first) return;
+            Vector3 muzzleCam = new Vector3(b.center.x, b.center.y + b.extents.y * 0.55f, b.max.z);
+            muzzleLocal = inv.MultiplyPoint3x4(muzzleCam);
+            muzzleDir = inv.MultiplyVector(Vector3.forward).normalized;
+            ramrodLen = (b.size.z * 0.55f) / 0.38f;
+            var rod = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            Destroy(rod.GetComponent<Collider>());
+            rod.name = "Ramrod";
+            rod.transform.SetParent(heldGun.transform, false);
+            rod.transform.localRotation = Quaternion.FromToRotation(Vector3.up, muzzleDir);
+            float thick = 0.009f / 0.38f;
+            rod.transform.localScale = new Vector3(thick, ramrodLen * 0.5f, thick);
+            var r = rod.GetComponent<MeshRenderer>();
+            r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            if (ramrodMaterial != null) r.sharedMaterial = ramrodMaterial;
+            ramrod = rod.transform;
+            ramrod.gameObject.SetActive(false);
+        }
+
+        public override void OnDestroy() { if (heldGun != null) Destroy(heldGun); base.OnDestroy(); }
 
         void Fire()
         {
@@ -295,7 +392,7 @@ namespace LGH
                 GUI.Label(new Rect(0, v.y - 50, v.x, 24), "[Esc] 메뉴", hintStyle);
                 return;
             }
-            if (!HasGun || PlayerInventory.UiOpen) return;
+            if (!Equipped || PlayerInventory.UiOpen) return;
             if (aiming)
             {
                 var old = GUI.color;
@@ -320,9 +417,9 @@ namespace LGH
             else if (spent)
                 GUI.Label(new Rect(0, y - 4, v.x, 22), "총알이 없다", hintStyle);
             else if (progress < 1f)
-                GUI.Label(new Rect(0, y - 4, v.x, 22), "[R] 길게 눌러 권총 장전  " + pct + "%", hintStyle);
+                GUI.Label(new Rect(0, y - 4, v.x, 22), "[R] 길게 눌러 권총 장전  " + pct + "%    [H] 숨기기", hintStyle);
             else if (GunPhase)
-                GUI.Label(new Rect(0, y - 4, v.x, 22), "[우클릭] 조준  [좌클릭] 발사", barStyle);
+                GUI.Label(new Rect(0, y - 4, v.x, 22), "[우클릭] 조준  [좌클릭] 발사    [H] 숨기기", barStyle);
             else if (Time.time < doneMessageUntil)
                 GUI.Label(new Rect(0, y - 4, v.x, 22), "권총 장전 완료 (1발) - 정문이 열리면 쏠 수 있다", barStyle);
         }

@@ -324,6 +324,7 @@ namespace LGH
             if (data == null) return;
             if (button == 1) Drop(data);
             else if (clicks >= 2 && data.Readable) reading = data;
+            else if (clicks >= 2 && PistolLoader.Local != null && PistolLoader.Local.IsPistol(data)) PistolLoader.Local.SetEquipped(!PistolLoader.Local.Equipped);
         }
 
         static Texture2D Solid(Color c)
@@ -501,6 +502,13 @@ namespace LGH
             {
                 if (GUI.Button(new Rect(bx, keysR.y - 6f, 120f, 34f), "읽기  [F]", buttonStyle)) reading = data;
                 bx += 132f;
+            }
+            var gun = PistolLoader.Local;
+            if (gun != null && gun.IsPistol(data))
+            {
+                bool eq = gun.Equipped;
+                if (GUI.Button(new Rect(bx, keysR.y - 6f, 130f, 34f), eq ? "집어넣기" : "손에 들기", buttonStyle)) gun.SetEquipped(!eq);
+                bx += 142f;
             }
             if (GUI.Button(new Rect(bx, keysR.y - 6f, 150f, 34f), "내려놓기  [G]", buttonStyle)) Drop(data);
         }
