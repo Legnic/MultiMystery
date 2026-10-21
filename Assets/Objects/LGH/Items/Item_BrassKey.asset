@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9e731218c9768064a88ca35440013b2a, type: 3}
+  m_Name: Item_BrassKey
+  m_EditorClassIdentifier: Assembly-CSharp::LGH.ItemData
+  itemId: key_brass
+  displayName: "\uB18B\uC1E0 \uC5F4\uC1E0"
+  description: "\uC190\uB54C \uBB3B\uC740 \uC791\uC740 \uB18B\uC1E0 \uC5F4\uC1E0. \uC190\uC7A1\uC774\uC5D0 'L' \uC790\uAC00 \uC0C8\uACA8\uC838 \uC788\uB2E4."
+  icon: {fileID: 2800000, guid: 145218d027abf3340a16de517512f0b3, type: 3}
+  stackable: 0
+  maxStack: 1
+  readText: 

@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9e731218c9768064a88ca35440013b2a, type: 3}
+  m_Name: Item_PocketWatch
+  m_EditorClassIdentifier: Assembly-CSharp::LGH.ItemData
+  itemId: pocketwatch
+  displayName: "\uD68C\uC911\uC2DC\uACC4"
+  description: "\uAE08\uB3C4\uAE08\uC774 \uBC97\uACA8\uC9C4 \uD68C\uC911\uC2DC\uACC4. \uBC14\uB298\uC774 11\uC2DC 40\uBD84\uC5D0 \uBA48\uCDB0 \uC788\uB2E4."
+  icon: {fileID: 2800000, guid: f71923451a0326d42b84ef50910134a5, type: 3}
+  stackable: 0
+  maxStack: 1
+  readText: 

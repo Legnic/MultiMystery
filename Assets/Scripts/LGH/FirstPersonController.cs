@@ -52,7 +52,8 @@ namespace LGH
             var mouse = Mouse.current;
             if (kb == null) return;
 
-            if (kb.escapeKey.wasPressedThisFrame)
+            // Esc that just closed the bag must not also open the pause menu
+            if (kb.escapeKey.wasPressedThisFrame && !PlayerInventory.EscapeConsumed)
             {
                 Cursor.lockState = CursorLockMode.None;
                 Cursor.visible = true;

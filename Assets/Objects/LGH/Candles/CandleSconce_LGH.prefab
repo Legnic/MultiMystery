@@ -49,9 +49,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::LGH.CandleFlicker
   candleLight: {fileID: 8762056652236865695}
   flame: {fileID: 1169329540498450970}
-  baseIntensity: 3
+  baseIntensity: 3.6
   intensityJitter: 0.5
-  baseRange: 8
+  baseRange: 8.5
   speed: 7
 --- !u!1 &331742386988221859
 GameObject:
@@ -1475,8 +1475,8 @@ Light:
   serializedVersion: 13
   m_Type: 2
   m_Color: {r: 1, g: 0.62, b: 0.3, a: 1}
-  m_Intensity: 3
-  m_Range: 8
+  m_Intensity: 4.8
+  m_Range: 10.5
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
   m_CookieSize2D: {x: 0.5, y: 0.5}
