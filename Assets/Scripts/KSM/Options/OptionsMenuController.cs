@@ -1,0 +1,428 @@
+using System.Collections.Generic;
+using Unity.Services.Vivox;
+using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
+
+namespace CoopDemo
+{
+    // 옵션 화면. 타이틀/대기실/인게임 어디서든 OptionsMenuController.Open()으로 연다.
+    // - 네트워크 세션, 음성 채널, 상대 플레이어는 절대 건드리지 않는다 (로컬 전용).
+    // - Time.timeScale은 쓰지 않는다. 인게임에서는 커서만 풀고 LGH.FirstPersonController를 IPlayerLock으로 잠깐 잠근다.
+    // - 슬라이더는 움직이는 즉시 미리보기가 적용된다(PlayerOptions.Preview). [적용 및 저장]을 눌러야 재실행 후에도 유지된다.
+    public class OptionsMenuController : MonoBehaviour
+    {
+        public static OptionsMenuController Instance { get; private set; }
+        public static bool IsOpen { get; private set; }
+
+        PlayerOptionsData staged;
+        int tab;
+        LGH.FirstPersonController lockedController;
+
+        // 해상도 변경 "되돌리기 타이머": 새 해상도를 고르면 바로 적용해보고, 확인을 안 누르면 자동으로 되돌린다.
+        const float ResolutionConfirmSeconds = 15f;
+        bool resolutionPending;
+        float resolutionRevertAt;
+        int resolutionPrevWidth, resolutionPrevHeight;
+        List<(int w, int h)> resolutionOptions;
+
+        static readonly Color[] CrosshairPresets =
+        {
+            Color.white, new Color(1f, 0.25f, 0.2f), new Color(0.3f, 1f, 0.3f), new Color(1f, 0.9f, 0.2f), new Color(0.3f, 0.85f, 1f)
+        };
+        static readonly string[] CrosshairPresetNames = { "흰색", "빨강", "초록", "노랑", "하늘" };
+
+        [Tooltip("조준점 모양 후보들. LGH.PlayerInteractor.crosshairOptions와 반드시 같은 순서로 넣을 것 — " +
+                 "여기 인덱스를 그대로 PlayerOptionsData.crosshairIndex로 저장해서 플레이어 쪽에 적용한다.")]
+        [SerializeField] Texture2D[] crosshairTextures;
+        const float CrosshairBaseSize = 32f;
+
+        GUIStyle title, tabBtn, tabBtnActive, label, small, box, button, sliderLabel, toggleStyle, warnStyle;
+
+        void Awake()
+        {
+            if (Instance != null && Instance != this) { Destroy(gameObject); return; }
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+
+        void OnDestroy()
+        {
+            if (Instance == this) Instance = null;
+        }
+
+        public static void Open()
+        {
+            if (Instance == null) return;
+            PlayerOptions.EnsureLoaded();
+            Instance.staged = PlayerOptions.Current;
+            Instance.resolutionPending = false;
+            IsOpen = true;
+            Instance.LockLocalPlayer(true);
+            Instance.SetBackgroundUiBlocked(true);
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+        }
+
+        // data: true면 저장된 값으로 되돌리면서 닫기(취소), false면 지금 미리보기 값 그대로 두고 닫기(닫기 버튼)
+        public static void Close(bool revert)
+        {
+            if (Instance == null) return;
+            Instance.resolutionPending = false;
+            if (revert) PlayerOptions.RevertToSaved();   // OptionsManager.Apply()가 해상도까지 포함해서 되돌려준다.
+            IsOpen = false;
+            Instance.LockLocalPlayer(false);
+            Instance.SetBackgroundUiBlocked(false);
+            // 인게임이면 다시 잠그지 않는다 — 일시정지 패널로 돌아가서 "계속하기"를 누를 때 잠그는 게 자연스럽다.
+        }
+
+        // 옵션 창은 OnGUI(IMGUI)로 그려지는데, 타이틀 화면은 uGUI(Canvas+EventSystem)라서 서로 입력 체계가 다르다.
+        // 그냥 두면 옵션 창 뒤에 깔린 "시작/옵션/나가기" 같은 uGUI 버튼이 옵션 창 너머로 그대로 클릭된다.
+        // EventSystem을 꺼서 uGUI 쪽 클릭 처리를 통째로 멈춘다 — OnGUI는 EventSystem과 무관하게 동작하므로 옵션 자체는 영향 없다.
+        EventSystem blockedEventSystem;
+
+        void SetBackgroundUiBlocked(bool blocked)
+        {
+            if (blocked)
+            {
+                blockedEventSystem = EventSystem.current != null ? EventSystem.current : FindAnyObjectByType<EventSystem>(FindObjectsInactive.Include);
+                if (blockedEventSystem != null) blockedEventSystem.enabled = false;
+            }
+            else if (blockedEventSystem != null)
+            {
+                blockedEventSystem.enabled = true;
+                blockedEventSystem = null;
+            }
+        }
+
+        void LockLocalPlayer(bool locked)
+        {
+            var local = LGH.NetworkPlayer.Local;
+            var fpc = local != null ? local.GetComponent<LGH.FirstPersonController>() : null;
+            if (locked)
+            {
+                lockedController = fpc;
+                if (fpc != null) { fpc.SpeedMultiplier = 0f; fpc.LookEnabled = false; }
+            }
+            else if (lockedController != null)
+            {
+                lockedController.SpeedMultiplier = 1f;
+                lockedController.LookEnabled = true;
+                lockedController = null;
+            }
+        }
+
+        void Update()
+        {
+            if (!IsOpen) return;
+            var kb = Keyboard.current;
+            // 인벤토리 등 상위 모달이 이번 프레임에 Esc를 이미 썼으면 옵션은 반응하지 않는다 (우선순위: 상위 모달 > 옵션 > 일반 인게임).
+            if (kb != null && kb.escapeKey.wasPressedThisFrame && !LGH.PlayerInventory.EscapeConsumed)
+                Close(false);
+
+            if (resolutionPending && Time.unscaledTime >= resolutionRevertAt) RevertResolution();
+        }
+
+        // ---------------- GUI ----------------
+
+        void Styles()
+        {
+            if (title != null) return;
+            title = new GUIStyle(GUI.skin.label) { fontSize = 28, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter };
+            tabBtn = new GUIStyle(GUI.skin.button) { fontSize = 16 };
+            tabBtnActive = new GUIStyle(tabBtn);
+            tabBtnActive.normal.textColor = Color.white;
+            tabBtnActive.fontStyle = FontStyle.Bold;
+            label = new GUIStyle(GUI.skin.label) { fontSize = 16, alignment = TextAnchor.MiddleLeft };
+            small = new GUIStyle(GUI.skin.label) { fontSize = 13, alignment = TextAnchor.MiddleLeft, wordWrap = true };
+            box = new GUIStyle(GUI.skin.box);
+            button = new GUIStyle(GUI.skin.button) { fontSize = 16 };
+            sliderLabel = new GUIStyle(GUI.skin.label) { fontSize = 14, alignment = TextAnchor.MiddleRight };
+            toggleStyle = new GUIStyle(GUI.skin.toggle) { fontSize = 16 };
+            warnStyle = new GUIStyle(GUI.skin.label) { fontSize = 14, alignment = TextAnchor.MiddleLeft, wordWrap = true };
+            warnStyle.normal.textColor = new Color(1f, 0.75f, 0.4f);
+        }
+
+        void OnGUI()
+        {
+            if (!IsOpen) return;
+            Styles();
+            var v = LGH.UiScale.Apply();
+            float w = v.x, h = v.y;
+
+            float pw = Mathf.Min(620f, w - 60f), ph = Mathf.Min(560f, h - 60f);
+            var r = new Rect((w - pw) / 2f, (h - ph) / 2f, pw, ph);
+            GUI.Box(r, GUIContent.none, box);
+            GUILayout.BeginArea(new Rect(r.x + 20f, r.y + 14f, pw - 40f, ph - 28f));
+
+            GUILayout.Label("옵션", title, GUILayout.Height(40));
+
+            GUILayout.BeginHorizontal();
+            DrawTab(0, "오디오");
+            DrawTab(1, "그래픽");
+            DrawTab(2, "조작");
+            DrawTab(3, "게임");
+            GUILayout.EndHorizontal();
+            GUILayout.Space(10);
+
+            GUILayout.BeginVertical(box, GUILayout.ExpandHeight(true));
+            switch (tab)
+            {
+                case 0: DrawAudioTab(); break;
+                case 1: DrawGraphicsTab(); break;
+                case 2: DrawControlsTab(); break;
+                case 3: DrawGameTab(); break;
+            }
+            GUILayout.EndVertical();
+
+            GUILayout.Space(10);
+            GUILayout.BeginHorizontal();
+            if (GUILayout.Button("기본값", button, GUILayout.Height(40))) ApplyPreview(PlayerOptionsData.Default());
+            if (GUILayout.Button("취소", button, GUILayout.Height(40))) Close(true);
+            GUILayout.FlexibleSpace();
+            if (GUILayout.Button("적용 및 저장", button, GUILayout.Height(40), GUILayout.Width(150))) PlayerOptions.Save(staged);
+            if (GUILayout.Button("닫기", button, GUILayout.Height(40), GUILayout.Width(100))) Close(false);
+            GUILayout.EndHorizontal();
+
+            GUILayout.EndArea();
+        }
+
+        void DrawTab(int index, string name)
+        {
+            if (GUILayout.Button(name, tab == index ? tabBtnActive : tabBtn, GUILayout.Height(34))) tab = index;
+        }
+
+        void ApplyPreview(PlayerOptionsData data)
+        {
+            staged = data;
+            PlayerOptions.Preview(staged);
+        }
+
+        float Slider(string labelText, float value01, float min, float max)
+        {
+            GUILayout.BeginHorizontal();
+            GUILayout.Label(labelText, label, GUILayout.Width(150));
+            float next = GUILayout.HorizontalSlider(value01, min, max, GUILayout.Height(24));
+            GUILayout.Label(Mathf.RoundToInt(Mathf.InverseLerp(min, max, next) * 100f) + "%", sliderLabel, GUILayout.Width(50));
+            GUILayout.EndHorizontal();
+            return next;
+        }
+
+        void DrawAudioTab()
+        {
+            // 배경음악/효과음 분리는 폴리싱 단계에서 다시 검토하기로 함 (2026-10-22) — 지금은 전체 음량만 노출.
+            // PlayerOptionsData.bgmVolume/sfxVolume과 OptionsManager의 믹서 적용 로직은 그대로 남겨뒀으니,
+            // 나중에 믹서에 BGM/SFX 그룹이 생기면 여기 슬라이더 두 줄만 다시 추가하면 된다.
+            float v;
+            v = Slider("전체 음량", staged.masterVolume, 0f, 1f);
+            if (!Mathf.Approximately(v, staged.masterVolume)) { staged.masterVolume = v; PlayerOptions.Preview(staged); }
+
+            v = Slider("상대방 음성", staged.voiceVolume, 0f, 1f);
+            if (!Mathf.Approximately(v, staged.voiceVolume)) { staged.voiceVolume = v; PlayerOptions.Preview(staged); }
+
+            GUILayout.Space(8);
+            bool micOn = !staged.micMuted;
+            bool nextMicOn = GUILayout.Toggle(micOn, " 내 마이크 켜기", toggleStyle, GUILayout.Height(28));
+            if (nextMicOn != micOn) { staged.micMuted = !nextMicOn; PlayerOptions.Preview(staged); }
+
+            GUILayout.Space(6);
+            string micStatus = VoiceChatManager.Instance != null ? VoiceChatManager.Instance.Status : "음성: 아직 시작 안 됨";
+            GUILayout.Label(micStatus, small);
+            bool voiceReady = VoiceChatManager.Instance != null && VoiceChatManager.Instance.IsReady;
+            if (voiceReady)
+            {
+                string speaking = VoiceChatManager.Instance.SelfSpeaking ? "말하는 중 (입력 감지됨)" : "조용함";
+                GUILayout.Label("마이크 입력: " + speaking, small);
+            }
+
+            GUILayout.Space(10);
+            if (!voiceReady)
+            {
+                GUILayout.Label("장치 목록은 방에 들어가 음성이 연결된 뒤에 고를 수 있습니다.", small);
+            }
+            else
+            {
+                GUILayout.Label("마이크 장치", label);
+                DrawDeviceList(VivoxService.Instance.AvailableInputDevices, VivoxService.Instance.ActiveInputDevice, isInput: true);
+                GUILayout.Space(8);
+                GUILayout.Label("스피커 장치", label);
+                DrawDeviceList(VivoxService.Instance.AvailableOutputDevices, VivoxService.Instance.ActiveOutputDevice, isInput: false);
+            }
+        }
+
+        // devices: VivoxInputDevice 또는 VivoxOutputDevice의 읽기 전용 목록 (object로 받아서 둘 다 처리).
+        void DrawDeviceList(System.Collections.Generic.IEnumerable<object> devices, object active, bool isInput)
+        {
+            foreach (var dev in devices)
+            {
+                string name = isInput ? ((VivoxInputDevice)dev).DeviceName : ((VivoxOutputDevice)dev).DeviceName;
+                string id = isInput ? ((VivoxInputDevice)dev).DeviceID : ((VivoxOutputDevice)dev).DeviceID;
+                bool isActive = active != null && (isInput ? ((VivoxInputDevice)active).DeviceID : ((VivoxOutputDevice)active).DeviceID) == id;
+                GUILayout.BeginHorizontal();
+                if (GUILayout.Button((isActive ? "● " : "  ") + name, isActive ? tabBtnActive : tabBtn, GUILayout.Height(30)))
+                {
+                    if (isInput) { staged.micDeviceId = id; ((VivoxInputDevice)dev).SetActiveDeviceAsync(); }
+                    else { staged.speakerDeviceId = id; ((VivoxOutputDevice)dev).SetActiveDeviceAsync(); }
+                    PlayerOptions.Preview(staged);
+                }
+                GUILayout.EndHorizontal();
+            }
+        }
+
+        void DrawGraphicsTab()
+        {
+            bool nextFullscreen = GUILayout.Toggle(staged.fullscreen, " 전체 화면 (테두리 없음)", toggleStyle, GUILayout.Height(28));
+            if (nextFullscreen != staged.fullscreen) { staged.fullscreen = nextFullscreen; PlayerOptions.Preview(staged); }
+            GUILayout.Label(staged.fullscreen ? "" : "꺼져 있으면 창 모드로 실행됩니다.", small);
+
+            GUILayout.Space(10);
+            float v = Slider("화면 밝기", staged.brightness, -1f, 1f);
+            if (!Mathf.Approximately(v, staged.brightness)) { staged.brightness = v; PlayerOptions.Preview(staged); }
+            GUILayout.Label("어두운 곳에서도 단서는 원래 보이도록 만들어져 있습니다 — 이 슬라이더는 보기 편하게 밝기만 보정합니다.", small);
+
+            GUILayout.Space(14);
+            GUILayout.Label("해상도", label);
+            EnsureResolutionOptions();
+            int current = resolutionOptions.FindIndex(o => o.w == staged.resolutionWidth && o.h == staged.resolutionHeight);
+            if (current < 0) current = resolutionOptions.Count - 1;
+            GUILayout.BeginHorizontal();
+            GUI.enabled = !resolutionPending && current > 0;
+            if (GUILayout.Button("◀", button, GUILayout.Width(40), GUILayout.Height(30))) TryChangeResolution(resolutionOptions[current - 1]);
+            GUI.enabled = true;
+            GUILayout.Label($"{resolutionOptions[current].w} x {resolutionOptions[current].h}", label, GUILayout.Width(150));
+            GUI.enabled = !resolutionPending && current < resolutionOptions.Count - 1;
+            if (GUILayout.Button("▶", button, GUILayout.Width(40), GUILayout.Height(30))) TryChangeResolution(resolutionOptions[current + 1]);
+            GUI.enabled = true;
+            GUILayout.EndHorizontal();
+
+            if (resolutionPending)
+            {
+                int left = Mathf.CeilToInt(resolutionRevertAt - Time.unscaledTime);
+                GUILayout.Space(6);
+                GUILayout.Label($"이 해상도를 유지할까요? {left}초 후 자동으로 되돌아갑니다.", warnStyle);
+                GUILayout.BeginHorizontal();
+                if (GUILayout.Button("유지하기", button, GUILayout.Height(32))) ConfirmResolution();
+                if (GUILayout.Button("지금 되돌리기", button, GUILayout.Height(32))) RevertResolution();
+                GUILayout.EndHorizontal();
+            }
+        }
+
+        void EnsureResolutionOptions()
+        {
+            if (resolutionOptions != null) return;
+            resolutionOptions = new List<(int, int)>();
+            foreach (var r in Screen.resolutions)
+            {
+                var pair = (r.width, r.height);
+                if (!resolutionOptions.Contains(pair)) resolutionOptions.Add(pair);
+            }
+            resolutionOptions.Sort((a, b) => (a.Item1 * a.Item2).CompareTo(b.Item1 * b.Item2));
+            var curPair = (staged.resolutionWidth, staged.resolutionHeight);
+            if (!resolutionOptions.Contains(curPair)) resolutionOptions.Add(curPair);
+        }
+
+        void TryChangeResolution((int w, int h) target)
+        {
+            resolutionPrevWidth = staged.resolutionWidth;
+            resolutionPrevHeight = staged.resolutionHeight;
+            staged.resolutionWidth = target.w;
+            staged.resolutionHeight = target.h;
+            Screen.SetResolution(target.w, target.h, staged.fullscreen ? FullScreenMode.FullScreenWindow : FullScreenMode.Windowed);
+            resolutionPending = true;
+            resolutionRevertAt = Time.unscaledTime + ResolutionConfirmSeconds;
+        }
+
+        void ConfirmResolution()
+        {
+            resolutionPending = false;
+            PlayerOptions.Preview(staged);
+        }
+
+        void RevertResolution()
+        {
+            resolutionPending = false;
+            staged.resolutionWidth = resolutionPrevWidth;
+            staged.resolutionHeight = resolutionPrevHeight;
+            Screen.SetResolution(resolutionPrevWidth, resolutionPrevHeight, staged.fullscreen ? FullScreenMode.FullScreenWindow : FullScreenMode.Windowed);
+            PlayerOptions.Preview(staged);
+        }
+
+        void DrawControlsTab()
+        {
+            float v = Slider("마우스 감도", staged.mouseSensitivity, 0.2f, 5f);
+            if (!Mathf.Approximately(v, staged.mouseSensitivity)) { staged.mouseSensitivity = v; PlayerOptions.Preview(staged); }
+
+            GUILayout.Space(10);
+            GUILayout.Label("현재 조작 키", label);
+            GUILayout.Label(
+                "WASD 이동 · 마우스 시점 · 스페이스 점프\n" +
+                "[E] 조사/상호작용 · [I] 소지품 · [F] 읽기 · [G] 내려놓기 · [R] 양초 교체\n" +
+                "[M] 마이크 음소거 · [ESC] 일시정지/옵션",
+                small);
+        }
+
+        void DrawGameTab()
+        {
+            GUILayout.Label("조준점", label);
+
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("모양", label, GUILayout.Width(70));
+            bool hasShapes = crosshairTextures != null && crosshairTextures.Length > 0;
+            int shapeIndex = hasShapes ? Mathf.Clamp(staged.crosshairIndex, 0, crosshairTextures.Length - 1) : 0;
+            GUI.enabled = hasShapes && shapeIndex > 0;
+            if (GUILayout.Button("◀", button, GUILayout.Width(40), GUILayout.Height(60))) ChangeCrosshairShape(shapeIndex - 1);
+            GUI.enabled = true;
+
+            // 미리보기: 지금 고른 모양을 실제 크기/색상 그대로 어두운 바탕 위에 보여준다.
+            Rect previewRect = GUILayoutUtility.GetRect(80f, 60f, GUILayout.Width(80f), GUILayout.Height(60f));
+            if (Event.current.type == EventType.Repaint)
+            {
+                var old = GUI.color;
+                GUI.color = new Color(0.08f, 0.08f, 0.08f, 1f);
+                GUI.DrawTexture(previewRect, Texture2D.whiteTexture);
+                if (hasShapes && crosshairTextures[shapeIndex] != null)
+                {
+                    float size = Mathf.Min(56f, CrosshairBaseSize * staged.crosshairSize);
+                    var r = new Rect(previewRect.center.x - size / 2f, previewRect.center.y - size / 2f, size, size);
+                    GUI.color = staged.crosshairColor;
+                    GUI.DrawTexture(r, crosshairTextures[shapeIndex]);
+                }
+                GUI.color = old;
+            }
+
+            GUI.enabled = hasShapes && shapeIndex < crosshairTextures.Length - 1;
+            if (GUILayout.Button("▶", button, GUILayout.Width(40), GUILayout.Height(60))) ChangeCrosshairShape(shapeIndex + 1);
+            GUI.enabled = true;
+            GUILayout.EndHorizontal();
+
+            GUILayout.Space(8);
+            float v = Slider("조준점 크기", staged.crosshairSize, 0.5f, 2.5f);
+            if (!Mathf.Approximately(v, staged.crosshairSize)) { staged.crosshairSize = v; PlayerOptions.Preview(staged); }
+
+            GUILayout.Space(8);
+            GUILayout.Label("조준점 색상", label);
+            GUILayout.BeginHorizontal();
+            for (int i = 0; i < CrosshairPresets.Length; i++)
+            {
+                var c = CrosshairPresets[i];
+                bool isActive = staged.crosshairColor == c;
+                var old = GUI.backgroundColor;
+                GUI.backgroundColor = c;
+                if (GUILayout.Button(isActive ? "●" : " ", isActive ? tabBtnActive : tabBtn, GUILayout.Width(48), GUILayout.Height(32)))
+                {
+                    staged.crosshairColor = c;
+                    PlayerOptions.Preview(staged);
+                }
+                GUI.backgroundColor = old;
+                GUILayout.Space(4);
+            }
+            GUILayout.EndHorizontal();
+        }
+
+        void ChangeCrosshairShape(int index)
+        {
+            staged.crosshairIndex = index;
+            PlayerOptions.Preview(staged);
+        }
+    }
+}

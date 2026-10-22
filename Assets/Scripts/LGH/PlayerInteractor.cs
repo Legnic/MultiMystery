@@ -20,6 +20,17 @@ namespace LGH
         public Transform viewCamera;
         public float reach = 2.6f;
         public LayerMask mask = ~0;
+        [Tooltip("화면 중앙에 그릴 조준점 후보들 (비워두면 예전처럼 '+' 글자로 그려진다). 어떤 걸 쓸지/크기/색상은 옵션의 '게임' 탭에서 조절 — " +
+                 "OptionsMenuController.crosshairTextures와 순서를 맞출 것.")]
+        public Texture2D[] crosshairOptions;
+        const float CrosshairBaseSize = 32f;
+
+        Texture2D CurrentCrosshair()
+        {
+            if (crosshairOptions == null || crosshairOptions.Length == 0) return null;
+            int i = Mathf.Clamp(CoopDemo.PlayerOptions.Current.crosshairIndex, 0, crosshairOptions.Length - 1);
+            return crosshairOptions[i];
+        }
 
         InteractableDoor focused;
         CandlePickup focusedPickup;
@@ -69,6 +80,8 @@ namespace LGH
             focusedDrawer = null;
             focusedPortrait = null;
             focusedWorld = null;
+            // 커서가 풀려있다 = 이 플레이어만 일시정지/옵션/소지품 등 메뉴가 떠 있는 상태. 조준·상호작용(E/R)도 멈춘다 (상대 플레이어는 무관).
+            if (Cursor.lockState != CursorLockMode.Locked) return;
             if (viewCamera == null) return;
             if (PortraitTilt.Current != null) return; // 액자를 살펴보는 동안은 그쪽이 입력(Q/E/F)을 가져간다
             if (RaycastIgnoringSelf(out RaycastHit hit))
@@ -178,7 +191,22 @@ namespace LGH
             var v = UiScale.Apply();
             float w = v.x, h = v.y;
             GUI.color = Color.white;
-            GUI.Label(new Rect(w / 2f - 10f, h / 2f - 14f, 20f, 28f), "+", style);
+            // 게임 중(커서가 잠겨 있을 때)에만 보인다 — 일시정지/소지품/옵션 등에서는 대신 마우스 커서가 보인다.
+            if (Cursor.lockState == CursorLockMode.Locked)
+            {
+                var tex = CurrentCrosshair();
+                if (tex != null)
+                {
+                    float size = CrosshairBaseSize * CoopDemo.PlayerOptions.Current.crosshairSize;
+                    GUI.color = CoopDemo.PlayerOptions.Current.crosshairColor;
+                    GUI.DrawTexture(new Rect(w / 2f - size / 2f, h / 2f - size / 2f, size, size), tex);
+                    GUI.color = Color.white;
+                }
+                else
+                {
+                    GUI.Label(new Rect(w / 2f - 10f, h / 2f - 14f, 20f, 28f), "+", style);
+                }
+            }
 
             string text = Time.time < messageUntil ? message : Prompt();
             if (text == null) return;

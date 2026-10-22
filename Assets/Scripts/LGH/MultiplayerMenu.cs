@@ -202,7 +202,10 @@ namespace LGH
             busy = false;
         }
 
-        async void LeaveRoom()
+        void LeaveRoom() { _ = LeaveRoomAsync(); }
+
+        // 결과창("타이틀로 돌아가기") 등 바깥에서도 세션 정리가 끝난 뒤를 기다렸다가 다음 동작을 이어갈 수 있도록 Task로 노출한다.
+        public async System.Threading.Tasks.Task LeaveRoomAsync()
         {
             busy = true;
             try { if (session != null) await session.LeaveAsync(); }
@@ -352,10 +355,21 @@ namespace LGH
                 shown.Clear(); shown.AddRange(rooms);
                 gInGame = InGame; gPaused = paused; gHasSession = session != null; gReady = ready;
             }
+
+            // 도입부/엔딩/결과 단계에서는 이 화면 대신 해당 Canvas가 화면을 차지한다.
+            // 플레이어는 그 단계들 중에도 이미 스폰돼 있어서(InGame=true) 이 가드가 없으면 두 화면이 겹쳐 그려진다.
+            // Lobby(대기방)와 Playing(일시정지/상단 정보)은 이 스크립트가 계속 그린다.
+            var flow = CoopDemo.GameFlowSync.Instance;
+            bool flowOwnsScreen = gInGame && flow != null &&
+                (flow.Stage == CoopDemo.GameStage.Intro || flow.Stage == CoopDemo.GameStage.Ending || flow.Stage == CoopDemo.GameStage.Result);
+            if (flowOwnsScreen) return;
+
+            bool lobbyStage = gInGame && flow != null && flow.Stage == CoopDemo.GameStage.Lobby;
+
             var v = UiScale.Apply();
             float w = v.x, h = v.y;
 
-            if (gInGame && !gPaused)
+            if (gInGame && !lobbyStage && !gPaused)
             {
                 if (session != null)
                 {
@@ -363,33 +377,29 @@ namespace LGH
                     string names = PlayerNames();
                     if (names.Length > 0) info += "      " + names;
                     GUI.Label(new Rect(14, 8, w - 28, 28), info, small);
-                    if (session.IsHost && session.PlayerCount < 2) GUI.Label(new Rect(14, 34, w - 28, 28), "상대를 기다리는 중... 상대는 방 목록에서 이 방을 누르면 들어와요", small);
                 }
                 return;
             }
 
-            float pw = 520f, ph = gInGame ? 280f : Mathf.Min(680f, h - 40f);
+            // 옵션 창이 떠 있는 동안은 이 패널을 그리지 않는다 (OptionsMenuController가 같은 화면 영역을 쓴다).
+            if (CoopDemo.OptionsMenuController.IsOpen) return;
+
+            float pw = 520f, ph = !gInGame ? Mathf.Min(680f, h - 40f) : (lobbyStage ? 420f : 320f);
             var r = new Rect((w - pw) / 2f, (h - ph) / 2f, pw, ph);
             GUI.Box(r, GUIContent.none, box);
             GUILayout.BeginArea(new Rect(r.x + 24, r.y + 16, pw - 48, ph - 32));
 
             if (gInGame)
             {
-                GUILayout.Label("일시정지", title, GUILayout.Height(48));
-                if (gHasSession) GUILayout.Label(session != null ? session.Name + "  (참가 코드: " + session.Code + ")" : "", label);
-                GUILayout.Space(8);
-                NicknameRow();
-                GUILayout.Space(8);
-                if (GUILayout.Button("계속하기", button, GUILayout.Height(42))) { GUIUtility.keyboardControl = 0; imeFocus = 0; ShowCursor(false); }
-                GUILayout.Space(6);
-                GUI.enabled = !busy;
-                if (GUILayout.Button("방 나가기", button, GUILayout.Height(42))) LeaveRoom();
-                GUI.enabled = true;
+                if (lobbyStage) DrawLobbyWaitingRoomBody(flow);
+                else DrawPauseBody();
             }
             else
             {
                 GUILayout.Label("저택", title, GUILayout.Height(50));
                 GUILayout.Label("2인 협동 방탈출", label);
+                GUILayout.Space(6);
+                if (GUILayout.Button("옵션", button, GUILayout.Height(32), GUILayout.Width(100))) CoopDemo.OptionsMenuController.Open();
                 GUILayout.Space(10);
 
                 NicknameRow();
@@ -444,6 +454,66 @@ namespace LGH
                 GUILayout.Label(status, label);
             }
             GUILayout.EndArea();
+        }
+
+        // 플레이 중(Playing) ESC로 연 일시정지 패널. 기존 동작 그대로.
+        void DrawPauseBody()
+        {
+            GUILayout.Label("일시정지", title, GUILayout.Height(48));
+            if (gHasSession) GUILayout.Label(session != null ? session.Name + "  (참가 코드: " + session.Code + ")" : "", label);
+            GUILayout.Space(8);
+            NicknameRow();
+            GUILayout.Space(8);
+            if (GUILayout.Button("계속하기", button, GUILayout.Height(42))) { GUIUtility.keyboardControl = 0; imeFocus = 0; ShowCursor(false); }
+            GUILayout.Space(6);
+            if (GUILayout.Button("옵션", button, GUILayout.Height(42))) CoopDemo.OptionsMenuController.Open();
+            GUILayout.Space(6);
+            GUI.enabled = !busy;
+            if (GUILayout.Button("방 나가기", button, GUILayout.Height(42))) LeaveRoom();
+            GUI.enabled = true;
+        }
+
+        // 방 생성/참가 직후 ~ 둘 다 준비를 누르고 카운트다운이 끝나기 전까지(GameFlowSync.Stage == Lobby) 보여주는 대기방.
+        void DrawLobbyWaitingRoomBody(CoopDemo.GameFlowSync flow)
+        {
+            GUILayout.Label("대기방", title, GUILayout.Height(48));
+            if (session != null) GUILayout.Label(session.Name + "   참가 코드 " + session.Code, label);
+            GUILayout.Space(6);
+            NicknameRow();
+            GUILayout.Space(10);
+
+            bool twoPlayers = session != null && session.PlayerCount >= 2;
+            GUILayout.Label(twoPlayers ? PlayerNames() : "상대를 기다리는 중... 상대는 방 목록에서 이 방을 누르면 들어와요", label);
+            GUILayout.Space(6);
+
+            if (flow != null)
+            {
+                bool localReady = flow.LocalLobbyReady;
+                bool otherReady = flow.OtherLobbyReady;
+                string readyLine = "나: " + (localReady ? "준비 완료" : "준비 안 됨");
+                if (twoPlayers) readyLine += "   ·   상대: " + (otherReady ? "준비 완료" : "준비 안 됨");
+                GUILayout.Label(readyLine, label);
+                GUILayout.Space(8);
+
+                double remain = flow.LobbyCountdownRemaining;
+                if (remain >= 0)
+                {
+                    GUILayout.Label("모두 준비 완료! " + Mathf.CeilToInt((float)remain) + "초 후 시작합니다...", title, GUILayout.Height(40));
+                }
+                else
+                {
+                    GUI.enabled = twoPlayers;
+                    if (GUILayout.Button(localReady ? "준비 취소" : "준비 완료", button, GUILayout.Height(42))) flow.RequestLobbyReady(!localReady);
+                    GUI.enabled = true;
+                }
+            }
+
+            GUILayout.Space(6);
+            if (GUILayout.Button("옵션", button, GUILayout.Height(36))) CoopDemo.OptionsMenuController.Open();
+            GUILayout.Space(6);
+            GUI.enabled = !busy;
+            if (GUILayout.Button("방 나가기", button, GUILayout.Height(36))) LeaveRoom();
+            GUI.enabled = true;
         }
     }
 }

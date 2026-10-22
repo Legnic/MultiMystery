@@ -148,6 +148,94 @@ git에 커밋되어 팀원 전원이 같은 내용을 공유합니다. 개인적
 - **`DayNightCycle`(낮밤 주기, `Assets/Scripts/LGH/DayNightCycle.cs`) — 실제로 동기화 안 되고 있었음, 수정 완료**: 기존엔 순수 `MonoBehaviour`라 각 클라이언트가 자기 타이머를 따로 돌렸음(호스트·게스트가 서로 다른 시각을 보게 됨). `NetworkBehaviour`로 바꾸고 `NetworkVariable<float> syncedT01`(host-write, everyone-read)을 추가 — 호스트(또는 네트워크 꺼진 싱글)만 `t01`을 실제로 흘려보내 `syncedT01`에 써주고, 게스트는 받은 값을 그대로 반영만 함(`DrivesTime = !IsSpawned || IsServer`). 기존 다른 동기화 매니저와 같은 패턴으로 프리팹화: `Assets/Objects/LGH/DayNightSync_LGH.prefab` 생성(`DefaultNetworkPrefabs`엔 Unity Netcode가 자동 등록), 씬의 기존 `DayNightCycle_LGH` 오브젝트를 그 프리팹에 연결(`SaveAsPrefabAssetAndConnect`)하고 중복으로 남아있던 비활성 `DayNightCycle` 오브젝트는 삭제. Play 모드에서 호스트로 직접 검증: `freezeTime`을 잠깐 풀어서 `t01`이 흐르는 동안 `syncedT01.Value`가 정확히 같이 움직이는 것 확인, 다시 `freezeTime=true`로 복원. `NetworkSceneObjectValidator` 0건, 콘솔 에러 0건.
 - **서랍(`InteractableDrawer`) — 점검해보니 이미 정상 동작 중, 수정 불필요(이전 보고 정정)**: 직전 턴에서 "상호작용 트리거가 없다"고 보고했던 건 제 점검 실수였음 — `Drawer0` 오브젝트 자체의 컴포넌트만 보고 판단해서 놓쳤는데, 실제로는 `PlayerInteractor.cs`가 레이캐스트에서 `InteractableDrawer`를 타입째로 찾아 `CandleNetworkSync.RequestDrawer()`로 넘기고, `CandleNetworkSync`가 `Awake()`에서 씬의 모든 `InteractableDrawer`(이 나이트스탠드 서랍 2개 포함)를 자동으로 찾아 인덱스를 매겨 완전히 동기화(RPC + 늦은 접속자 전체 상태 수신)하고 있었음. Play 모드에서 `CandleNetworkSync.Instance.RequestDrawer(drawer)`를 직접 호출해 실제로 열리고 닫히는 것까지 확인함.
 
+## 옵션(설정) 시스템 P0 구현 (2026-10-22)
+사용자가 상세 스펙(P0/P1/P2 우선순위, UI 구조, 진입 규칙)을 주고 P0 항목 구현을 요청함. 핵심 원칙: 옵션은 플레이어별 로컬 설정(상대 PC에 전파 금지), ESC 옵션 창은 `Time.timeScale`을 쓰지 않고 로컬 입력만 잠그며 네트워크 세션·음성·상대 플레이어는 그대로 유지.
+
+**착수 전 발견한 중요 사실 — 생각보다 기반이 많이 갖춰져 있었음**:
+- 음성 채팅이 이미 완전히 구현돼 있음(`Assets/Scripts/KSM/Voice/VoiceChatManager.cs`, Vivox v16 `VivoxService.Instance` 기반): 마이크 음소거 토글(M키), 마이크 입력 감도(게인), 거리 기반 상대 음량 감쇠(`UpdateDistanceVolume`), 상태 표시(`Status`)까지 전부 있었음. "상대방 음성 음량" 슬라이더만 추가하면 됐음(`SetRemoteVolumeScale(0~1)`을 추가해 기존 거리 감쇠 위에 곱산으로 결합).
+- 마우스 감도 필드가 이미 `LGH.FirstPersonController.mouseSensitivity`로 존재 — 그대로 매 프레임 덮어쓰기만 하면 됨.
+- ESC 처리가 이미 부분 구현돼 있었음: `FirstPersonController.Update()`가 ESC에서 커서만 풀어주고(잠그는 코드는 없음), `LGH.MultiplayerMenu.OnGUI()`가 "커서가 풀려있고 인게임이면 = 일시정지"로 판단해서 이미 "일시정지" 패널(닉네임/계속하기/방 나가기)을 그리고 있었음 — `Time.timeScale` 사용 안 함, 네트워크 안 끊음, 이미 요구사항 2번을 만족하는 상태. 패널에 "옵션" 버튼만 추가하면 됐음.
+- `LGH.PlayerInventory.EscapeConsumed`(정적 프로퍼티)가 이미 "인벤토리 등 상위 모달이 이번 프레임에 Esc를 썼는지" 판단하는 용도로 존재 — 옵션의 ESC 처리가 이 값을 확인하게 해서 상위 모달 > 옵션 > 일반 인게임 우선순위를 그대로 재사용함.
+- `/TitleCanvas/TitleRoot/ButtonPanel/OptionsButton`이 이미 씬에 있었지만 `TitleMenuUI.cs` 주석에 "옵션 버튼은 아직 기능이 없어서 연결 안 함"이라고 적혀 있던 상태 — 핸들러만 추가해서 연결함.
+- UI 체계가 혼합 상태: 로비/타이틀은 uGUI(Canvas), 인게임 HUD·소지품·일시정지는 전부 `OnGUI()`(IMGUI, `PlayerInventory.cs`/`MultiplayerMenu.cs` 패턴). 인게임 옵션 창은 이 기존 관례를 따라 OnGUI로 만듦(별도 UI 체계를 섞지 않기 위함).
+- 오디오 믹서(`Assets/Sounds/KJH/KJH_AudioMixer.mixer`)에 그룹이 `Master/Ambient/Echo` 셋뿐이고, 씬에 실제 `AudioSource` 컴포넌트는 2개(미사용 `Speaker_1F/2F`)뿐 — 현재 거의 모든 효과음이 `AudioSource.PlayClipAtPoint(...)`로 그때그때 재생되고 있어 믹서를 거치지 않음. **BGM 음량·효과음 음량을 진짜로 분리하려면 Audio Mixer 창에서 Master 밑에 "BGM"/"SFX" 자식 그룹을 만들고, 각 그룹 볼륨 페이더를 우클릭 → Expose to script → 이름을 각각 `BGMVolume`/`SFXVolume`으로 지어야 함(그룹 생성·파라미터 노출은 공개 API가 없어서 스크립트로 못 함, 팀원이 에디터에서 직접 해야 함)**. 그 전까지는 해당 슬라이더가 존재하고 저장도 되지만 실제로 들리는 소리에는 영향이 없음(그룹이 없으면 `OptionsManager`가 콘솔에 경고만 찍고 조용히 넘어감). "전체 음량"은 믹서 라우팅과 무관하게 `AudioListener.volume`을 직접 제어하므로 지금 당장도 모든 소리에 적용됨.
+
+**구현 내용** (전부 `Assets/Scripts/KSM/Options/`, 네임스페이스 `CoopDemo`):
+- `PlayerOptionsData`(값 묶음) + `PlayerOptions`(static, PlayerPrefs 키 `KSM_PlayerOptions_v1`에 JSON으로 저장/로드, `Preview()`=미리보기만/`Save()`=영구저장/`RevertToSaved()`=취소).
+- `OptionsManager`(씬에 상주하는 `OptionsSystem` 오브젝트, `DontDestroyOnLoad`): `PlayerOptions.Changed` 구독, `AudioListener.volume`/믹서 BGM·SFX 파라미터/`VoiceChatManager` 마이크·상대음량/`Screen.fullScreenMode`/전역 Volume의 `ColorAdjustments.postExposure`(기존 아트 기준값 0.6 위에 슬라이더 오프셋을 더함, 대체 아님)/로컬 플레이어의 `mouseSensitivity`에 반영. 밝기는 기존 `Building_LGH_Volume`(전역 Volume, 이미 ColorAdjustments 보유)을 그대로 씀 — 새 Volume 안 만듦.
+- `OptionsMenuController`: 오디오/그래픽/조작 3탭 + [기본값]/[취소]/[적용 및 저장]/[닫기]. 슬라이더는 즉시 `PlayerOptions.Preview()`로 미리보기 적용, 적용 및 저장을 눌러야 `PlayerPrefs`에 영구 반영. 취소=저장된 값으로 되돌리고 닫기, 닫기=지금 미리보기 값은 그대로 둔 채(이번 세션 한정) 그냥 닫기. `Open()`/`Close()`에서 로컬 플레이어의 `FirstPersonController.SpeedMultiplier=0`/`LookEnabled=false`만 잠그고(`Time.timeScale`/`NetworkManager`는 절대 안 건드림), ESC는 `PlayerInventory.EscapeConsumed`를 먼저 확인한 뒤에만 닫음.
+- 진입점 3곳: 타이틀 화면(`TitleMenuUI.OnOptionsClicked` → 기존 OptionsButton에 연결), 대기실/방 목록 화면(`MultiplayerMenu`에 작은 옵션 버튼 추가, 타이틀이 꺼진 뒤에도 접근 가능하도록), 인게임 일시정지 패널(`MultiplayerMenu`의 "일시정지" 박스에 옵션 버튼 추가 — 옵션이 열려있는 동안은 `MultiplayerMenu.OnGUI()`가 자기 패널을 안 그리게 해서 화면을 넘겨줌).
+- 검증: Play 모드에서 전부 직접 호출/상태확인으로 확인함(슬라이더 미리보기 → `AudioListener.volume`/`postExposure` 즉시 반영, 적용 및 저장 → `PlayerPrefs` 기록 확인, 취소 → 저장값 복원 확인, 인게임에서 옵션 열때 `SpeedMultiplier=0`/`LookEnabled=false`이면서 `NetworkManager.IsListening=true`·`Time.timeScale=1` 유지 확인). 실제 클릭(마우스)·ESC 키 입력 경로 자체는 이 환경에서 `simulate_key`가 Game 뷰 포커스 문제로 불안정해 직접 플레이로 추가 확인 필요.
+
+**아직 안 한 것(P1, 이번엔 손 안 댐)**: 마이크/스피커 장치 선택, 해상도 변경, 키 재설정, FOV, 조준점/화면 흔들림, 자막 크기 — 전부 스펙 그대로 뒤로 미룸.
+
+**후속 조정(같은 날)**: 사용자가 "배경음악/효과음 음량 분리는 폴리싱 과정에서 검토"하기로 결정 — 오디오 믹서에 BGM/SFX 그룹이 아직 없는 상태와도 맞물려, `OptionsMenuController`의 오디오 탭에서는 "전체 음량"/"상대방 음성"만 보이게 줄임. `PlayerOptionsData.bgmVolume`/`sfxVolume` 필드와 `OptionsManager`의 믹서 반영 로직은 그대로 남겨뒀으니(위 "Audio Mixer 창에서 BGM/SFX 그룹 추가" 안내도 유효), 나중에 폴리싱 때 슬라이더 두 줄만 `DrawAudioTab()`에 다시 추가하면 됨.
+
+## 옵션 시스템 P1 확장 — 마이크/스피커 장치, 해상도, 조준점 (2026-10-22, 같은 날 후속)
+사용자가 P1 중 "마이크 및 스피커 장치 목록·선택", "해상도 변경", "조준점 크기·색상"을 요청하고, 직접 크로스헤어 에셋(`Assets/AssetPacks/OccaSoftware/Crosshairs` — OccaSoftware의 "Massive Crosshair Bundle", 512×512 투명 PNG 7종)을 임포트해서 "플레이 중 마우스 커서 대신 조준점이 보이게" 요청.
+
+**새로 추가**:
+- `PlayerOptionsData`에 `resolutionWidth/Height`, `micDeviceId`/`speakerDeviceId`(Vivox `VivoxInputDevice.DeviceID`/`VivoxOutputDevice.DeviceID`), `crosshairSize`(0.5~2.5배), `crosshairColor` 필드 추가.
+- 오디오 탭: Vivox가 준비되면(`VoiceChatManager.IsReady`) `VivoxService.Instance.AvailableInputDevices`/`AvailableOutputDevices`를 그대로 나열해서 클릭 한 번으로 `SetActiveDeviceAsync()` 호출(실제 테스트 환경에서도 "Default System Device/Communication Device/No Device" + 실제 사운드카드 이름까지 정상적으로 나열·선택됨을 확인함).
+- 그래픽 탭: `Screen.resolutions`에서 중복 제거한 해상도 목록을 ◀▶로 순회. 고르는 즉시 `Screen.SetResolution()`으로 바로 적용해보고, 15초 "이 해상도를 유지할까요?" 타이머를 띄움 — [유지하기]를 누르거나 시간이 지나면 자동으로 이전 해상도로 복구(`Time.unscaledTime` 기준이라 일시정지 중에도 흐름, `Time.timeScale` 미사용 원칙과는 무관). **주의**: `Screen.SetResolution`은 에디터 Game 뷰에서는 실제로 창 크기를 안 바꾸는 게 Unity의 알려진 제약이라 에디터에서는 로직만 확인했고 실제 창 크기 변경은 빌드에서 확인 필요.
+- 게임 탭(신규): 조준점 크기 슬라이더(0.5~2.5배) + 색상 프리셋 5종(흰/빨/초/노/하늘) 버튼.
+- `LGH.PlayerInteractor`: 화면 중앙의 "+" 텍스트 크로스헤어를 `crosshairTexture`(현재 `Crosshair_04.png`를 `NetworkPlayer_LGH.prefab`에 연결함) 기반 그리기로 교체, 크기/색상은 `PlayerOptions.Current`에서 매 프레임 읽음. **`Cursor.lockState == Locked`일 때만 그리도록 조건을 추가**해서, 일시정지·소지품·옵션·책 읽기 등 커서가 풀리는 모든 상황에서는 조준점이 자동으로 사라지고 마우스 커서가 그 자리를 대신하게 함(기존 "+"는 이 조건이 없어서 일시정지 중에도 계속 그려지고 있었음 — 겸사겸사 고침).
+
+**테스트 중 발견해 고친 버그**: `PlayerOptions.Load()`가 `JsonUtility.FromJson<T>()`로 저장된 JSON을 읽었는데, 이번에 필드를 추가한 뒤 "예전에 저장된(새 필드가 없는) JSON"을 불러오면 새 필드들이 전부 C# 기본값(0, 즉 `crosshairColor`는 완전 투명/`crosshairSize`는 0배)으로 비어서 **조준점이 통째로 안 보이는** 상태가 됐었음 — 실제로 이 증상으로 재현·발견함. `JsonUtility.FromJsonOverwrite(json, boxed Default())` 방식으로 바꿔서, 저장 파일에 없는 필드는 항상 `PlayerOptionsData.Default()` 값을 쓰도록 고침(`Load()`/`RevertToSaved()` 둘 다). **앞으로 `PlayerOptionsData`에 필드를 추가할 때마다 이 패턴 덕분에 예전 세이브 파일이 있어도 안전함** — 새 필드 추가 자체는 걱정 없이 해도 됨.
+
+## 옵션 창 버그 수정 + 조준점 모양 선택 (2026-10-22, 같은 날 세 번째 후속)
+사용자가 "타이틀에서 옵션 창을 켜도 뒤에 있는 시작/옵션/나가기 버튼이 눌린다"고 보고 + "조준점을 종류별로 고르고 옵션 창에서 미리보기 하고 싶다" 요청.
+
+- **원인**: 옵션 창은 `OnGUI`(IMGUI)로 그리고 타이틀 화면은 uGUI(Canvas+EventSystem)라서 서로 다른 입력 체계다 — OnGUI가 화면 위에 그려지는 것과 별개로, uGUI의 `EventSystem`은 그 뒤에 깔린 버튼에 대해 클릭 판정을 계속한다. **수정**: `OptionsMenuController.Open()/Close()`에서 `EventSystem.current.enabled`를 꺼졌다 켜지게 함 — OnGUI 자체는 EventSystem과 무관하게 동작하므로 옵션 조작에는 영향 없음. Play 모드에서 `EventSystem.enabled`가 열 때 false, 닫을 때 true로 바뀌는 것 확인함.
+- **조준점 모양 선택 추가**: `PlayerOptionsData.crosshairIndex` 필드 추가. `LGH.PlayerInteractor.crosshairTexture`(단일) → `crosshairOptions`(배열)로 변경, `OptionsMenuController`도 똑같은 순서로 `crosshairTextures` 배열을 따로 들고 있음(둘 다 `Assets/AssetPacks/OccaSoftware/Crosshairs`의 7종: 02/04/23/24/25/26/27 순서 — **둘의 순서를 반드시 맞춰야 함**, 인덱스로만 매칭됨). 기본값은 인덱스 1(Crosshair_04, 단순 십자형).
+- "게임" 탭에 ◀ [미리보기 박스] ▶ 추가 — 어두운 배경 위에 지금 고른 모양을 실제 크기/색상 그대로 그려서 보여줌(Play 모드에서 모양 전환 시 미리보기가 즉시 바뀌는 것 확인함). 인게임 조준점도 같은 인덱스를 봐서 동일하게 적용됨.
+
+## 일시정지 중 이동·상호작용이 안 멈추던 버그 수정 (2026-10-22, 같은 날 네 번째 후속)
+사용자가 "일시정지해서 옵션을 열어도 마우스 시점만 멈추고 WASD 이동과 E 상호작용(문 등)은 계속된다"고 보고. 요구사항: 일시정지한 바로 그 플레이어만 전부 멈춰야 하고(개별 옵션 원칙), 상대 플레이어는 영향받으면 안 됨.
+
+**원인**: 마우스 시점이 멈추는 건 애초에 `OptionsMenuController`가 `LookEnabled`를 잠가서가 아니라, `FirstPersonController`의 시점 코드가 우연히 `Cursor.lockState == Locked`일 때만 돌아가게 되어 있어서였음. **WASD 이동 코드와 `PlayerInteractor`의 E/R 상호작용 코드는 애초에 커서 잠금 상태를 전혀 확인하지 않아서**, 일시정지 패널만 떠 있어도(옵션을 열기 전부터) 계속 작동하고 있었음 — Options 기능 자체의 버그가 아니라 원래 일시정지 시스템에 있던 공백이었음.
+
+**수정**: 이 프로젝트에서 "커서가 풀려 있다 = 이 플레이어만 메뉴가 떠 있다"는 신호로 이미 일관되게 쓰이고 있어서(조준점 표시/숨김도 이걸로 판단), 같은 기준을 움직임·상호작용에도 적용함:
+- `LGH.FirstPersonController.Update()`: 기존에 있던 "닉네임 입력 중(`typing`)이면 WASD·점프 무시" 패턴 옆에 `bool paused = Cursor.lockState != CursorLockMode.Locked;`를 추가해서 `typing || paused`일 때 WASD·점프·사다리 오르내리기 입력을 전부 무시하도록 함.
+- `LGH.PlayerInteractor.Update()`: 맨 앞에 `if (Cursor.lockState != CursorLockMode.Locked) return;`를 추가해서 조준 레이캐스트와 E/R 입력 자체를 멈춤(안내 문구도 같이 사라짐).
+- 둘 다 `Cursor.lockState`는 그 컴퓨터(로컬 플레이어) 것만 읽으므로 상대 플레이어의 조작에는 전혀 영향 없음 — 개별 옵션 원칙 그대로 유지됨.
+- **검증 한계**: `simulate_key`로 W를 눌러서 확인하려 했으나 이 환경에서 Game 뷰 포커스 문제로 입력 자체가 전달되지 않아(잠금 상태에서도 위치 변화 없음 — 즉 대조군조차 움직이지 않아서 시뮬레이션 자체가 무효였음) 코드 검토로만 확인함. 코드 패턴은 이미 검증된 기존 `typing` 가드와 동일한 방식이라 안전하다고 판단하지만, **실제 플레이로 한 번 확인 필요**.
+
+## 게임 흐름(로비→도입부→플레이→엔딩→결과) 시스템 (2026-10-22, 다섯 번째 후속)
+사용자가 상세 스펙(원하는 사용자 경험 다이어그램, 전환 조건, ESC/입력 처리 표)을 주고 "별도 씬 추가 없이 Canvas 기반으로" 구현을 요청함. 먼저 조사부터 함 — 스펙이 가정한 것과 실제가 다른 부분이 있었음:
+
+**조사 결과 (스펙과 실제의 차이)**:
+- "LobbyCanvas"/"GameCanvas"/"OptionCanvas"는 Canvas가 아니었음. 씬에 실존하는 Canvas는 `TitleCanvas`·`VoiceHudCanvas` 둘뿐이고, 로비/일시정지는 `MultiplayerMenu.cs`가, 옵션은 `OptionsMenuController.cs`가 `OnGUI`(IMGUI)로 그림 → 기존 OnGUI 두 개는 **손대지 않고**, Intro/Ending/Result만 신규 uGUI Canvas로 추가. `MultiplayerMenu.OnGUI()`에 "스테이지가 Playing이 아니면 아무것도 안 그림" 가드 한 줄만 추가함(OnGUI는 uGUI보다 나중에 그려져서 가드가 없으면 화면이 겹침).
+- Input System 액션맵은 실제 게임플레이에 쓰이지 않음(전부 `Keyboard.current` 직접 폴링) — 지난 ESC 버그 수정 때 이미 확립한 "`Cursor.lockState`가 Locked가 아니면 이동/상호작용 정지" 패턴을 그대로 재사용. `GameFlowUI`가 Playing이 아닌 동안 커서를 계속 풀어두는 것만으로 로비/도입부/엔딩/결과 내내 이동·상호작용이 자동으로 막힘.
+- "탈출 성공" 조건은 프로젝트에 아직 없음(문은 전부 동일한 `InteractableDoor`, 출구를 구분하는 스크립트 없음) — 특정 문을 임의로 "출구"로 지어내지 않고 `GameFlowSync.ServerConfirmEscapeSuccess()`/`RequestEscapeSuccess()`라는 연결 지점만 공개로 열어둠. **사용자 요청으로 임시 비밀 커맨드(`DebugEscapeTrigger`, Playing 중 키보드로 E-S-C-A-P-E 순서 입력)가 당분간 이 자리를 대신 채움 — 진짜 탈출 기믹이 생기면 그 스크립트에서 `GameFlowSync.Instance.RequestEscapeSuccess()`를 직접 부르고 `DebugEscapeTrigger`는 지우면 됨.**
+- "타이틀로 돌아가기"가 이미 두 버전 있었음: `MultiplayerBackButton`(세션 시작 전 전용)과 `MultiplayerMenu`의 private `LeaveRoom()`(세션 정리 포함) — 후자를 `public async Task LeaveRoomAsync()`로 노출만 해서 재사용(기존 호출부는 `void LeaveRoom(){ _ = LeaveRoomAsync(); }` 래퍼로 그대로 유지).
+
+**구현** (전부 `Assets/Scripts/KSM/GameFlow/`, 네임스페이스 `CoopDemo`, Gim002/PortraitPuzzle과 같은 "NetworkVariable+Rpc, 서버만 결정" 패턴):
+- `GameFlowSync`(NetworkBehaviour, 프리팹 `Assets/Prefabs/KSM/GameFlow/GameFlowSync.prefab`, DefaultNetworkPrefabs 자동 등록): `enum GameStage{Lobby,Intro,Playing,Ending,Result}` 하나의 NetworkVariable + 슬롯(0/1)별 완료 플래그 4개(`introDone0/1`, `endingDone0/1`) + 서버 시계 기준 시작/클리어 시각. `Update()`에서 서버가 `LGH.NetworkPlayer.All.Count>=2`를 보고 Lobby→Intro 자동 전환. 모든 전환 메서드는 "지금 그 단계가 아니면 조용히 무시"라 중복 호출·연타에 안전.
+- `IllustratedCutsceneController`: 도입부/엔딩 공용 컷 재생기(`Kind.Intro`/`Kind.Ending`). `Time.unscaledDeltaTime`만 쓰고 `Time.timeScale`은 안 건드림. 다음/스킵 다 "한 번만 보고"가 보장됨(`localFinished` 플래그).
+- `GameFlowUI`: 로컬 전용 — `GameFlowSync.StageChanged`를 보고 Intro/Ending/Result Canvas 중 하나만 켜고, Playing에 막 들어선 순간에만 커서를 잠근다(그 뒤엔 옵션/소지품이 자유롭게 풀었다 잠갔다 함).
+- `ResultCanvasController`: 클리어 시간(`playingStartedAt`~`clearedAt`, 서버 시간 기준 단일 값)을 HH:MM:SS로 표시, 타이틀 버튼은 연타 방지 + "세션 정리(`LeaveRoomAsync`) → 로컬 UI 숨김 → `TitleMenuUI.ShowTitle()`" 순서 보장.
+- `GameFlowBuilder`(Editor, `Tools/KSM/GameFlow/Build All`): 이 프로젝트의 다른 Build All 도구들과 같은 방식 — 재실행 가능, Canvas 3개(IntroCanvas/EndingCanvas/ResultCanvas)를 전부 유니티 기본 UI(단색 Image+Text)로 임시 제작. **실제 일러스트가 생기면 각 Canvas의 Illustration Image에 스프라이트만 끼우면 됨, 코드 변경 불필요.**
+
+**테스트 중 발견해 고친 버그**: `ResultCanvasController`가 `FindAnyObjectByType<TitleMenuUI>()`를 기본(비활성 제외) 옵션으로 호출하고 있었는데, `TitleMenuUI`는 `TitleRoot`에 붙어 있고 게임 중엔 `TitleRoot`가 꺼져 있어서 **항상 못 찾고 조용히 아무 일도 안 일어나고 있었음**(null 체크가 있어서 에러도 안 남) — 이 프로젝트에 이미 문서화된 "비활성 오브젝트는 FindObjectsInactive.Include로 찾아야 한다" 함정을 제가 새 코드에서 또 밟은 것. `FindObjectsInactive.Include`로 고침.
+
+**검증**: Play 모드에서 호스트 기준 전체 사이클을 직접 메서드 호출/버튼 `onClick.Invoke()`로 끝까지 확인함 — Lobby→Intro(자동, 2명 스폰 조건)→스킵 연타해도 1회만 보고→상대 슬롯 완료 시 Playing 전환+커서 잠금→비밀 커맨드 대역(`RequestEscapeSuccess`)으로 Ending 전환+클리어 시간 기록→양쪽 완료 시 Result 전환→결과창에 시간/인원 정상 표시→타이틀 버튼 연타 방지+세션 정리+타이틀 복귀까지 스크린샷으로 확인. `NetworkSceneObjectValidator` 0건.
+**검증 한계**: 이 환경은 호스트 1개 프로세스만 띄울 수 있어서 "상대방 완료"는 전부 슬롯 ID를 직접 지정해 흉내 낸 것 — 진짜 2인 동시 플레이, 그리고 `DebugEscapeTrigger`의 실제 키보드 입력 자체는 `simulate_key`의 Game 뷰 포커스 문제로 못 돌려봄(기존에도 반복된 한계). **다음 2인 플레이테스트에서 전체 흐름과 비밀 커맨드 입력을 실제로 확인 필요.**
+
+## 대기방(로비) 준비 시스템 추가 (2026-10-22, 여섯 번째 후속)
+사용자가 "방 생성 후 게스트를 기다리는 대기 방을 만들고, 게스트가 들어온 뒤 호스트·게스트가 모두 준비 버튼을 누르면 3초 후 인트로→플레이로 넘어가게 해달라"고 요청.
+
+**착수 전 발견 — 사실 지금은 대기 화면 자체가 완전히 비어 있었음**: 직전(다섯 번째) 라운드에서 GameFlow 시스템을 넣으며 `MultiplayerMenu.OnGUI()`에 "스테이지가 Playing이 아니면 아무것도 안 그림" 가드를 추가했는데, 그 시점에 `Lobby` 단계에서 "상대를 기다리는 중..." 문구를 그리던 기존 코드 블록이 그 가드 뒤에 있어서 완전히 죽은 코드가 돼 있었다(그동안은 혼자 테스트하며 2인 자동 연결 조건이 거의 즉시 충족돼 눈치채기 어려웠음). 이번 요청은 그 자리를 제대로 채우는 작업이기도 함.
+
+**구현**:
+- `GameFlowSync.cs`: `Lobby` 단계에 슬롯별(0/1) 준비 상태(`readyLobby0/1`)와 카운트다운 종료 시각(`introCountdownEndAt`, 서버 시계 기준, 3초 `LobbyCountdownSeconds`)을 NetworkVariable로 추가. `Update()`(서버 전용)가 매 프레임: 2명 미만이면 준비 상태·카운트다운 전부 취소 → 2명이고 둘 다 준비면 카운트다운 시작/진행, 끝나면 기존 `ServerAdvanceToIntro()` 재사용 → 둘 중 하나라도 준비를 취소하면 카운트다운만 취소(Lobby 유지). 기존 "2명 접속되면 바로 Intro" 자동전환 로직은 이 흐름으로 대체됨. `RequestLobbyReady(bool)`을 기존 `RequestIntroFinished()`와 같은 패턴(호스트면 바로, 아니면 `Rpc(SendTo.Server)`)으로 추가. UI가 읽을 `LocalLobbyReady`/`OtherLobbyReady`/`LobbyCountdownRemaining`도 공개.
+- **겸사겸사 발견해 고친 잠재 버그**: `GameFlowSync`는 Develop 씬에 프리팹 인스턴스로 계속 남아있는 유일한 오브젝트라(네트워크 세션이 끝나도 GameObject 자체는 안 지워짐), 같은 에디터/빌드 실행 중 두 번째로 호스팅을 시작해도 NetworkVariable 값이 이전 판의 값(예: `Result` 단계, 완료 플래그들)을 그대로 들고 있을 수 있었다 — 지금까지는 테스트할 때마다 매번 에디터를 새로 Play해서 드러나지 않았을 뿐, 실제 팀원이 한 번 플레이 끝내고 같은 창에서 바로 "다시하기"를 한다면 재현됐을 문제. `OnNetworkSpawn()`에서 `IsServer`일 때 `ServerResetForNewSession()`을 호출해 매 호스팅 시작마다 `Lobby`+모든 플래그 초기값으로 리셋하도록 고침.
+- `MultiplayerMenu.cs`: 화면 소유권 가드를 "Playing이 아니면 전부 안 그림"에서 "Intro/Ending/Result일 때만 안 그림"으로 완화해서 `Lobby` 단계를 이 스크립트가 다시 그리게 함. 기존 "일시정지" 패널 내용은 `DrawPauseBody()`로 그대로 옮기고, 새 `DrawLobbyWaitingRoomBody()`를 추가해 같은 패널(박스)에 방 이름/코드, 닉네임 입력, 인원 현황("상대를 기다리는 중..." 또는 나/상대 닉네임), 준비 상태("나: 준비 완료 · 상대: 준비 안 됨"), 준비/준비취소 토글 버튼(2명 미만이면 비활성화), 카운트다운 중엔 버튼 대신 "모두 준비 완료! N초 후 시작합니다..." 문구를 그림. 옵션/방 나가기 버튼도 그대로 유지.
+- 새 Canvas나 새 프리팹은 추가하지 않음 — 전부 기존 OnGUI 패널과 기존 NetworkVariable+Rpc 패턴 재사용.
+
+**검증**: Play 모드에서 `NetworkManager.StartHost()`로 직접 호스트를 띄워 확인(이 환경은 실제 Relay 세션 생성이 불가해 기존 라운드들과 동일한 방식). 혼자(1명)일 때 `RequestLobbyReady(true)`를 불러도 다음 프레임에 강제로 `false`로 되돌아감(2명 미만 가드 확인). `LGH.NetworkPlayer.All`에 더미 엔트리를 추가해 2명 상태를 흉내 낸 뒤 양쪽 슬롯을 리플렉션으로 준비 완료 처리 → 카운트다운 진행 후 `Stage`가 자동으로 `Intro`로 전환됨을 확인(두 eval 호출 사이 왕복 지연만으로 3초가 넘어 카운트다운이 끝나 있었음). 호스트를 재시작(`Shutdown()` → `StartHost()`)해 두 번째 호스팅 세션을 흉내 내자 `Stage`가 `Lobby`로 제대로 리셋되는 것도 확인(위 리셋 버그 수정 검증). 둘 다 준비 후 한쪽이 바로 준비를 취소하면 `Stage`가 `Lobby`에 그대로 머물고 카운트다운이 `-1`로 취소되는 것도 확인. 콘솔 에러/예외 0건(테스트 중 플레이어를 흉내 내느라 생긴 "오디오 리스너 2개" 로그 1종만 있었음 — 테스트 아티팩트이지 실제 버그 아님).
+**검증 한계**: 전부 호스트 1개 프로세스 + 리플렉션/더미 데이터로 흉내 낸 것이라, 실제 두 번째 사람이 방 목록에서 들어와 준비 버튼을 누르는 진짜 클릭 경로, 그리고 대기방 패널이 실제로 올바르게 그려지는지(레이아웃/버튼 클릭 판정)는 **다음 2인 플레이테스트에서 실제로 확인 필요**.
+
 ## 사용 가능한 Unity 전용 스킬
 이 환경에는 `unity:` 접두사의 스킬들(unity-cli, ui, urp-postprocessing, physics-3d-collision 등)이 이미 연결되어 있습니다. 관련 작업을 할 때는 먼저 해당 스킬을 확인하세요.
 

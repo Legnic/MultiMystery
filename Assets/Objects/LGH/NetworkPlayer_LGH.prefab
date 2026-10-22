@@ -2434,6 +2434,14 @@ MonoBehaviour:
   mask:
     serializedVersion: 2
     m_Bits: 4294967295
+  crosshairOptions:
+  - {fileID: 2800000, guid: 9ee137293631b9e46b1a401b72b130a4, type: 3}
+  - {fileID: 2800000, guid: b8e78032f8af0954784d1fe9e5a09187, type: 3}
+  - {fileID: 2800000, guid: e7e80d39e3e102147a3be13caa7cd3d7, type: 3}
+  - {fileID: 2800000, guid: 6f6c2d827b5ed454b90a1529cefe9041, type: 3}
+  - {fileID: 2800000, guid: dcd5aae0341bd0642858735fe7fdc429, type: 3}
+  - {fileID: 2800000, guid: 552478a654d2eb8478c30045279d5688, type: 3}
+  - {fileID: 2800000, guid: 7789b657ea330f94d9b70d6d4a117aed, type: 3}
 --- !u!114 &1846032557411346950
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2446,7 +2454,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 1272352115
+  GlobalObjectIdHash: 400371282
   InScenePlacedSourceGlobalObjectIdHash: 0
   m_InScenePlacedDisabledByDefault: 0
   DeferredDespawnTick: 0
