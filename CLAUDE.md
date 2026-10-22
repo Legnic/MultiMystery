@@ -127,6 +127,16 @@ git에 커밋되어 팀원 전원이 같은 내용을 공유합니다. 개인적
 - 씬 배치는 `Tools/KJH/GIM-002/Build All`(재실행 가능, GIM002 루트를 지우고 다시 만듦, 데이터 에셋은 없을 때만 생성 → 튜닝 값 보존). 기존 오브젝트에도 컴포넌트를 붙인다: 음악실 문 2개(`Gim002KeyTarget`, 열쇠 쓰기 전 잠김), `Key_Behind_E3`/`Key_Behind_2F`(`Gim002KeyItem` + BoxCollider).
 - 검증 한계: Play 모드에서 `StartHost()` 로컬 호스트로 GIM-001 해결 → 열쇠 2개 → 장면 1~3 → Complete까지 통과(오답·재접속 리셋 포함, 콘솔 에러 0). 단 `simulate_key`/`QueueStateEvent` 키 입력이 Game 뷰 포커스 문제로 들어가지 않아 **손잡이 2초 누르기와 놀이책 F/←/→ 입력은 직접 플레이로 확인 필요**, 두 클라이언트 동시 테스트도 미실행.
 
+## 덤불 정원 미로 GIM-005 (2026-10-22, KJH 씬)
+- 명세: `GIM-005_덤불정원미로.md`(김진호). 위치: 1층 정원 = `Courtyard`(x 36~52, z -16~0), 2층 정원 관리실 = `F2_MaidRoom`(북쪽 내벽 z=-9). 기존 맵 오브젝트는 수정하지 않고 별도 KJH 프리팹으로 제작.
+- 명세서의 `Gim003*` 이름은 `Gim005*`로 바꿔 구현(복사 오기로 판단). 스크립트 `Assets/Scripts/KJH/Gim005/`(네임스페이스 `Gim005`), 프리팹·데이터 `Assets/Prefabs/KJH/Gim005/`. 재생성은 `Tools/KJH/GIM-005/Build All`(프리팹은 같은 경로에 덮어씀, `Data/`의 Config·SymbolData는 없을 때만 생성 → 튜닝 값 보존).
+- 판정 로직은 순수 C# `Core/Gim005Logic.cs`(asmdef `Gim005.Core`) + 미로 논리 구조 `Core/Gim005MazeLayout.cs`(7×7칸, 가운데 3×3 광장, 진짜 길 G1→G3→G6→G7). EditMode 테스트 27개(`Gim005/Tests/Editor`)가 규칙과 "가짜 길 4개는 모두 막다른 길"을 검사한다. 미로 모양을 바꾸려면 `Gim005MazeLayout.Edges`를 고치고 Build All.
+- 네트워크: GIM-002와 같은 구조(`IGim005Net` / `LocalGim005Net` / `Gim005NetSync`). `Gim005Sync.prefab`은 `DefaultNetworkPrefabs.asset`에 등록됨. 다른 플레이어 접속 시 진행 중 시도는 Ready로 리셋(완료 여부 유지).
+- 완료 시 1/2층 철창 `Rail_StairFront`를 **이름으로 찾아** 모든 컴퓨터에서 비활성화한다(`Gim005Config.hideOnCompleteNames`, 부모 경로에 `Ravenwood_LGH` 포함 조건). 상태 기반이라 늦게 들어온 사람에게도 적용되고, 씬 참조를 다시 연결할 필요가 없다.
+- **Develop 적용 방법**: Develop 씬에 `GIM005_Maze.prefab`(위치 44, 0, -8), `GIM005_GardenRoom.prefab`(26.5, 3.9, -9.13), `Gim005Sync.prefab`(최상위)을 프리팹 인스턴스로 놓으면 끝. Develop의 Ravenwood_LGH도 같은 좌표(68, 0, -16)라 위치가 맞는다. 놓은 뒤 `Tools/Network/Validate Scene NetworkObjects`로 확인.
+- 임시 숫자 글자는 깊이 검사 셰이더 `Gim005_WorldText`를 쓴다(기본 TextMesh 글꼴 머티리얼은 URP에서 벽 너머로 비쳐 보임). 글꼴 텍스처는 실행 중에 만들어지므로 에디터(비실행)에서는 숫자가 안 보이는 게 정상.
+- 검증 한계: `StartHost()` 로컬 호스트로 입구 통과→타이머, 오답(-15초·3초 잠금), 진짜 길 개방, 시간 초과(흐려짐→시작점 복귀→재배정), 중앙 버튼→완료→철창 비활성화까지 확인(콘솔 GIM-005 에러 0). E키는 Game 뷰 포커스 문제로 `PlayerInteractor`가 조준한 대상의 `Interact()`를 직접 호출해 확인. **두 클라이언트 동시 테스트와 실제 걸어서 통과는 직접 플레이로 확인 필요.**
+
 ## 네트워크 동기화 정책 — "전면 재구축" 대신 "규칙 + 검사" (2026-10-21)
 팀원들과 실제 멀티플레이 플레이테스트를 하면서 같은 유형의 버그가 반복 발견됐다: `DumbwaiterSync_KJH`, `PortraitPuzzleSync_KJH`, `DoorSync_LGH`(+빠진 `CandleNetworkSync`) 전부 **코드 로직 자체는 멀쩡했는데, Develop 씬에 프리팹이 아닌 맨몸 오브젝트로 배치**돼 있었다. `NetworkManager`의 `EnableSceneManagement=False`라서, 게스트가 접속하면 씬에 맨몸으로 둔 `NetworkObject`(또는 `DefaultNetworkPrefabs`에 등록 안 된 프리팹)를 전부 지우고 호스트가 보낸 정보로 "등록된 프리팹"만 다시 만들기 때문이다. 호스트 혼자 테스트하면 멀쩡해 보여서 게스트 접속 전까지 못 알아챈다.
 

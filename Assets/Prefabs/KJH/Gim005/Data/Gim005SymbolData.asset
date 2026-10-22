@@ -1,0 +1,54 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 87c5697c4b7f26949b2dc228c5b3daa7, type: 3}
+  m_Name: Gim005SymbolData
+  m_EditorClassIdentifier: Assembly-CSharp::Gim005.Gim005SymbolData
+  symbols:
+  - id: SYM_01
+    label: 1
+    sprite: {fileID: 21300000, guid: ad96b6de8fedaae4a968d477bdb06e1e, type: 3}
+  - id: SYM_02
+    label: 2
+    sprite: {fileID: 21300000, guid: 299e2fe36825ee34c820d64aa4793efc, type: 3}
+  - id: SYM_03
+    label: 3
+    sprite: {fileID: 21300000, guid: 5f0c671221cd46648a85f8be9e856a14, type: 3}
+  - id: SYM_04
+    label: 4
+    sprite: {fileID: 21300000, guid: 5b53ac825650e144d94c9435b4b71d41, type: 3}
+  - id: SYM_05
+    label: 5
+    sprite: {fileID: 21300000, guid: 7376ae70950de7244a135fc3c399fb45, type: 3}
+  - id: SYM_06
+    label: 6
+    sprite: {fileID: 21300000, guid: e2c3aa643e4694347892ee3cc8c01fc3, type: 3}
+  - id: SYM_07
+    label: 7
+    sprite: {fileID: 21300000, guid: 73d7f69a24eace54e95c5ffb084bfe1b, type: 3}
+  - id: SYM_08
+    label: 8
+    sprite: {fileID: 21300000, guid: ab33e4eaa8b4dc640845070c4a2c3706, type: 3}
+  - id: SYM_09
+    label: 9
+    sprite: {fileID: 21300000, guid: d1078f94cd21bc04a8a157d097d61ed8, type: 3}
+  - id: SYM_10
+    label: 10
+    sprite: {fileID: 21300000, guid: d369f33358f162e4a9f7ae0f99deb7e4, type: 3}
+  - id: SYM_11
+    label: 11
+    sprite: {fileID: 21300000, guid: 2da8671e3aa3cbd4cbcc81b87f98f44e, type: 3}
+  - id: SYM_12
+    label: 12
+    sprite: {fileID: 21300000, guid: d398ad147254b3e41809ea624bc3b1fa, type: 3}
+  - id: SYM_13
+    label: 13
+    sprite: {fileID: 21300000, guid: 7d23bc4ac61aa504a8a6661ec23d412c, type: 3}
