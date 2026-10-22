@@ -7,6 +7,7 @@ namespace CoopDemo
     // 이미 있는 FirstPersonController/PlayerInteractor의 "커서 풀리면 멈춘다" 로직을 그대로 재사용한다.
     public class GameFlowUI : MonoBehaviour
     {
+        [SerializeField] GameObject lobbyCanvas;
         [SerializeField] GameObject introCanvas;
         [SerializeField] GameObject endingCanvas;
         [SerializeField] GameObject resultCanvas;
@@ -45,6 +46,9 @@ namespace CoopDemo
             bool wasPlaying = shown == GameStage.Playing;
             shown = stage;
 
+            // 대기방 화면은 저택(플레이 화면)이 뒤에서 비치지 않도록 불투명 배경만 깐다 — 실제 내용(인원/준비 버튼)은
+            // MultiplayerMenu의 기존 OnGUI 패널이 이 배경 위에 그대로 그린다(OnGUI는 Canvas보다 나중에 그려짐).
+            if (lobbyCanvas != null) lobbyCanvas.SetActive(stage == GameStage.Lobby);
             if (introCanvas != null) introCanvas.SetActive(stage == GameStage.Intro);
             if (endingCanvas != null) endingCanvas.SetActive(stage == GameStage.Ending);
             if (resultCanvas != null) resultCanvas.SetActive(stage == GameStage.Result);

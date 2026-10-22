@@ -246,6 +246,21 @@ git에 커밋되어 팀원 전원이 같은 내용을 공유합니다. 개인적
 **검증**: Play 모드에서 `NetworkManager.StartHost()`로 직접 호스트를 띄워 확인(이 환경은 실제 Relay 세션 생성이 불가해 기존 라운드들과 동일한 방식). 혼자(1명)일 때 `RequestLobbyReady(true)`를 불러도 다음 프레임에 강제로 `false`로 되돌아감(2명 미만 가드 확인). `LGH.NetworkPlayer.All`에 더미 엔트리를 추가해 2명 상태를 흉내 낸 뒤 양쪽 슬롯을 리플렉션으로 준비 완료 처리 → 카운트다운 진행 후 `Stage`가 자동으로 `Intro`로 전환됨을 확인(두 eval 호출 사이 왕복 지연만으로 3초가 넘어 카운트다운이 끝나 있었음). 호스트를 재시작(`Shutdown()` → `StartHost()`)해 두 번째 호스팅 세션을 흉내 내자 `Stage`가 `Lobby`로 제대로 리셋되는 것도 확인(위 리셋 버그 수정 검증). 둘 다 준비 후 한쪽이 바로 준비를 취소하면 `Stage`가 `Lobby`에 그대로 머물고 카운트다운이 `-1`로 취소되는 것도 확인. 콘솔 에러/예외 0건(테스트 중 플레이어를 흉내 내느라 생긴 "오디오 리스너 2개" 로그 1종만 있었음 — 테스트 아티팩트이지 실제 버그 아님).
 **검증 한계**: 전부 호스트 1개 프로세스 + 리플렉션/더미 데이터로 흉내 낸 것이라, 실제 두 번째 사람이 방 목록에서 들어와 준비 버튼을 누르는 진짜 클릭 경로, 그리고 대기방 패널이 실제로 올바르게 그려지는지(레이아웃/버튼 클릭 판정)는 **다음 2인 플레이테스트에서 실제로 확인 필요**.
 
+## GIM-005(덤불 정원 미로) Develop 통합 (2026-10-22, 일곱 번째 후속)
+KJH 브랜치에서 GIM-005 구현을 머지해온 뒤, "다른 시스템을 해치지 않으면서 Develop에 병합"해달라는 요청. KJH 쪽 CLAUDE.md에 이미 "Develop 적용 방법"이 명시돼 있어(`GIM005_Maze.prefab`(44,0,-8), `GIM005_GardenRoom.prefab`(26.5,3.9,-9.13), `Gim005Sync.prefab`(최상위)을 프리팹 인스턴스로 두면 끝 — Develop의 `Ravenwood_LGH`도 KJH와 같은 좌표라 바로 맞음), 그 안내 그대로 세 프리팹을 Develop 씬 루트에 인스턴스화하고 위치만 맞췄다. 코드/프리팹 자체는 전혀 수정하지 않음(GIM-002/GIM-003 등과 동일하게 "KJH 프리팹 원본을 그대로 가져다 쓰기" 원칙 준수).
+
+**겸사겸사 발견해 고친 버그 — 이번 작업과 무관하게 이미 깨져 있었음**: `Tools/Network/Validate Scene NetworkObjects`를 돌려보니 `GameFlowSync`가 `DefaultNetworkPrefabs.asset`에 등록 해제된 상태였다(게스트 접속 시 이 오브젝트가 삭제되는 문제 — "네트워크 동기화 정책" 섹션에서 반복 경고한 바로 그 패턴). 직전 라운드(13a521e 커밋)에는 분명히 등록돼 있었는데, 그 이후 KJH/KWJ 브랜치를 Develop에 머지하면서 `DefaultNetworkPrefabs.asset` 충돌("# Conflicts: Assets/DefaultNetworkPrefabs.asset")을 해결하는 과정에서 빠진 것으로 보인다. `NetworkPrefabsList.Add(...)` API로 다시 등록해서 수정(YAML 직접 편집 대신 Netcode 공식 API 사용). **앞으로 `DefaultNetworkPrefabs.asset`에서 충돌이 나면, 병합 후 반드시 `Validate Scene NetworkObjects`를 돌려서 양쪽 브랜치가 추가한 항목이 전부 살아있는지 확인할 것** — 자동 병합이 리스트 항목을 조용히 누락시킬 수 있다.
+**검증**: `Validate Scene NetworkObjects` 재실행 → "문제 없음". Play 모드에서 `StartHost()`로 호스트 직접 시작 → `Gim005Controller.Instance`가 Config 연결된 채로 초기화되고 네트워크 시작 시 `LocalGim005Net`→`Gim005NetSync`로 정상 전환(`IsAuthority=True`) 확인. `RequestEnter()`(Ready→Running)→오답 1회(시간 -15초·3초 패널 잠금 확인)→정답 1회(덤불 열림 확인)→`RequestCenter()`(Running→Complete)까지 전체 흐름 통과. 완료 시 `Ravenwood_LGH/Floor2/Balustrade/Rail_StairFront`가 실제로 비활성화되는 것까지 확인(Develop 고유의 이름 기반 참조가 올바르게 맞아떨어짐을 검증한 부분). 테스트 종료 후 Play 모드를 나가자 씬이 `isDirty=false`로 깨끗하고 `Rail_StairFront`도 다시 `active=True`로 돌아와 있음을 확인(Play 중 상태가 저장된 씬에 새지 않음). 콘솔 에러 0건.
+**검증 한계**: 전부 호스트 1개 프로세스에서 `RequestEnter/RequestPress/RequestCenter`를 직접 호출해 확인한 것 — 실제 두 사람이 각자 입구 통과(A)/문양 버튼 누르기(B)로 역할을 나눠 플레이하는 것, 그리고 덤불을 실제로 걸어서 통과하는 공간적 경로 자체는 **다음 2인 플레이테스트에서 확인 필요**(이 부분은 KJH 씬에서 이미 검증됐던 핵심 판정 로직이 아니라, Develop에 옮겨 놓았을 때 공간 배치가 실제로 잘 맞는지에 대한 것).
+
+## 대기방에서 저택(플레이 화면) 가리기 (2026-10-22, 여덟 번째 후속)
+사용자가 "대기방에 입장했을 때 저택 모습, 즉 플레이 화면이 안 보이도록 가려달라"고 요청. 대기방은 `MultiplayerMenu`의 OnGUI 패널로 그리는데, Canvas/OnGUI 모두 화면 전체를 덮지 않는 중앙 박스라서 그 뒤로 플레이어가 스폰된 저택 3D 장면이 그대로 비쳤음.
+
+- `GameFlowUI`에 `lobbyCanvas` 필드를 추가해 Intro/Ending/Result와 같은 방식으로 관리: `Stage == Lobby`일 때만 켠다. 이 Canvas는 불투명 배경 이미지 하나뿐이고, 실제 대기방 내용(인원/준비 버튼 등)은 기존 `MultiplayerMenu`의 OnGUI 패널이 그 위에 그대로 그린다(OnGUI가 uGUI Canvas보다 나중에 그려지므로 자연스럽게 맨 위에 보임) — 새 UI 로직을 따로 만들지 않고 배경만 추가.
+- `GameFlowBuilder.cs`(`Tools/KSM/GameFlow/Build All`)에 `BuildLobbyCanvas()`를 추가해 재실행 가능하게 유지. 이 도구를 실제로 다시 실행해 Develop에 `LobbyCanvas`를 추가함 — 재실행 후 `GameFlowSync`의 `DefaultNetworkPrefabs` 등록(fileID 포함)이 그대로 유지되는 것도 재확인함(이 프로젝트의 "idempotent Build All" 관례가 안전하다는 재확인).
+- **테스트 중 발견해 고친 디테일**: 처음엔 Intro/Ending/Result Canvas와 같은 배경색 알파 0.97(연출용으로 살짝 어둡게)을 그대로 썼는데, 실제 스크린샷으로 확인해보니 밝은 촛불 광원이 3%만큼 비쳐서 은은하게 보임 — 다른 Canvas는 "연출 중 살짝 어둡게"가 목적이라 문제없지만, 대기방은 "아예 안 보이게"가 목적이라 적합하지 않음. 배경 알파를 1.0(완전 불투명)으로 바꿔서 해결. 스크린샷 비교로 촛불 빛샘이 완전히 사라지는 것까지 확인함.
+- **검증**: Play 모드에서 실제 사용자 흐름 그대로 재현(`TitleMenuUI.OnStartClicked()` 호출 → 호스트 시작) → `capture_game_view`로 Game 뷰를 직접 캡처해 비교. 수정 전엔 좌하단 음성 HUD 텍스트와 촛불 빛이 은은하게 비쳤고, 알파 1.0으로 바꾼 뒤에는 완전한 검은 배경 위에 대기방 패널만 깔끔하게 보임. `Validate Scene NetworkObjects` 재실행 결과 "문제 없음", 콘솔 에러 0건.
+
 ## 사용 가능한 Unity 전용 스킬
 이 환경에는 `unity:` 접두사의 스킬들(unity-cli, ui, urp-postprocessing, physics-3d-collision 등)이 이미 연결되어 있습니다. 관련 작업을 할 때는 먼저 해당 스킬을 확인하세요.
 

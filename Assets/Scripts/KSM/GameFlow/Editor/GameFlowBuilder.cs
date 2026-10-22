@@ -24,7 +24,7 @@ namespace CoopDemo.EditorTools
             EnsureFolder(PrefabRoot);
 
             // 이전 결과 지우기 (씬 루트 기준)
-            foreach (var go in SceneRoots().Where(g => g.name == "IntroCanvas" || g.name == "EndingCanvas"
+            foreach (var go in SceneRoots().Where(g => g.name == "LobbyCanvas" || g.name == "IntroCanvas" || g.name == "EndingCanvas"
                         || g.name == "ResultCanvas" || g.name == "GameFlowUI" || g.name == "GameFlowSync").ToList())
                 Object.DestroyImmediate(go);
 
@@ -33,17 +33,20 @@ namespace CoopDemo.EditorTools
             syncGo.name = "GameFlowSync";
             RegisterNetworkPrefab(syncPrefab);
 
+            var lobbyGo = BuildLobbyCanvas();
             var introGo = BuildCutsceneCanvas("IntroCanvas", IllustratedCutsceneController.Kind.Intro, DefaultIntroCuts());
             var endingGo = BuildCutsceneCanvas("EndingCanvas", IllustratedCutsceneController.Kind.Ending, DefaultEndingCuts());
             var resultGo = BuildResultCanvas();
 
             // 전부 처음엔 꺼져 있다 — GameFlowUI가 단계에 맞춰 하나만 켠다.
+            lobbyGo.SetActive(false);
             introGo.SetActive(false);
             endingGo.SetActive(false);
             resultGo.SetActive(false);
 
             var uiGo = new GameObject("GameFlowUI");
             var ui = uiGo.AddComponent<GameFlowUI>();
+            SetRef(ui, "lobbyCanvas", lobbyGo);
             SetRef(ui, "introCanvas", introGo);
             SetRef(ui, "endingCanvas", endingGo);
             SetRef(ui, "resultCanvas", resultGo);
@@ -108,6 +111,20 @@ namespace CoopDemo.EditorTools
             list.Add(new NetworkPrefab { Prefab = prefab });
             EditorUtility.SetDirty(list);
             AssetDatabase.SaveAssets();
+        }
+
+        // =====================================================================
+        // 대기방 배경 Canvas — 저택(플레이 화면)이 뒤로 비치지 않게 가리는 불투명 배경만 둔다.
+        // 실제 대기방 내용(인원/준비 버튼 등)은 MultiplayerMenu의 기존 OnGUI 패널이 이 위에 그대로 그린다.
+        // =====================================================================
+
+        static GameObject BuildLobbyCanvas()
+        {
+            var canvasGo = CreateOverlayCanvas("LobbyCanvas", sortOrder: 10);
+            // 다른 GameFlow Canvas(0.97)와 달리 완전 불투명(1.0) — 요구사항이 "연출용으로 살짝 어둡게"가 아니라
+            // "저택(플레이 화면)이 전혀 안 보이게" 가리는 것이므로, 밝은 광원이 살짝 비쳐 보이는 것도 허용하지 않는다.
+            CreateFullStretchImage((RectTransform)canvasGo.transform, "Background", new Color(0.04f, 0.04f, 0.06f, 1f));
+            return canvasGo;
         }
 
         // =====================================================================
