@@ -36,6 +36,9 @@ namespace CoopDemo
         [Tooltip("마이크 입력 감도(게인). 0이 기본, -50이면 가장 작게, 50이면 가장 크게 보낸다.")]
         [SerializeField, Range(-50, 50)] int micVolume;
 
+        // 옵션의 "상대방 음성 음량" 슬라이더 (0~1). 거리 감쇠(UpdateDistanceVolume)와 곱산으로 합쳐진다.
+        float m_RemoteVolumeScale01 = 1f;
+
         readonly Dictionary<VivoxParticipant, Action> m_SpeechHandlers = new Dictionary<VivoxParticipant, Action>();
 
         bool m_Initializing;
@@ -96,7 +99,7 @@ namespace CoopDemo
         // 상대 플레이어와의 거리를 재서 상대 목소리의 음량을 조절한다. (2인 협동 전제: 나 말고 다른 참가자는 모두 같은 상대로 본다)
         void UpdateDistanceVolume()
         {
-            int adjust = 0;
+            int distanceAdjust = 0;
             float distance = -1f;
 
             var local = LGH.NetworkPlayer.Local;
@@ -104,15 +107,36 @@ namespace CoopDemo
             if (local != null && remote != null)
             {
                 distance = Vector3.Distance(local.transform.position, remote.transform.position);
-                adjust = ComputeVolumeAdjust(distance, nearDistance, farDistance, farVolumeAdjust);
+                distanceAdjust = ComputeVolumeAdjust(distance, nearDistance, farDistance, farVolumeAdjust);
             }
 
             RemoteDistance = distance;
-            RemoteVolumeAdjust = adjust;
+            int combined = CombineWithOptionVolume(distanceAdjust);
+            RemoteVolumeAdjust = combined;
 
             foreach (var p in m_SpeechHandlers.Keys)
             {
-                if (!p.IsSelf && p.LocalVolume != adjust) p.SetLocalVolume(adjust);
+                if (!p.IsSelf && p.LocalVolume != combined) p.SetLocalVolume(combined);
+            }
+        }
+
+        // 옵션의 "상대방 음성 음량"(0~1)을 거리 감쇠 위에 추가로 깎는다. 1 = 거리 감쇠 그대로, 0 = 완전 무음.
+        int CombineWithOptionVolume(int distanceAdjust)
+        {
+            int optionAdjust = Mathf.RoundToInt(Mathf.Lerp(-50f, 0f, Mathf.Clamp01(m_RemoteVolumeScale01)));
+            return Mathf.Clamp(distanceAdjust + optionAdjust, -50, 50);
+        }
+
+        // 옵션 메뉴에서 호출. 다음 UpdateDistanceVolume() 때 자동으로 반영된다 (채널에 안 들어가 있어도 안전).
+        public void SetRemoteVolumeScale(float scale01)
+        {
+            m_RemoteVolumeScale01 = Mathf.Clamp01(scale01);
+            if (!UsesDistanceVolume && IsInChannel)
+            {
+                // 거리 모드가 아니면 즉시 한 번 적용해준다 (거리 폴링 루프가 없으므로).
+                int combined = CombineWithOptionVolume(0);
+                foreach (var p in m_SpeechHandlers.Keys)
+                    if (!p.IsSelf) p.SetLocalVolume(combined);
             }
         }
 

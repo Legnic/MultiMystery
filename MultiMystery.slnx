@@ -1,6 +1,9 @@
 ﻿<Solution>
   <Project Path="Assembly-CSharp.csproj" />
+  <Project Path="OccaSoftware.Crosshairs.Editor.csproj" />
   <Project Path="Gim002.Core.csproj" />
   <Project Path="Assembly-CSharp-Editor.csproj" />
+  <Project Path="Gim005.Core.csproj" />
+  <Project Path="Gim005.Tests.Editor.csproj" />
   <Project Path="Gim002.Tests.Editor.csproj" />
 </Solution>

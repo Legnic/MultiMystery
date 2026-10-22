@@ -78,6 +78,9 @@
     <Compile Include="Assets\Scripts\KJH\Dumbwaiter\DumbwaiterWindow.cs" />
     <Compile Include="Assets\Scripts\KJH\Dumbwaiter\DumbwaiterNetworkSync.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim002\Runtime\Gim002KeyItem.cs" />
+    <Compile Include="Assets\Scripts\LGH\PistolLoader.cs" />
+    <Compile Include="Assets\Scripts\KJH\Gim005\Runtime\IGim005Net.cs" />
+    <Compile Include="Assets\Scripts\LGH\LockBoxNetworkSync.cs" />
     <Compile Include="Assets\Scripts\LGH\IRoomResettable.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim002\Runtime\Gim002KeyData.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim002\Runtime\Gim002ScreenFlash.cs" />
@@ -86,13 +89,17 @@
     <Compile Include="Assets\Scripts\KJH\PotionCraft\FinalRecipeData.cs" />
     <Compile Include="Assets\Scripts\KJH\PotionCraft\MixerClearButton.cs" />
     <Compile Include="Assets\Scripts\KJH\Dumbwaiter\IWorldInteractable.cs" />
+    <Compile Include="Assets\Scripts\LGH\Telescope.cs" />
     <Compile Include="Assets\Scripts\LGH\PlayerInteractor.cs" />
     <Compile Include="Assets\Scripts\KJH\KeySafe\LockedSafe.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim002\Runtime\Gim002Curtain.cs" />
+    <Compile Include="Assets\Scripts\KJH\Gim005\Runtime\Gim005Config.cs" />
     <Compile Include="Assets\Scripts\KJH\ObjectEcho\ObjectEchoTarget.cs" />
+    <Compile Include="Assets\Scripts\KJH\Gim005\Runtime\Gim005NetSync.cs" />
     <Compile Include="Assets\Scripts\LGH\UiScale.cs" />
     <Compile Include="Assets\Scripts\KJH\Photo\PlayerMovement.cs" />
     <Compile Include="Assets\Scripts\KJH\Common\IRequiresAbility.cs" />
+    <Compile Include="Assets\Scripts\KJH\Gim005\Runtime\Gim005Controller.cs" />
     <Compile Include="Assets\Scripts\KJH\KeySafe\KeyPickup.cs" />
     <Compile Include="Assets\Scripts\KJH\KeySafe\SimpleDoorOpenSequence.cs" />
     <Compile Include="Assets\Scripts\KJH\Clue\InspectPhotoCapture.cs" />
@@ -102,12 +109,18 @@
     <Compile Include="Assets\Scripts\KJH\PotionCraft\PotionRecipeTable.cs" />
     <Compile Include="Assets\Scripts\LGH\MultiplayerMenu.cs" />
     <Compile Include="Assets\Scripts\KJH\Common\Hold\IHoldableSocket.cs" />
+    <Compile Include="Assets\Scripts\LHJ\CharacterKeyMove.cs" />
+    <Compile Include="Assets\Scripts\KSM\Options\PlayerOptions.cs" />
     <Compile Include="Assets\Scripts\KJH\SoundCue\SpectrumResponseProfile.cs" />
+    <Compile Include="Assets\Scripts\KJH\Gim005\Runtime\Gim005SymbolButton.cs" />
     <Compile Include="Assets\Scripts\KJH\Clue\IModalInteraction.cs" />
+    <Compile Include="Assets\Scripts\KJH\Gim005\Runtime\Gim005Panel.cs" />
     <Compile Include="Assets\Scripts\KJH\PotionCraft\TrashStation.cs" />
     <Compile Include="Assets\Scripts\KSM\UI\TitleMenuUI.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim002\Runtime\Gim002Controller.cs" />
+    <Compile Include="Assets\Scripts\KJH\Gim005\Runtime\Gim005SymbolDisplay.cs" />
     <Compile Include="Assets\Scripts\KJH\Clue\ClueJournal.cs" />
+    <Compile Include="Assets\Scripts\LGH\PaperNote.cs" />
     <Compile Include="Assets\Scripts\KWJ\UI\MainMenuButtonHover.cs" />
     <Compile Include="Assets\Scripts\KJH\ObjectEcho\IHandReach.cs" />
     <Compile Include="Assets\Scripts\KJH\PotionCraft\PotionCatalog.cs" />
@@ -120,27 +133,37 @@
     <Compile Include="Assets\Scripts\KJH\Gim002\Runtime\Gim002StageItem.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim002\Runtime\Gim002StageLight.cs" />
     <Compile Include="Assets\Scripts\KSM\Player\ToyActionAnimator.cs" />
+    <Compile Include="Assets\Scripts\KSM\Options\OptionsMenuController.cs" />
     <Compile Include="Assets\Scripts\KJH\KeySafe\SafeClue.cs" />
     <Compile Include="Assets\Scripts\KJH\Photo\FlashEffect.cs" />
+    <Compile Include="Assets\Scripts\LGH\Ladder.cs" />
     <Compile Include="Assets\Scripts\KSM\Voice\VoiceChatHud.cs" />
     <Compile Include="Assets\Scripts\KSM\Player\ToyFigureSlotAvatar.cs" />
+    <Compile Include="Assets\Scripts\LGH\StarLockBox.cs" />
     <Compile Include="Assets\Scripts\LGH\ItemNetworkSync.cs" />
     <Compile Include="Assets\Scripts\LGH\RoomResetter.cs" />
+    <Compile Include="Assets\Scripts\LGH\StarLockBoxInspect.cs" />
     <Compile Include="Assets\Scripts\LGH\FirstPersonController.cs" />
+    <Compile Include="Assets\Scripts\KJH\Gim005\Runtime\LocalGim005Net.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim002\Runtime\Gim002IndicatorLamp.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim002\Runtime\Gim002PianoKey.cs" />
     <Compile Include="Assets\Scripts\KJH\Photo\PhotoCaptureSystem.cs" />
     <Compile Include="Assets\Scripts\KJH\PotionCraft\PotionCraftSync.cs" />
     <Compile Include="Assets\Scripts\KJH\Common\Hold\HoldableHomeSpot.cs" />
+    <Compile Include="Assets\Scripts\KSM\GameFlow\IllustratedCutsceneController.cs" />
+    <Compile Include="Assets\Scripts\KSM\Options\OptionsManager.cs" />
     <Compile Include="Assets\Scripts\KJH\Photo\IInteractable.cs" />
     <Compile Include="Assets\Scripts\KJH\Common\Hold\HoldableItem.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim002\Runtime\Gim002Tones.cs" />
     <Compile Include="Assets\Scripts\LGH\PlayerAvatar.cs" />
+    <Compile Include="Assets\Scripts\KJH\Gim005\Runtime\Gim005CenterButton.cs" />
     <Compile Include="Assets\Scripts\KJH\PotionCraft\PotionVisuals.cs" />
+    <Compile Include="Assets\Scripts\KJH\Gim005\Runtime\Gim005Gate.cs" />
     <Compile Include="Assets\TutorialInfo\Readme.cs" />
     <Compile Include="Assets\Scripts\KJH\Photo\FootstepSound.cs" />
     <Compile Include="Assets\Scripts\KJH\Clue\ViewableClue.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim002\Runtime\Gim002Scoreboard.cs" />
+    <Compile Include="Assets\Scripts\KSM\GameFlow\ResultCanvasController.cs" />
     <Compile Include="Assets\Scripts\KJH\PotionCraft\RecipeBookData.cs" />
     <Compile Include="Assets\Scripts\KJH\ObjectEcho\IPlayerLock.cs" />
     <Compile Include="Assets\Scripts\KJH\SoundCue\SpectrumOverlay.cs" />
@@ -156,6 +179,8 @@
     <Compile Include="Assets\Scripts\KSM\UI\MultiplayerMenuUI.cs" />
     <Compile Include="Assets\Scripts\KJH\Puzzle\PortraitPuzzle.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim002\Runtime\Gim002Puppet.cs" />
+    <Compile Include="Assets\Scripts\LGH\StarLockPart.cs" />
+    <Compile Include="Assets\Scripts\KSM\GameFlow\GameFlowSync.cs" />
     <Compile Include="Assets\Scripts\KJH\PotionCraft\SupplyStation.cs" />
     <Compile Include="Assets\Scripts\KJH\GameTime\TimeUnlock.cs" />
     <Compile Include="Assets\Scripts\KJH\Photo\CameraModeController.cs" />
@@ -167,6 +192,7 @@
     <Compile Include="Assets\Scripts\KWJ\UI\MainMenuController.cs" />
     <Compile Include="Assets\Scripts\KJH\Clue\InspectableClue.cs" />
     <Compile Include="Assets\Scripts\KJH\Photo\PhotoInventory.cs" />
+    <Compile Include="Assets\Scripts\KJH\Gim005\Runtime\Gim005SymbolData.cs" />
     <Compile Include="Assets\Scripts\KJH\Common\PlayerAbility.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim002\Runtime\LocalGim002Net.cs" />
     <Compile Include="Assets\Scripts\KJH\Common\IInteractionCondition.cs" />
@@ -174,11 +200,14 @@
     <Compile Include="Assets\Scripts\KJH\Common\Hold\PlayerHand.cs" />
     <Compile Include="Assets\Scripts\KJH\ObjectEcho\ObjectEchoController.cs" />
     <Compile Include="Assets\Scripts\KJH\Clue\ClueViewerUI.cs" />
+    <Compile Include="Assets\Scripts\KSM\GameFlow\DebugEscapeTrigger.cs" />
     <Compile Include="Assets\Scripts\KJH\SoundCue\InkWaveformGraphic.cs" />
     <Compile Include="Assets\Scripts\LGH\WorldItem.cs" />
     <Compile Include="Assets\Scripts\KJH\Dumbwaiter\DumbwaiterButton.cs" />
+    <Compile Include="Assets\Scripts\KSM\GameFlow\GameFlowUI.cs" />
     <Compile Include="Assets\Scripts\KJH\GameTime\GameClock.cs" />
     <Compile Include="Assets\Scripts\KSM\Player\ProceduralToyAnimator.cs" />
+    <Compile Include="Assets\Scripts\KJH\Gim005\Runtime\Gim005MazeArea.cs" />
     <Compile Include="Assets\Scripts\KJH\Puzzle\KeyBoxLid.cs" />
     <Compile Include="Assets\Scripts\KJH\GameTime\TimePhase.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim002\Runtime\Gim002KeyTarget.cs" />
@@ -191,16 +220,32 @@
     <Compile Include="Assets\Scripts\LGH\DayNightCycle.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Assets\Objects\LGH\Backup\LockBoxNetworkSync_beforeAnnounce.cs.txt" />
+    <None Include="Assets\Objects\LGH\Backup\PistolLoader_src.cs.txt" />
+    <None Include="Assets\Objects\LGH\Backup\FirstPersonController_beforeLadder.cs.txt" />
+    <None Include="Assets\Objects\LGH\Backup\StarLockPart_beforeInspect.cs.txt" />
     <None Include="Assets\TextMesh Pro\Shaders\TMPro.cginc" />
+    <None Include="Assets\Objects\LGH\Backup\InteractableDoor_beforeFixedSwing.cs.txt" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile Overlay.shader" />
+    <None Include="Assets\Objects\LGH\Backup\PlayerInventory_beforeBoxPause.cs.txt" />
     <None Include="Assets\AssetPacks\Pine Forest_LowPoly\Shaders\Ground_Simple.shader" />
+    <None Include="Assets\Objects\LGH\Backup\PaperNote_beforeInk.cs.txt" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile-2-Pass.shader" />
+    <None Include="Assets\Objects\LGH\Backup\StarLockBoxInspect_src.cs.txt" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_Bitmap.shader" />
     <None Include="Assets\AssetPacks\Supercyan Free Forest Sample\Shaders\Legacy\CelShader.shader" />
+    <None Include="Assets\Objects\LGH\Backup\NetworkPlayer.cs.txt" />
+    <None Include="Assets\Objects\LGH\Backup\StarLockBox_beforeInspect.cs.txt" />
     <None Include="Assets\AssetPacks\Supercyan Free Forest Sample\Shaders\SupercyanShaderLighting.cginc" />
     <None Include="Assets\TutorialInfo\StyleSheets\ReadmeEditor.uss" />
+    <None Include="Assets\Objects\LGH\Backup\PlayerInventory_beforeInk.cs.txt" />
+    <None Include="Assets\Objects\LGH\Backup\PaperNote_src.cs.txt" />
+    <None Include="Assets\Objects\LGH\Backup\PistolLoader_beforeCarry.cs.txt" />
     <None Include="Assets\TextMesh Pro\Shaders\TMPro_Mobile.cginc" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF SSD.shader" />
+    <None Include="Assets\Objects\LGH\Backup\PistolLoader_beforeHideKey.cs.txt" />
+    <None Include="Assets\Prefabs\KJH\Gim005\Materials\Gim005_WorldText.shader" />
+    <None Include="Assets\Objects\LGH\Backup\FirstPersonController_beforeLadderE.cs.txt" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Surface-Mobile.shader" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF SpaceWarp.shader" />
     <None Include="Assets\AssetPacks\Supercyan Free Forest Sample\Shaders\SupercyanShader.shader" />
@@ -210,24 +255,34 @@
     <None Include="Assets\Objects\LGH\Backup\FirstPersonController.cs.txt" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Surface.shader" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_Bitmap-Custom-Atlas.shader" />
+    <None Include="Assets\Objects\LGH\Backup\PlayerInteractor_beforePistol.cs.txt" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF.shader" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile SSD.shader" />
     <None Include="Assets\TextMesh Pro\Resources\LineBreaking Leading Characters.txt" />
+    <None Include="Assets\Objects\LGH\Backup\PlayerInteractor.cs.txt" />
     <None Include="Assets\TextMesh Pro\Shaders\TMPro_Properties.cginc" />
     <None Include="Assets\TutorialInfo\StyleSheets\ReadmeEditorLight.uss" />
     <None Include="Assets\TextMesh Pro\Shaders\TMPro_Surface.cginc" />
+    <None Include="Assets\Objects\LGH\Backup\PlayerInteractor_beforeWrap.cs.txt" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile SpaceWarp.shader" />
     <None Include="Assets\TextMesh Pro\Resources\LineBreaking Following Characters.txt" />
+    <None Include="Assets\Objects\LGH\Backup\PlayerInventory_beforeEquip.cs.txt" />
     <None Include="Assets\Objects\LGH\Backup\PlayerInventory.cs.txt" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF SSD SpaceWarp.shader" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile Masking.shader" />
     <None Include="Assets\Objects\LGH\Backup\MultiplayerMenu.cs.txt" />
+    <None Include="Assets\Objects\LGH\Backup\StarLockBox_beforeTouchOff.cs.txt" />
+    <None Include="Assets\AssetPacks\OccaSoftware\Crosshairs\Readme.txt" />
+    <None Include="Assets\Objects\LGH\Backup\Telescope_beforeReticleTex.cs.txt" />
+    <None Include="Assets\Objects\LGH\Backup\Ladder_beforeE.cs.txt" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF Overlay.shader" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_Bitmap-Mobile.shader" />
+    <None Include="Assets\Objects\LGH\Backup\PistolLoader_src2.cs.txt" />
     <None Include="Assets\TextMesh Pro\Fonts\LiberationSans - OFL.txt" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile.shader" />
     <None Include="Assets\TutorialInfo\StyleSheets\ReadmeEditorDark.uss" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile SSD SpaceWarp.shader" />
+    <None Include="Assets\Objects\LGH\Backup\PlayerInteractor_beforeSelfRay.cs.txt" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_Sprite.shader" />
   </ItemGroup>
   <ItemGroup>
@@ -1905,6 +1960,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="Gim005.Core.csproj" />
+    <ProjectReference Include="OccaSoftware.Crosshairs.Editor.csproj" />
     <ProjectReference Include="Gim002.Core.csproj" />
   </ItemGroup>
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />

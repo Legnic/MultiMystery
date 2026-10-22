@@ -3,7 +3,6 @@ using UnityEngine;
 namespace CoopDemo
 {
     // 더미 타이틀 화면. 각 버튼의 OnClick에 아래 함수들이 연결되어 있다.
-    // 옵션 버튼은 아직 기능이 없어서 연결하지 않았다.
     public class TitleMenuUI : MonoBehaviour
     {
         [Tooltip("시작을 누르면 숨길 타이틀 화면 루트. 비워두면 이 오브젝트 자체를 숨긴다.")]
@@ -20,6 +19,12 @@ namespace CoopDemo
             Debug.Log("[타이틀] 시작 버튼 클릭");
             if (multiplayerMenu != null) multiplayerMenu.enabled = true;
             TitleRoot.SetActive(false);
+        }
+
+        public void OnOptionsClicked()
+        {
+            Debug.Log("[타이틀] 옵션 버튼 클릭");
+            OptionsMenuController.Open();
         }
 
         public void OnQuitClicked()

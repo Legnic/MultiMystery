@@ -97,7 +97,10 @@ namespace LGH
 
             // typing in a menu text box (nickname) must not walk the player around
             bool typing = (MultiplayerMenu.Typing || GUIUtility.keyboardControl != 0) && Cursor.lockState != CursorLockMode.Locked;
-            if (typing) { h = 0f; v = 0f; }
+            // cursor unlocked = some menu is up for THIS player only (pause/options/inventory/reading/...) — WASD/jump must stop too,
+            // not just mouse-look. The other player's game keeps running; this only reads this player's own Cursor state.
+            bool paused = Cursor.lockState != CursorLockMode.Locked;
+            if (typing || paused) { h = 0f; v = 0f; }
 
             Vector3 moveDir = (transform.right * h + transform.forward * v);
             if (moveDir.sqrMagnitude > 1f) moveDir.Normalize();
@@ -107,8 +110,8 @@ namespace LGH
             {
                 bool letGo = !Climbing.isActiveAndEnabled || !Climbing.Holds(controller)
                              || (controller.isGrounded && (v < 0f || h != 0f))          // at the bottom: step back / sideways
-                             || (kb.spaceKey.wasPressedThisFrame && !typing)
-                             || (kb.eKey.wasPressedThisFrame && !typing && Time.frameCount != climbFrame);   // E lets go anywhere
+                             || (kb.spaceKey.wasPressedThisFrame && !typing && !paused)
+                             || (kb.eKey.wasPressedThisFrame && !typing && !paused && Time.frameCount != climbFrame);   // E lets go anywhere
                 if (letGo) StopClimb();
                 else
                 {
@@ -121,7 +124,7 @@ namespace LGH
             if (controller.isGrounded)
             {
                 verticalVelocity = -0.5f;
-                if (kb.spaceKey.wasPressedThisFrame && !typing)
+                if (kb.spaceKey.wasPressedThisFrame && !typing && !paused)
                     verticalVelocity = Mathf.Sqrt(jumpHeight * -2f * gravity);
             }
             else
