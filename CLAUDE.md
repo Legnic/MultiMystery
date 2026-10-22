@@ -137,6 +137,16 @@ git에 커밋되어 팀원 전원이 같은 내용을 공유합니다. 개인적
 - 임시 숫자 글자는 깊이 검사 셰이더 `Gim005_WorldText`를 쓴다(기본 TextMesh 글꼴 머티리얼은 URP에서 벽 너머로 비쳐 보임). 글꼴 텍스처는 실행 중에 만들어지므로 에디터(비실행)에서는 숫자가 안 보이는 게 정상.
 - 검증 한계: `StartHost()` 로컬 호스트로 입구 통과→타이머, 오답(-15초·3초 잠금), 진짜 길 개방, 시간 초과(흐려짐→시작점 복귀→재배정), 중앙 버튼→완료→철창 비활성화까지 확인(콘솔 GIM-005 에러 0). E키는 Game 뷰 포커스 문제로 `PlayerInteractor`가 조준한 대상의 `Interact()`를 직접 호출해 확인. **두 클라이언트 동시 테스트와 실제 걸어서 통과는 직접 플레이로 확인 필요.**
 
+## 온실 화분 퍼즐 GIM-004 (2026-10-22, KJH 씬)
+- 명세: `GIM-004_온실화분퍼즐v2.md`(이채원). 1층 온실 `F1_Conservatory`(x 55~68, z -16~-9)에 중앙 선반 + 화분 7개(A~G), 2층 서고 `F2_Library/ReadingTable` 위에 온실 기록일지. 정답 D-E-A-F(선반 정면 기준 왼쪽부터, `Gim004Config.rules.answer`에서 변경 가능).
+- 결정(2026-10-22): 정원문 = `Door_Courtyard_L/R`(남쪽 복도→정원 미로 입구 양문), 정원 관리실 문 = `Door_MaidRoom`. 두 문은 완료 전까지 런타임에 잠그고 완료 시 연다. GIM-003 완료 전 온실·서고 문 잠금은 **기본 꺼짐**(`Gim004Config.lockEntryUntilPotionCraft`로 켤 수 있음). 기록일지는 E로 펼치고 들고 나갈 수 없음. 선반은 뒤쪽·양옆 난간, 정면이 온실 입구(서쪽)를 봄.
+- LGH 맵 프리팹은 건드리지 않음: 문은 `Gim004Controller`가 이름으로 찾아(`completeDoors`, 부모 경로에 `Ravenwood_LGH` 포함) 매 프레임 상태에 맞게 잠그고, 완료 시 호스트가 `DoorNetworkSync.RequestInteract`로 연다.
+- 스크립트 `Assets/Scripts/KJH/Gim004/`(네임스페이스 `Gim004`). 판정은 순수 C# `Core/Gim004Logic.cs`(asmdef `Gim004.Core`) + EditMode 테스트 23개(배치 기록 4문장의 해가 D-E-A-F 하나뿐인지도 검사). 네트워크는 GIM-005와 같은 구조(`IGim004Net`/`LocalGim004Net`/`Gim004NetSync`), `Gim004Sync.prefab`은 `DefaultNetworkPrefabs.asset`에 등록됨. 화분은 공용 들기 시스템(`HoldableItem`), 손은 동기화 안 함.
+- 재생성: `Tools/KJH/GIM-004/Build All`(재실행 가능). **기능/겉모습 분리**: `Assets/Prefabs/KJH/Gim004/Visuals/`의 `Gim004_PotVisual_A~G`, `Gim004_ShelfVisual`, `Gim004_PotBenchVisual`, `Gim004_JournalVisual`은 "없을 때만" 만들어짐 → 모델 교체는 이 프리팹 안만 바꾸고 Build All 재실행(화분 콜라이더 재조정 + 기록일지 사진 재촬영). 임시 모델로 되돌리기는 `Rebuild Placeholder Visuals`. `Data/Gim004Config.asset`도 없을 때만 생성.
+- 기록일지 사진 1~4(F·E·D·A)는 `Tools/KJH/GIM-004/Capture Journal Photos`가 실제 화분 겉모습 프리팹을 찍어 `Data/Photos`에 만든다(명세서 "사진은 게임 속 모델을 촬영" 원칙). 모델을 바꾸면 사진도 반드시 다시 찍을 것.
+- **Develop 적용 방법**: `GIM004_Conservatory.prefab`(61.5, 0, -12.5), `GIM004_Journal.prefab`(62.55, 4.665, 3.5, 회전 y 180), `Gim004Sync.prefab`(최상위)을 프리팹 인스턴스로 두면 끝(Develop의 Ravenwood_LGH도 같은 좌표). 놓은 뒤 `Tools/Network/Validate Scene NetworkObjects`.
+- 검증 한계: Play 모드 `StartHost()` 로컬 호스트에서 `Interact()` 직접 호출로 오답(D-F-A-E → 4개 원위치, 오답 1)·교체·빼기·정답(완료, 두 양문 잠금 해제+열림, 선반 잠금)·기록일지 열고 닫기까지 확인(콘솔 GIM-004 에러 0). **실제 E키 입력, 두 클라이언트 동시 플레이, 1층/2층 안내 문구·실패음 분리는 직접 플레이로 확인 필요.**
+
 ## 네트워크 동기화 정책 — "전면 재구축" 대신 "규칙 + 검사" (2026-10-21)
 팀원들과 실제 멀티플레이 플레이테스트를 하면서 같은 유형의 버그가 반복 발견됐다: `DumbwaiterSync_KJH`, `PortraitPuzzleSync_KJH`, `DoorSync_LGH`(+빠진 `CandleNetworkSync`) 전부 **코드 로직 자체는 멀쩡했는데, Develop 씬에 프리팹이 아닌 맨몸 오브젝트로 배치**돼 있었다. `NetworkManager`의 `EnableSceneManagement=False`라서, 게스트가 접속하면 씬에 맨몸으로 둔 `NetworkObject`(또는 `DefaultNetworkPrefabs`에 등록 안 된 프리팹)를 전부 지우고 호스트가 보낸 정보로 "등록된 프리팹"만 다시 만들기 때문이다. 호스트 혼자 테스트하면 멀쩡해 보여서 게스트 접속 전까지 못 알아챈다.
 
