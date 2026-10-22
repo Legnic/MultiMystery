@@ -261,6 +261,32 @@ KJH 브랜치에서 GIM-005 구현을 머지해온 뒤, "다른 시스템을 해
 - **테스트 중 발견해 고친 디테일**: 처음엔 Intro/Ending/Result Canvas와 같은 배경색 알파 0.97(연출용으로 살짝 어둡게)을 그대로 썼는데, 실제 스크린샷으로 확인해보니 밝은 촛불 광원이 3%만큼 비쳐서 은은하게 보임 — 다른 Canvas는 "연출 중 살짝 어둡게"가 목적이라 문제없지만, 대기방은 "아예 안 보이게"가 목적이라 적합하지 않음. 배경 알파를 1.0(완전 불투명)으로 바꿔서 해결. 스크린샷 비교로 촛불 빛샘이 완전히 사라지는 것까지 확인함.
 - **검증**: Play 모드에서 실제 사용자 흐름 그대로 재현(`TitleMenuUI.OnStartClicked()` 호출 → 호스트 시작) → `capture_game_view`로 Game 뷰를 직접 캡처해 비교. 수정 전엔 좌하단 음성 HUD 텍스트와 촛불 빛이 은은하게 비쳤고, 알파 1.0으로 바꾼 뒤에는 완전한 검은 배경 위에 대기방 패널만 깔끔하게 보임. `Validate Scene NetworkObjects` 재실행 결과 "문제 없음", 콘솔 에러 0건.
 
+## 기믹 더미 → VARCO 모델 교체 1차 (2026-10-22, 아홉 번째 후속)
+KWJ님이 만든 실제 3D 모델(바르코, 인형극 소품·도르래 부품·약품 믹서)이 `Assets/VARCO 3D/KWJ/`에 새로 들어와서, Develop 씬 곳곳의 원시도형(Cube/Cylinder/Sphere) 더미를 실제 모델로 교체하는 작업.
+
+**사전 조사**: `_NeedsCollider` 폴더(콜라이더가 아직 없다는 뜻)의 새 프리팹 17개를 전부 열어 메시·피벗·바운드를 확인하고, GIM-002 무대(`OBJ_STAGE`)·덤웨이터(`Dumbwaiter_Rig`)·PotionCraft 믹서(`Station_Mixer_F2`)의 기존 더미 오브젝트와 좌표·스크립트 참조(`Gim002StageCrank.handle`, `Dumbwaiter.cabin/counterweight/pulleyWheel/cabinRope/counterweightRope`, `MixerStation.layers` 등)를 하나하나 대조해서 교체 가능 여부와 매핑을 정리함. 사용자가 이 매핑으로 진행을 승인.
+
+**발견한 문제 — 해결**: `Assets/VARCO 3D/KWJ/Prefabs/_NeedsCollider/Prop_TrashBin.prefab`이 깨져 있었음(원본 FBX가 같은 머지에서 삭제됐는데 이 프리팹은 여전히 그 GUID를 프리팹 변형 부모로 참조해서 `AssetDatabase`가 로드 자체를 못 함). 아무 씬/프리팹도 참조하지 않는 것을 확인하고 삭제. **주의**: KJH 브랜치를 다시 머지하면 이 깨진 파일이 또 복구될 수 있음(실제로 이번 세션에서 한 번 그랬음) — 머지 후 매번 재확인 필요.
+
+**GIM-002 인형극 무대**: 처음엔 VARCO 원본 조각(`Furn_PuppetStage`/`Furn_PuppetStage_Details`/`Prop_Puppet*`)을 직접 재조립하려 했으나, 작업 중 사용자가 팀장님께 전달받은 안내를 공유함 — KJH님이 이미 `Assets/Prefabs/KJH/Gim002/Gim002_Stage.prefab`(무대 전체, 진행 램프 3개·반주자 표시등 포함)과 업데이트된 `Gim002_Lamp_Progress.prefab`/`Gim002_Lamp_Ready.prefab`을 만들어뒀다는 내용. 확인해보니 **당시엔 아직 저장소에 없었음**(Gim002_Stage.prefab 자체가 아예 없었고, 램프 프리팹 2개는 있었지만 내용은 옛날 더미 그대로)이라 사용자에게 상황을 알리고 진행 방식을 물음 → 사용자가 "무대는 보류, 다른 기믹(도르래/믹서)부터 진행"으로 결정.
+이후 사용자가 KJH 최신 브랜치를 머지해오자(`4c4e71b` GIM-002 무대를 프리팹으로 분리 등) `Gim002_Stage.prefab`과 두 램프 프리팹이 실제 모델(Maya 메시 `pCylinder1`/`pSphere1`/`texture_mapping`, 기존 Unity 기본 도형 `Cylinder`/`Sphere`/`Cube`와 다름)로 들어온 것을 확인 — 팀장님 안내 그대로 진행:
+- `GIM002_KJH/F2_Nursery/OBJ_STAGE`를 삭제하고 같은 부모 아래 `Gim002_Stage.prefab`을 위치 (60.5, 3.9, -8.45), 회전 0으로 배치.
+- 1층 피아노 램프 4개(`Ravenwood_LGH/TempFurniture/F1_Music/PianoLamps` 아래 `OBJ_LAMP_PROGRESS_1F_1~3`, `OBJ_LAMP_STAGE`)는 프리팹 연결이 끊긴 옛 복사본이라 각각 삭제 후 `Gim002_Lamp_Progress`/`Gim002_Lamp_Ready` 프리팹 인스턴스로 교체, 기존 위치·회전과 `kind`/`progressIndex`/`blinkOnStageWrong` 값을 그대로 재적용.
+- 검증: `Validate Scene NetworkObjects` 문제 없음. Play 모드에서 호스트로 `RequestGim001Solved`→`RequestStageWound`→`RequestMusicDoorOpened`→`RequestCrankCompleted` 순으로 진행해 커튼이 실제로 좌우 각각의 기둥 방향으로 열리는 것(새 `Gim002Curtain` 스크립트가 메시 폭을 직접 읽어 계산 — 하드코딩된 기본 Cube 가정 없음)과, 반주자 표시등의 렌즈 2개가 함께 켜지는 것(`Gim002IndicatorLamp.bulb`는 `Lens_L` 하나만 연결돼 있는데도, 강제로 다른 색을 넣어도 다음 프레임에 자동으로 원래 점등색으로 돌아옴 — 같은 머티리얼을 쓰는 GPU 인스턴싱 동기화로 추정)까지 확인. 콘솔 에러 0건.
+
+**도르래(Dumbwaiter)**: `Ravenwood_LGH/Floor1/Dumbwaiter_Rig` 내부에서 `Dumbwaiter.cs`가 `cabin`/`counterweight`/`pulleyWheel`/`cabinRope`/`counterweightRope` 트랜스폼을 직접 움직이고 있어서, 이 트랜스폼 자체는 그대로 두고 **시각적 자식만** 새 모델로 바꿈(스크립트의 위치/회전/스케일 제어가 그대로 유지되도록):
+- `PulleyWheel`의 더미 `Disc`/`Spoke` 삭제 → `Furn_PulleyAssembly` 프리팹에서 `Wheel`/`Axle` 조각만 꺼내 자식으로 연결.
+- `Cabin`의 더미 `Floor`/`Side_*`/`Lip_West` 삭제(화물 표시용 `Cargo_0/1/2`는 유지) → `Furn_PulleyAssembly`의 `LiftBox/Model`을 바닥 피벗 기준으로 높이 절반만큼 띄워 자식으로 연결.
+- `Counterweight`의 더미 `Body` 삭제 → `Furn_PulleyAssembly`의 `Counterweight/Model`을 같은 방식으로 연결.
+- **로프는 코드 수정이 필요했음**: 기존 `StretchRope()`는 "기본 실린더(높이 2, 중심 피벗)"를 가정하고 위치를 중심점으로, 스케일을 길이의 절반으로 계산했는데, 새 로프 모델(`Pulley_RopeStrand`, 메시 로컬 높이 ≈0.98)은 피벗이 로프 **위쪽 끝(도르래 쪽)**에 있고 거기서 아래로 늘어지는 구조라 가정이 안 맞음. `Dumbwaiter.cs`에 `ropeMeshHeight` 필드를 추가하고 `StretchRope()`를 "위치는 도르래 높이로 고정, 세로 스케일만 `늘어진 길이 / ropeMeshHeight`로 계산"하도록 수정(실제 메시 바운드 값으로 자동 설정). `Rope_Cabin`/`Rope_Counterweight`는 하위 오브젝트를 추가하지 않고 자기 자신의 `MeshFilter`/`MeshRenderer`를 새 로프 메시·머티리얼로 직접 교체(피벗이 이미 맞으므로 가장 간단).
+- 검증: Play 모드에서 `Dumbwaiter.GoTo(0)`으로 1층→2층 전체 구간 이동시켜, 도착 후 `Rope_Cabin`/`Rope_Counterweight`의 위치(도르래 높이로 고정)·스케일(계산식과 소수점까지 정확히 일치)을 직접 대조해 수식이 올바르게 동작함을 확인. 콘솔 에러 0건.
+- **시각 확인 한계**: Scene 뷰 카메라를 도르래 위치로 옮겨 스크린샷을 여러 번 시도했으나 방이 어둡고 구도를 맞추기 어려워 깔끔한 사진을 못 건짐(화물 상자는 제자리에서 확인됨) — 수치 검증은 확실하나 **실제 눈으로 본 마감 상태는 다음 플레이테스트에서 확인 필요**.
+
+**PotionCraft 약품 믹서**: `Station_Mixer_F2/Vat`은 스크립트에 이름으로 참조되지 않는 순수 장식 메시라 가장 간단 — 자기 자신의 `MeshFilter`/`MeshRenderer`를 `Prop_IngredientMixer.fbx`(아직 `_NeedsCollider`에 프리팹이 없어 FBX를 직접 사용) 메시·머티리얼로 교체하고, 기존 `CapsuleCollider`(상호작용용)는 그대로 둠. 크기는 기존 비율 대신 균등 스케일 0.70으로 맞춰서 가루 층(`Layer0/1/2`)이 나타나는 높이 바로 아래에 믹서 입구가 오도록 배치(기존 Vat의 Y 위치와 거의 일치해 위치는 그대로 둠).
+
+**검증 공통**: 전 과정 `Tools/Network/Validate Scene NetworkObjects` 문제 없음, 콘솔 에러 0건. 새로 배치한 모델들은 전부 비상호작용 장식(부모 스크립트가 애니메이션)이거나 이미 콜라이더가 있던 자리(Vat)라서 콜라이더를 새로 추가할 필요는 없었음.
+**남은 일**: GIM-002 무대 자체는 이제 완료됐지만, 아직 안 쓴 VARCO 프리팹(`Prop_PulleyCrank`, `Prop_PuppetBGFrame` 등 — 대응하는 더미가 불명확하거나 우선순위 밖)과 2인 실제 플레이로 커튼·표시등·도르래·믹서의 최종 비주얼을 확인하는 일이 남음.
+
 ## 사용 가능한 Unity 전용 스킬
 이 환경에는 `unity:` 접두사의 스킬들(unity-cli, ui, urp-postprocessing, physics-3d-collision 등)이 이미 연결되어 있습니다. 관련 작업을 할 때는 먼저 해당 스킬을 확인하세요.
 

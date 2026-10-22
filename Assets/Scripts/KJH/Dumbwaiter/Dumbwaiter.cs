@@ -28,6 +28,8 @@ public class Dumbwaiter : MonoBehaviour
     [SerializeField] private float cabinHeight = 0.7f;
     [SerializeField] private float counterweightHeight = 0.5f;
     [SerializeField] private float pulleyRadius = 0.15f;
+    [Tooltip("로프 메시의 스케일 1 기준 세로 길이. 로프 모델의 피벗은 위쪽 끝(도르래 쪽)에 있고 거기서 아래로 늘어지는 구조여야 한다.")]
+    [SerializeField] private float ropeMeshHeight = 0.98f;
 
     [Header("이동")]
     [Tooltip("1층~2층 전체 구간을 오가는 데 걸리는 시간(초).")]
@@ -182,15 +184,16 @@ public class Dumbwaiter : MonoBehaviour
         t.localPosition = p;
     }
 
-    // 로프(높이 2짜리 기본 실린더)를 도르래~물체 윗면 사이에 맞게 늘린다.
+    // 로프 모델의 피벗은 도르래 쪽(위쪽 끝)에 고정돼 있고 거기서 물체 윗면까지 아래로 늘어지는 구조다.
+    // 그래서 위치는 도르래 높이로 고정해 두고, 세로 스케일만 바꿔서 늘어진 길이를 표현한다.
     private void StretchRope(Transform rope, float lowerEnd)
     {
         float length = Mathf.Max(0.01f, pulleyHeight - lowerEnd);
         Vector3 p = rope.localPosition;
-        p.y = lowerEnd + length * 0.5f;
+        p.y = pulleyHeight;
         rope.localPosition = p;
         Vector3 s = rope.localScale;
-        s.y = length * 0.5f; // 기본 실린더 높이가 2이므로 절반
+        s.y = length / Mathf.Max(0.0001f, ropeMeshHeight);
         rope.localScale = s;
     }
 
