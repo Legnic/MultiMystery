@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5242c62aed35bd14d954a6324689459a, type: 3}
+  m_Name: Gim005Config
+  m_EditorClassIdentifier: Assembly-CSharp::Gim005.Gim005Config
+  rules:
+    symbolCount: 13
+    gateCount: 8
+    timeLimit: 90
+    wrongPolicy: 0
+    wrongTimePenalty: 15
+    panelLockSeconds: 3
+    timeoutFxSeconds: 2
+    bellAtRemaining: 30
+  symbols: {fileID: 11400000, guid: e7e3f36a69f859b478ee32dd714a9691, type: 2}
+  hideOnCompleteNames:
+  - Rail_StairFront
+  hideOnCompleteParentFilter: Ravenwood_LGH
+  msgStarted: "\uB4F1 \uB4A4\uC5D0\uC11C \uB364\uBD88\uC774 \uBC14\uC2A4\uB77D\uAC70\uB9B0\uB2E4. \uC11C\uB458\uB7EC\uC57C \uD55C\uB2E4"
+  msgPanelIdle: "\uBC84\uD2BC\uC774 \uC544\uC9C1 \uBC18\uC751\uD558\uC9C0 \uC54A\uB294\uB2E4"
+  msgPanelLocked: "\uD328\uB110\uC774 \uC7A0\uACA8 \uC788\uB2E4"
+  msgWrong: "\uD2C0\uB9B0 \uBB38\uC591\uC774\uB2E4! \uC2DC\uAC04\uC774 \uC904\uC5B4\uB4E4\uC5C8\uB2E4"
+  msgAlreadyOpen: "\uC774\uBBF8 \uB20C\uB9B0 \uBC84\uD2BC\uC774\uB2E4"
+  msgTimeOut: "\uC815\uC2E0\uC774 \uC544\uB4DD\uD574\uC9C4\uB2E4\u2026"
+  msgComplete: "\uB364\uBD88\uC774 \uBAA8\uB450 \uAC77\uD788\uACE0, \uC5B4\uB518\uAC00\uC5D0\uC11C \uCCA0\uCC3D\uC774 \uC5F4\uB9AC\uB294 \uC18C\uB9AC\uAC00 \uB4E4\uB9B0\uB2E4"
