@@ -38,6 +38,13 @@ namespace Gim002.EditorTools
         [MenuItem("Tools/KJH/GIM-002/Build All")]
         public static void BuildAll()
         {
+            // 씬의 무대·표시등은 실제 모델(KWJ Puppet)로 교체되어 있다. 다시 만들면 임시 박스 모양으로 돌아간다.
+            // 또 씬 루트 이름이 GIM002_KJH로 바뀌어 있어서, 다시 만들면 기존 것을 지우지 못하고 GIM002가 하나 더 생긴다.
+            if (!EditorUtility.DisplayDialog("GIM-002 Build All",
+                    "무대와 표시등 프리팹을 임시 박스 모양으로 다시 만듭니다.\n실제 모델 교체 내용이 사라지고, 씬 루트가 GIM002_KJH라면 GIM002가 중복으로 생깁니다. 계속할까요?",
+                    "다시 만들기", "취소"))
+                return;
+
             font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             mats.Clear();
             EnsureFolder(Root); EnsureFolder(DataDir); EnsureFolder(MatDir);

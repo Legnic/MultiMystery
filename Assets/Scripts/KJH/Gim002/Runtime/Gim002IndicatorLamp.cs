@@ -16,6 +16,8 @@ namespace Gim002
         [SerializeField] int progressIndex = 1;
         [Tooltip("색을 바꿀 전구 렌더러 (비우면 자식에서 첫 렌더러)")]
         [SerializeField] Renderer bulb;
+        [Tooltip("(선택) 같이 켜고 끌 전구가 더 있으면 여기에 (예: 렌즈 두 개짜리 표시등)")]
+        [SerializeField] Renderer[] extraBulbs = new Renderer[0];
         [SerializeField] Color offColor = new Color(0.15f, 0.13f, 0.1f);
         [SerializeField] Color onColor = new Color(1f, 0.8f, 0.35f);
         [SerializeField] Color warnColor = new Color(1f, 0.1f, 0.05f);
@@ -88,11 +90,18 @@ namespace Gim002
             }
 
             bool lit = col != offColor;
-            bulb.GetPropertyBlock(block);
+            Paint(bulb, col, lit);
+            foreach (var r in extraBulbs) Paint(r, col, lit);
+        }
+
+        void Paint(Renderer r, Color col, bool lit)
+        {
+            if (r == null) return;
+            r.GetPropertyBlock(block);
             block.SetColor(BaseColorId, col);
             block.SetColor(ColorId, col);
             block.SetColor(EmissionId, lit ? col * glow : Color.black);
-            bulb.SetPropertyBlock(block);
+            r.SetPropertyBlock(block);
         }
     }
 }
