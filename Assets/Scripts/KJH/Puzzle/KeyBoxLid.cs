@@ -14,6 +14,9 @@ public class KeyBoxLid : MonoBehaviour
     [Tooltip("열린 각도(도). 열리는 방향이 반대면 부호를 바꾼다")]
     [SerializeField] float openAngle = -110f;
     [SerializeField] float duration = 0.9f;
+    [Tooltip("상자 몸통의 바깥쪽 콜라이더(비워도 동작). 열리면 꺼서 안에 있는 물건(열쇠)을 조준할 수 있게 한다 — " +
+        "닫힌 모양 전체를 감싸는 콜라이더라서 그대로 두면 상자가 열려도 속의 열쇠를 가린다.")]
+    [SerializeField] Collider bodyCollider;
 
     public bool IsOpen { get; private set; }
 
@@ -41,6 +44,7 @@ public class KeyBoxLid : MonoBehaviour
         if (lid == null) { Debug.LogWarning("[KeyBoxLid] lid가 연결되어 있지 않아 뚜껑을 열 수 없다", this); return; }
         if (IsOpen) return;
         IsOpen = true;
+        if (bodyCollider != null) bodyCollider.enabled = false;
         Debug.Log($"[KeyBoxLid] 뚜껑 열기 시작 delay={delay} instant={instant} activeInHierarchy={isActiveAndEnabled}", this);
         Cache();
         if (instant) SetAngle(openAngle);

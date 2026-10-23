@@ -478,7 +478,7 @@ namespace Gim004.EditorTools
             var so = new SerializedObject(pot);
             so.FindProperty("potId").enumValueIndex = (int)id;
             so.FindProperty("displayName").stringValue = "화분";
-            so.FindProperty("holdOffset").vector3Value = new Vector3(0.38f, -0.6f, 0.95f);
+            so.FindProperty("holdOffset").vector3Value = new Vector3(-0.38f, -0.6f, 0.95f);
             so.FindProperty("returnSeconds").floatValue = 0.6f;
             so.ApplyModifiedPropertiesWithoutUndo();
             return go;

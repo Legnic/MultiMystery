@@ -4566,7 +4566,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Gim002.Gim002StageItem
   displayName: "\uBB3C\uAC74"
-  holdOffset: {x: 0.25, y: -0.35, z: 0.55}
+  holdOffset: {x: -0.25, y: -0.35, z: 0.55}
   holdEuler: {x: 0, y: 0, z: 0}
   returnSeconds: 0.5
   placeSeconds: 0.15
@@ -38092,7 +38092,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Gim002.Gim002StageItem
   displayName: "\uBB3C\uAC74"
-  holdOffset: {x: 0.3, y: -0.25, z: 0.6}
+  holdOffset: {x: -0.3, y: -0.25, z: 0.6}
   holdEuler: {x: 0, y: 0, z: 0}
   returnSeconds: 0.5
   placeSeconds: 0.15
@@ -64388,6 +64388,26 @@ PrefabInstance:
       propertyPath: m_Name
       value: GIM004_Conservatory
       objectReference: {fileID: 0}
+    - target: {fileID: 516509934820227420, guid: a2499a0c59792eb488b0cc984794fc39, type: 3}
+      propertyPath: holdOffset.x
+      value: -0.38
+      objectReference: {fileID: 0}
+    - target: {fileID: 971167355743074345, guid: a2499a0c59792eb488b0cc984794fc39, type: 3}
+      propertyPath: holdOffset.x
+      value: -0.38
+      objectReference: {fileID: 0}
+    - target: {fileID: 2137519533159715355, guid: a2499a0c59792eb488b0cc984794fc39, type: 3}
+      propertyPath: holdOffset.x
+      value: -0.38
+      objectReference: {fileID: 0}
+    - target: {fileID: 2262077611629126848, guid: a2499a0c59792eb488b0cc984794fc39, type: 3}
+      propertyPath: holdOffset.x
+      value: -0.38
+      objectReference: {fileID: 0}
+    - target: {fileID: 3616963782683423505, guid: a2499a0c59792eb488b0cc984794fc39, type: 3}
+      propertyPath: holdOffset.x
+      value: -0.38
+      objectReference: {fileID: 0}
     - target: {fileID: 5670378841134374441, guid: a2499a0c59792eb488b0cc984794fc39, type: 3}
       propertyPath: m_LocalPosition.x
       value: 61.5
@@ -64427,6 +64447,14 @@ PrefabInstance:
     - target: {fileID: 5670378841134374441, guid: a2499a0c59792eb488b0cc984794fc39, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6012086131376706482, guid: a2499a0c59792eb488b0cc984794fc39, type: 3}
+      propertyPath: holdOffset.x
+      value: -0.38
+      objectReference: {fileID: 0}
+    - target: {fileID: 9003173921875002997, guid: a2499a0c59792eb488b0cc984794fc39, type: 3}
+      propertyPath: holdOffset.x
+      value: -0.38
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -109298,6 +109326,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 367680610}
+  - component: {fileID: 367680612}
+  - component: {fileID: 367680611}
   m_Layer: 0
   m_Name: Furn_Desk_Drawer_Top
   m_TagString: Untagged
@@ -109328,6 +109358,41 @@ Transform:
   - {fileID: 38738335}
   m_Father: {fileID: 1097261046}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &367680611
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 367680609}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eefa2038f28d6d14997b0f38bef672d2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LGH.InteractableDrawer
+  openDistance: 0.3
+  speed: 1.4
+--- !u!65 &367680612
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 367680609}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.3600005, y: 0.13500018, z: 0.348}
+  m_Center: {x: 0.000000059604645, y: -0.00000017881393, z: -0.14600028}
 --- !u!1 &368301019
 GameObject:
   m_ObjectHideFlags: 0
@@ -117940,7 +118005,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Gim002.Gim002PlayBook
   displayName: "\uC778\uD615\uADF9 \uB180\uC774\uCC45"
-  holdOffset: {x: 0.25, y: -0.3, z: 0.55}
+  holdOffset: {x: -0.25, y: -0.3, z: 0.55}
   holdEuler: {x: -60, y: 0, z: 0}
   returnSeconds: 0.5
   placeSeconds: 0.15
@@ -128523,6 +128588,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 439244843}
+  - component: {fileID: 439244845}
+  - component: {fileID: 439244844}
   m_Layer: 0
   m_Name: Furn_Desk_Drawer_Middle
   m_TagString: Untagged
@@ -128553,6 +128620,41 @@ Transform:
   - {fileID: 375237078}
   m_Father: {fileID: 1099321921}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &439244844
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 439244842}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eefa2038f28d6d14997b0f38bef672d2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LGH.InteractableDrawer
+  openDistance: 0.3
+  speed: 1.4
+--- !u!65 &439244845
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 439244842}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.36000568, y: 0.13500005, z: 0.3480009}
+  m_Center: {x: -0.000000029802322, y: 0, z: -0.14599979}
 --- !u!1 &440547850
 GameObject:
   m_ObjectHideFlags: 0
@@ -154113,7 +154215,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Gim002.Gim002StageItem
   displayName: "\uBB3C\uAC74"
-  holdOffset: {x: 0.3, y: -0.25, z: 0.6}
+  holdOffset: {x: -0.3, y: -0.25, z: 0.6}
   holdEuler: {x: 0, y: 0, z: 0}
   returnSeconds: 0.5
   placeSeconds: 0.15
@@ -164938,6 +165040,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 558220658}
+  - component: {fileID: 558220660}
+  - component: {fileID: 558220659}
   m_Layer: 0
   m_Name: Furn_Desk_Drawer_Bottom
   m_TagString: Untagged
@@ -164968,6 +165072,41 @@ Transform:
   - {fileID: 2143779247}
   m_Father: {fileID: 1097261046}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &558220659
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 558220657}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eefa2038f28d6d14997b0f38bef672d2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LGH.InteractableDrawer
+  openDistance: 0.3
+  speed: 1.4
+--- !u!65 &558220660
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 558220657}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.3600005, y: 0.13500018, z: 0.348}
+  m_Center: {x: 0.000000059604645, y: 0.00000010430813, z: -0.14600028}
 --- !u!1 &559254692
 GameObject:
   m_ObjectHideFlags: 0
@@ -253556,6 +253695,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 877388294}
+  - component: {fileID: 877388296}
+  - component: {fileID: 877388295}
   m_Layer: 0
   m_Name: Furn_Desk_Drawer_Middle
   m_TagString: Untagged
@@ -253586,6 +253727,41 @@ Transform:
   - {fileID: 1414339219}
   m_Father: {fileID: 1097261046}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &877388295
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 877388293}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eefa2038f28d6d14997b0f38bef672d2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LGH.InteractableDrawer
+  openDistance: 0.3
+  speed: 1.4
+--- !u!65 &877388296
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 877388293}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.3600005, y: 0.13500018, z: 0.348}
+  m_Center: {x: 0.000000059604645, y: -0.000000059604645, z: -0.14600028}
 --- !u!1 &878813792
 GameObject:
   m_ObjectHideFlags: 0
@@ -265844,7 +266020,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Gim002.Gim002StageItem
   displayName: "\uBB3C\uAC74"
-  holdOffset: {x: 0.3, y: -0.25, z: 0.6}
+  holdOffset: {x: -0.3, y: -0.25, z: 0.6}
   holdEuler: {x: 0, y: 0, z: 0}
   returnSeconds: 0.5
   placeSeconds: 0.15
@@ -303979,7 +304155,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Gim002.Gim002StageItem
   displayName: "\uBB3C\uAC74"
-  holdOffset: {x: 0.3, y: -0.25, z: 0.6}
+  holdOffset: {x: -0.3, y: -0.25, z: 0.6}
   holdEuler: {x: 0, y: 0, z: 0}
   returnSeconds: 0.5
   placeSeconds: 0.15
@@ -342948,6 +343124,11 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1187849441}
   m_Mesh: {fileID: -2107402436901741215, guid: 9aab68ba4017f1640a66b67d08f45257, type: 2}
+--- !u!65 &1188173123 stripped
+BoxCollider:
+  m_CorrespondingSourceObject: {fileID: 934771623862870726, guid: 049e2b28701acfc48a714abaf813352a, type: 3}
+  m_PrefabInstance: {fileID: 913034149}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1188180140
 GameObject:
   m_ObjectHideFlags: 0
@@ -359820,7 +360001,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Gim002.Gim002StageItem
   displayName: "\uBB3C\uAC74"
-  holdOffset: {x: 0.25, y: -0.35, z: 0.55}
+  holdOffset: {x: -0.25, y: -0.35, z: 0.55}
   holdEuler: {x: 0, y: 0, z: 0}
   returnSeconds: 0.5
   placeSeconds: 0.15
@@ -367696,6 +367877,7 @@ MonoBehaviour:
   hingeLocalAxis: {x: 1, y: 0, z: 0}
   openAngle: -110
   duration: 0.9
+  bodyCollider: {fileID: 1188173123}
 --- !u!1 &1273909357
 GameObject:
   m_ObjectHideFlags: 0
@@ -373642,7 +373824,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Gim002.Gim002StageItem
   displayName: "\uBB3C\uAC74"
-  holdOffset: {x: 0.25, y: -0.35, z: 0.55}
+  holdOffset: {x: -0.25, y: -0.35, z: 0.55}
   holdEuler: {x: 0, y: 0, z: 0}
   returnSeconds: 0.5
   placeSeconds: 0.15
@@ -406098,6 +406280,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1409516617}
+  - component: {fileID: 1409516619}
+  - component: {fileID: 1409516618}
   m_Layer: 0
   m_Name: Furn_Desk_Drawer_Middle
   m_TagString: Untagged
@@ -406128,6 +406312,41 @@ Transform:
   - {fileID: 1514959862}
   m_Father: {fileID: 371007504}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1409516618
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1409516616}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eefa2038f28d6d14997b0f38bef672d2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LGH.InteractableDrawer
+  openDistance: 0.3
+  speed: 1.4
+--- !u!65 &1409516619
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1409516616}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.3600006, y: 0.13499999, z: 0.34800065}
+  m_Center: {x: -0.0000014603138, y: 0, z: -0.14600042}
 --- !u!1 &1409765070
 GameObject:
   m_ObjectHideFlags: 0
@@ -440292,6 +440511,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1534703088}
+  - component: {fileID: 1534703090}
+  - component: {fileID: 1534703089}
   m_Layer: 0
   m_Name: Furn_Desk_Drawer_Top
   m_TagString: Untagged
@@ -440322,6 +440543,41 @@ Transform:
   - {fileID: 120569337}
   m_Father: {fileID: 371007504}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1534703089
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1534703087}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eefa2038f28d6d14997b0f38bef672d2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LGH.InteractableDrawer
+  openDistance: 0.3
+  speed: 1.4
+--- !u!65 &1534703090
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1534703087}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.3600006, y: 0.13499999, z: 0.34800065}
+  m_Center: {x: -0.0000014603138, y: 0, z: -0.14600042}
 --- !u!1 &1535107056
 GameObject:
   m_ObjectHideFlags: 0
@@ -445655,6 +445911,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1554105308}
+  - component: {fileID: 1554105310}
+  - component: {fileID: 1554105309}
   m_Layer: 0
   m_Name: Furn_Desk_Drawer_Top
   m_TagString: Untagged
@@ -445685,6 +445943,41 @@ Transform:
   - {fileID: 1016379109}
   m_Father: {fileID: 1099321921}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1554105309
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1554105307}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eefa2038f28d6d14997b0f38bef672d2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LGH.InteractableDrawer
+  openDistance: 0.3
+  speed: 1.4
+--- !u!65 &1554105310
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1554105307}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.36000568, y: 0.13500005, z: 0.3480009}
+  m_Center: {x: -0.000000029802322, y: -0.00000011920929, z: -0.14599979}
 --- !u!1 &1554117402
 GameObject:
   m_ObjectHideFlags: 0
@@ -497036,6 +497329,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1722243256}
+  - component: {fileID: 1722243258}
+  - component: {fileID: 1722243257}
   m_Layer: 0
   m_Name: Furn_Desk_Drawer_Bottom
   m_TagString: Untagged
@@ -497066,6 +497361,41 @@ Transform:
   - {fileID: 1827959037}
   m_Father: {fileID: 371007504}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1722243257
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1722243255}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eefa2038f28d6d14997b0f38bef672d2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LGH.InteractableDrawer
+  openDistance: 0.3
+  speed: 1.4
+--- !u!65 &1722243258
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1722243255}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.3600006, y: 0.13500002, z: 0.34800065}
+  m_Center: {x: -0.0000014603138, y: 0, z: -0.14600042}
 --- !u!1 &1722442216
 GameObject:
   m_ObjectHideFlags: 0
@@ -535311,7 +535641,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Gim002.Gim002StageItem
   displayName: "\uBB3C\uAC74"
-  holdOffset: {x: 0.3, y: -0.25, z: 0.6}
+  holdOffset: {x: -0.3, y: -0.25, z: 0.6}
   holdEuler: {x: 0, y: 0, z: 0}
   returnSeconds: 0.5
   placeSeconds: 0.15
@@ -538477,6 +538807,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1875771831}
+  - component: {fileID: 1875771833}
+  - component: {fileID: 1875771832}
   m_Layer: 0
   m_Name: Furn_Desk_Drawer_Bottom
   m_TagString: Untagged
@@ -538507,6 +538839,41 @@ Transform:
   - {fileID: 914091274}
   m_Father: {fileID: 1099321921}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1875771832
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1875771830}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eefa2038f28d6d14997b0f38bef672d2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LGH.InteractableDrawer
+  openDistance: 0.3
+  speed: 1.4
+--- !u!65 &1875771833
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1875771830}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.36000568, y: 0.13499999, z: 0.3480009}
+  m_Center: {x: -0.000000029802322, y: 0, z: -0.14599979}
 --- !u!1 &1875893383
 GameObject:
   m_ObjectHideFlags: 0
@@ -565454,7 +565821,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Gim002.Gim002StageItem
   displayName: "\uBB3C\uAC74"
-  holdOffset: {x: 0.25, y: -0.35, z: 0.55}
+  holdOffset: {x: -0.25, y: -0.35, z: 0.55}
   holdEuler: {x: 0, y: 0, z: 0}
   returnSeconds: 0.5
   placeSeconds: 0.15
@@ -577411,8 +577778,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.8950689, y: 1.4005013, z: 0.84092295}
-  m_Center: {x: -0.0000010728836, y: 0, z: 0}
+  m_Size: {x: 0.8950689, y: 1.4005022, z: 0.46250802}
+  m_Center: {x: -0.0000010728836, y: 0.000000029802322, z: -0.18920773}
 --- !u!1 &2000404210
 GameObject:
   m_ObjectHideFlags: 0

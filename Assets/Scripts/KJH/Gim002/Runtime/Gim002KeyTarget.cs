@@ -75,6 +75,14 @@ namespace Gim002
             if (C != null) C.StateChanged -= OnState;
         }
 
+        // 방 초기화(RoomResetter.ResetAll, 새 방을 만들 때 호출됨)가 모든 문을 "에디터에 적힌 기본값"으로
+        // 되돌리는데, 이 문의 진짜 잠금 여부는 그 기본값이 아니라 Gim002 상태라서 그때 풀려버릴 수 있다.
+        // GimmickDoorLink 등 다른 기믹 문들도 같은 이유로 매 프레임 다시 맞추므로 여기도 그렇게 한다.
+        void Update()
+        {
+            if (kind == TargetKind.MusicDoor && door != null) ApplyDoorLock();
+        }
+
         void OnState(Gim002SyncState prev, Gim002SyncState now)
         {
             if (kind != TargetKind.MusicDoor || door == null) return;

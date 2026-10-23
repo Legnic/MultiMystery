@@ -20,8 +20,8 @@ public class HoldableItem : MonoBehaviour, IWorldInteractable
     [Tooltip("안내 문구에 쓸 이름 (예: 망원경 부엉이)")]
     [SerializeField] protected string displayName = "물건";
 
-    [Tooltip("손에 들었을 때 카메라 기준 위치 (오른쪽, 위, 앞)")]
-    [SerializeField] Vector3 holdOffset = new Vector3(0.28f, -0.25f, 0.6f);
+    [Tooltip("손에 들었을 때 카메라 기준 위치 (왼쪽, 위, 앞). 오른손은 촛불이 차지하고 있어서 음수 X(왼쪽)를 쓴다")]
+    [SerializeField] Vector3 holdOffset = new Vector3(-0.28f, -0.25f, 0.6f);
 
     [Tooltip("손에 들었을 때 카메라 기준 회전(도)")]
     [SerializeField] Vector3 holdEuler = Vector3.zero;

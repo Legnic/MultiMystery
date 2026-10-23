@@ -400,7 +400,7 @@ namespace Gim002.EditorTools
             var item = go.AddComponent<Gim002StageItem>();
             SetEnum(item, "kind", (int)StageSlotKind.Doll);
             SetEnum(item, "doll", (int)id);
-            SetVector(item, "holdOffset", new Vector3(0.25f, -0.35f, 0.55f));
+            SetVector(item, "holdOffset", new Vector3(-0.25f, -0.35f, 0.55f));
             go.AddComponent<Gim002Puppet>();
         }
 
@@ -428,7 +428,7 @@ namespace Gim002.EditorTools
             var item = go.AddComponent<Gim002StageItem>();
             SetEnum(item, "kind", (int)StageSlotKind.Background);
             SetEnum(item, "background", (int)id);
-            SetVector(item, "holdOffset", new Vector3(0.3f, -0.25f, 0.6f));
+            SetVector(item, "holdOffset", new Vector3(-0.3f, -0.25f, 0.6f));
         }
 
         // =====================================================================
@@ -498,7 +498,7 @@ namespace Gim002.EditorTools
             Label(book.transform, "인형극\n놀이책", new Vector3(0f, 0.052f, 0f), Quaternion.LookRotation(Vector3.down, Vector3.left), 0.014f, new Color(1f, 0.9f, 0.6f));
             var pb = book.AddComponent<Gim002PlayBook>();
             SetString(pb, "displayName", "인형극 놀이책");
-            SetVector(pb, "holdOffset", new Vector3(0.25f, -0.3f, 0.55f));
+            SetVector(pb, "holdOffset", new Vector3(-0.25f, -0.3f, 0.55f));
             SetVector(pb, "holdEuler", new Vector3(-60f, 0f, 0f));
         }
 
