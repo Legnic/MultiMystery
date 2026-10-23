@@ -9,7 +9,7 @@ namespace PotionCraft
     {
         [Serializable] public class MaterialInfo { public MaterialId id; public string displayName; public Color color = Color.white; public GameObject prefab; }
         [Serializable] public class WaterInfo { public WaterId id; public string displayName; public Color color = Color.white; public GameObject prefab; }
-        [Serializable] public class PowderInfo { public PowderColor id; public string displayName; public Color color = Color.white; }
+        [Serializable] public class PowderInfo { public PowderColor id; public string displayName; public Color color = Color.white; public GameObject prefab; }
 
         public MaterialInfo[] materials;
         public WaterInfo[] waters;
@@ -65,7 +65,7 @@ namespace PotionCraft
                 case ItemKind.Material: { var m = Find(materials, sub); return m != null ? m.prefab : null; }
                 case ItemKind.Water: { var w = Find(waters, sub); return w != null ? w.prefab : null; }
                 case ItemKind.Lump: return lumpPrefab;
-                case ItemKind.Powder: return powderPrefab;
+                case ItemKind.Powder: { var p = FindPowder(sub); return p != null && p.prefab != null ? p.prefab : powderPrefab; }
             }
             return null;
         }

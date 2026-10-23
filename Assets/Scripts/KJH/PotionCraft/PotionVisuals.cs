@@ -26,6 +26,27 @@ namespace PotionCraft
                 if (r.name.StartsWith("Tint")) Tint(r, c);
         }
 
+        // root 밑에서 "Dish_<색이름>"(예: Dish_Red) 자식을 켜고 나머지는 끈다. 그런 색 전용 모델이 없으면
+        // fallbackName(기본 "Tint_Pile") 자식을 켜고 그걸 색칠한다 — 아직 모델이 없는 색(Gold 등)의 임시 대체.
+        public static void ShowPowderDish(GameObject root, PowderColor color, Color fallbackTint, string fallbackName = "Tint_Pile")
+        {
+            if (root == null) return;
+            string dishName = "Dish_" + color;
+            Transform dish = null, fallback = null;
+            foreach (Transform t in root.transform)
+            {
+                if (t.name == dishName) dish = t;
+                else if (t.name == fallbackName) fallback = t;
+                t.gameObject.SetActive(false);
+            }
+            if (dish != null) dish.gameObject.SetActive(true);
+            else if (fallback != null)
+            {
+                fallback.gameObject.SetActive(true);
+                Tint(fallback.GetComponent<Renderer>(), fallbackTint);
+            }
+        }
+
         public static void StripColliders(GameObject root)
         {
             foreach (var col in root.GetComponentsInChildren<Collider>(true)) Object.Destroy(col);

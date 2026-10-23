@@ -71,6 +71,25 @@ namespace LGH
             return null;
         }
 
+        // 인벤토리에 든 아이템을 다른 기믹(열쇠 사용 등)이 소비할 때 쓰는 공용 요청.
+        // 인벤토리 쓰기는 서버만 할 수 있어서(PlayerInventory.CanWrite), 호스트가 아니어도 이 요청 하나로 안전하게 처리된다.
+        public bool RequestConsume(PlayerInventory inv, ItemData item, int count = 1)
+        {
+            if (inv == null || item == null) return false;
+            int id = IdOf(item);
+            if (id < 0) return false;
+            if (!Online) return inv.RemoveItem(id, count);
+            ConsumeRpc(id, count);
+            return true;
+        }
+
+        [Rpc(SendTo.Server)]
+        void ConsumeRpc(int id, int count, RpcParams rpcParams = default)
+        {
+            var inv = InventoryOf(rpcParams.Receive.SenderClientId);
+            if (inv != null) inv.RemoveItem(id, count);
+        }
+
         // ---------------- host side ----------------
 
         string DoPickup(int i, PlayerInventory inv)

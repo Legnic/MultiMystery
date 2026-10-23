@@ -287,7 +287,8 @@ namespace PotionCraft
                 var pi = LGH.PlayerInteractor.Active;
                 if (pi == null || pi.viewCamera == null) return null;
                 parent = pi.viewCamera;
-                localPos = new Vector3(0.3f, -0.28f, 0.6f);
+                // 오른손은 촛불이 차지하고 있어서 재료/물건은 왼손(카메라 기준 왼쪽, 음수 X)에 든다.
+                localPos = new Vector3(-0.3f, -0.28f, 0.6f);
             }
             else
             {
@@ -295,13 +296,14 @@ namespace PotionCraft
                 var po = NetworkManager.SpawnManager.GetPlayerNetworkObject(client);
                 if (po == null) return null; // 아직 스폰 전이면 다음 프레임에 다시 시도
                 parent = po.transform;
-                localPos = new Vector3(0.25f, 1.15f, 0.5f);
+                localPos = new Vector3(-0.25f, 1.15f, 0.5f);
             }
 
             var go = Instantiate(prefab, parent);
             go.name = "Held_" + catalog.NameOf(code);
             go.transform.localPosition = localPos;
-            go.transform.localRotation = Quaternion.identity;
+            // 회전은 그대로 둔다: 프리팹 자신의 로컬 회전이 "손에 들었을 때" 모습이 되도록 이미 맞춰져 있다
+            // (Item_Material_* 같은 전용 래퍼는 identity, 원본 VARCO 모델을 직접 쓰는 경우는 보통 (270,0,0)).
             PotionVisuals.StripColliders(go);
             if (Item.KindOf(code) == ItemKind.Powder) PotionVisuals.TintMarked(go, catalog.ColorOf(code));
             return go;

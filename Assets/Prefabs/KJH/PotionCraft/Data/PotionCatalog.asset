@@ -46,21 +46,27 @@ MonoBehaviour:
   - id: 0
     displayName: "\uCD08\uB85D\uC0C9 \uAC00\uB8E8"
     color: {r: 0.2, g: 0.8, b: 0.3, a: 1}
+    prefab: {fileID: 2569406201218959848, guid: 31f1f7800dec2494a948e6c4a1b42feb, type: 3}
   - id: 1
     displayName: "\uBE68\uAC04\uC0C9 \uAC00\uB8E8"
     color: {r: 0.9, g: 0.12, b: 0.12, a: 1}
+    prefab: {fileID: 49842941264919146, guid: 7b61a2d33f5c1a141aa02a07deaf804a, type: 3}
   - id: 2
     displayName: "\uD30C\uB780\uC0C9 \uAC00\uB8E8"
     color: {r: 0.15, g: 0.35, b: 0.95, a: 1}
+    prefab: {fileID: 9199539230652114180, guid: 4877d51f1919d8f428264b240ba11664, type: 3}
   - id: 3
     displayName: "\uBD84\uD64D\uC0C9 \uAC00\uB8E8"
     color: {r: 1, g: 0.5, b: 0.75, a: 1}
+    prefab: {fileID: 5950441744096196049, guid: eedde3c7370162f4cb35da58d60fc41b, type: 3}
   - id: 4
     displayName: "\uAC80\uC815\uC0C9 \uAC00\uB8E8"
     color: {r: 0.06, g: 0.06, b: 0.06, a: 1}
+    prefab: {fileID: 4506399729380476179, guid: 26da40405a7a57e4c8eea7a232817889, type: 3}
   - id: 5
     displayName: "\uD669\uAE08\uBE5B \uAC00\uB8E8"
     color: {r: 1, g: 0.82, b: 0.2, a: 1}
+    prefab: {fileID: 0}
   lumpName: "\uC7AC\uB8CC \uB369\uC774"
   lumpColor: {r: 0.45, g: 0.45, b: 0.45, a: 1}
   lumpPrefab: {fileID: 287118967712542255, guid: facf85f6929dbff46874cd92063905b4, type: 3}
