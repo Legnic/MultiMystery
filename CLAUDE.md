@@ -426,6 +426,19 @@ KJH 브랜치의 GIM-004 구현을 머지해온 뒤(GIM-005는 지난 세션에 
 
 **검증 한계**: 전부 메서드 직접 호출로 확인한 것이라 실제 E키로 줍고 쓰는 입력 경로, 그리고 인벤토리 창([I])을 직접 열어 눈으로 보는 것은 다음 실제 플레이로 확인 필요(이 환경의 기존 한계와 동일).
 
+## GIM-007(함께 미는 안방 가구)·GIM-008(다락 별 상자 보상) Develop 통합 (2026-10-23, 열여덟 번째 후속)
+KJH님이 GIM-007·GIM-008을 KJH 브랜치에 구현·배치하고 Develop에 머지(`f5b5f63`)해온 뒤, 팀장님 안내 그대로 KJH 쪽 CLAUDE.md의 "Develop 적용 방법"을 따라 네 프리팹을 Develop 씬 루트에 배치: `GIM007_MasterBedroom.prefab`(31, 3.9, 12.9, 회전 y 90), `Gim007Sync.prefab`(최상위), `AtticTreasure_Contents.prefab`(26.088, 9.115, 11.879, 회전 y 270), `AtticTreasureSync.prefab`(최상위). 코드/프리팹 자체는 수정하지 않음(기존 기믹들과 동일한 "KJH 프리팹 원본 그대로 쓰기" 원칙). 배치 전 `Door_Master_Dressing`을 다른 기믹이 잠그거나 열고 있지 않은지 확인(문제 없음 — GIM-004는 `Door_Courtyard_L/R`·`Door_MaidRoom`만 건드림).
+
+**머지 충돌로 사라진 GIM-002 열쇠 아이템 발견 — 복구함**: 배치 전 `ItemDatabase_LGH.asset`을 확인해보니, 이번 머지의 충돌(`# Conflicts: Assets/Objects/LGH/Resources/ItemDatabase_LGH.asset`) 해결 과정에서 내 직전 작업(GIM-002 열쇠 인벤토리화, 열일곱 번째 후속)이 추가한 `Item_Gim002MusicKey`/`Item_Gim002StageKey`(인덱스 6·7)가 통째로 사라지고 그 자리를 GIM-008의 `Item_GoldStatue`/`Item_FrontKey`로 덮어쓴 상태였다 — 즉 두 리스트를 합치는 대신 한쪽이 다른 쪽을 지워버린 머지 사고. 아이템 에셋 파일 자체는 남아 있어서(`Assets/Objects/LGH/Items/Item_Gim002*.asset`) `ItemDatabase.IndexOf()`가 더 이상 찾지 못해 GIM-002 열쇠의 줍기·사용이 조용히 깨지는 상태였다. **기존 인덱스(0~7)는 절대 건드리지 않고 끝(8·9번)에 다시 추가**해서 복구(네트워크가 인덱스로 아이템을 주고받으므로 끼워넣기 금지 원칙 유지).
+- **앞으로 규칙**: `ItemDatabase_LGH.asset`에서 머지 충돌이 나면, 자동 병합이 양쪽이 추가한 항목을 하나씩 다 지켰는지 직접 확인할 것 — `DefaultNetworkPrefabs.asset` 충돌 때와 같은 유형의 함정(목록형 에셋은 자동 병합이 한쪽을 조용히 덮어쓸 수 있다)이다.
+
+**검증**: Play 모드 `StartHost()` 단일 호스트로 GIM-007·GIM-008 각각 끝까지 확인.
+- GIM-007: `Gim007Controller.Instance`가 Config 연결된 채 초기화되고 `Gim007NetSync`로 정상 전환(`IsAuthority=True`) 확인. `Gim007NetSync`의 private `authority`(`LocalGim007Net`) 필드를 리플렉션으로 꺼내 두 손잡이(호스트+가짜 클라이언트 ID)를 잡히고 라운드마다 `ReportAs(..., true)`로 8단계 전진시켜 `Complete`까지 도달 — `Door_Master_Dressing`과 그 짝문이 실제로 열리고 열린 채로 잠기는 것(`IsOpen=True`, `locked=True`)까지 확인.
+- GIM-008: `AtticTreasureSync.Instance` 스폰 확인 → 현관 열쇠(`AtticTreasureKey.Interact()`) → 인벤토리로 바로 들어감 확인 → 황금상(`AtticTreasureStatue.Interact()`) → 연출(`Cutscene`) 재생 후(≈3초 대기) 인벤토리에 들어가고 `State=Taken`으로 전환 확인 → `Door_Front_L.Interact(..., inventory)`로 현관 열쇠를 써서 양문이 실제로 열리는 것(`IsOpen=True`)까지 확인. GIM-002 키 인덱스 복구가 실제로 유효한지 GIM-001을 `PortraitPuzzle.RequestShift()`로 직접 풀어 재확인 — 음악실 열쇠·태엽 열쇠 모두 다시 줍고(`ItemNetworkSync.RequestPickup`) 사용(`Gim002KeyTarget.Interact()`)해 `musicDoorOpened`/`stageWound` 둘 다 true, 문 잠금 해제까지 정상 동작 확인.
+- `Tools/Network/Validate Scene NetworkObjects` 문제 없음, 콘솔 에러 0건(기존 오디오 리스너 중복 경고만 있음). Play 모드 종료 후 `git diff`로 저장된 씬 파일을 직접 확인해 **새 프리팹 인스턴스 4개 추가 외에 기존 오브젝트의 직렬화 값이 전혀 바뀌지 않았음**을 확인(문 잠금 상태 등은 씬에 직렬화되는 값이 아니라 각 기믹 컨트롤러가 Start/Update에서 매번 다시 적용하는 런타임 전용 상태라서, Play 테스트 중 바뀐 값이 Stop 후에도 메모리에 남아 있어도 저장 파일에는 반영되지 않음 — 다만 이 가정에 의존하지 말고 저장 후에는 항상 `git diff`로 실제 반영 범위를 확인할 것).
+
+**발견했지만 손대지 않은 것 — LGH 쪽 사전 존재 이슈**: `AtticTreasureBoxItem`이 상자를 찾을 때 쓰는 `LGH.StarLockBox`(별 자물쇠 상자) 컴포넌트가 **Develop 씬에는 전혀 없음**(`LGH.unity`/`KJH.unity`에는 있음 — `ItemNetworkSync`가 `DoorSync_LGH.prefab`에 안 들어가 있던 것과 같은 유형의 "LGH 씬 전용, 공유 프리팹에 안 올라간 컴포넌트"). `AtticTreasureBoxItem.BoxOpen`은 상자를 못 찾으면 `box == null || box.IsOpen`이 자동으로 `true`가 되도록 짜여 있어서(안전한 기본값) **Develop에서는 지금 별자물쇠 퍼즐을 풀지 않아도 황금상·현관 열쇠를 바로 주울 수 있는 상태**다 — 막히는 버그는 아니지만, 원래 기획대로라면 별자물쇠를 먼저 풀어야 하는 게이트가 Develop에서는 사실상 없는 셈. GIM-008 코드 자체가 아니라 LGH 쪽 맵 프리팹 문제라 범위 밖으로 남겨둠 — LGH님 확인 필요.
+
 ## 사용 가능한 Unity 전용 스킬
 이 환경에는 `unity:` 접두사의 스킬들(unity-cli, ui, urp-postprocessing, physics-3d-collision 등)이 이미 연결되어 있습니다. 관련 작업을 할 때는 먼저 해당 스킬을 확인하세요.
 

@@ -58,6 +58,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\Scripts\KJH\Common\Editor\NetworkSceneObjectValidator.cs" />
+    <Compile Include="Assets\Scripts\KJH\Gim007\Editor\Gim007Builder.cs" />
     <Compile Include="Assets\Scripts\KJH\Dumbwaiter\Editor\DumbwaiterBuilder.cs" />
     <Compile Include="Assets\Scripts\KJH\Clue\Editor\ClueSetupMenu.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim005\Editor\Gim005Builder.cs" />
@@ -68,6 +69,7 @@
     <Compile Include="Assets\Scripts\KJH\Gim004\Editor\Gim004Builder.cs" />
     <Compile Include="Assets\Scripts\KJH\PotionCraft\Editor\PotionCraftBuilder.cs" />
     <Compile Include="Assets\Scripts\KJH\ObjectEcho\Editor\ObjectEchoSetupMenu.cs" />
+    <Compile Include="Assets\Scripts\KJH\AtticTreasure\Editor\AtticTreasureBuilder.cs" />
     <Compile Include="Assets\Scripts\KJH\Common\Editor\GameUIGroups.cs" />
     <Compile Include="Assets\TutorialInfo\Editor\ReadmeEditor.cs" />
   </ItemGroup>
@@ -1858,6 +1860,7 @@
     <ProjectReference Include="Gim004.Core.csproj" />
     <ProjectReference Include="Gim005.Core.csproj" />
     <ProjectReference Include="OccaSoftware.Crosshairs.Editor.csproj" />
+    <ProjectReference Include="Gim007.Core.csproj" />
     <ProjectReference Include="Gim002.Core.csproj" />
   </ItemGroup>
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
