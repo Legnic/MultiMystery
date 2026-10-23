@@ -512,6 +512,22 @@ KJH 브랜치를 Develop에 다시 머지한 뒤 "방금 머지해온 KJH 씬에
 
 **검증 공통**: `Tools/Network/Validate Scene NetworkObjects` 문제 없음, 콘솔 에러 0건. 전부 Edit 모드에서 값을 고친 뒤 Play 모드로 들어가 실제 동작(문 재잠금, 서랍 열기, 상자+열쇠, 손 위치)을 확인하고 Stop 후에도 Edit 모드 값이 그대로 남아있는지 재확인했다.
 
+## 미사용 VARCO 에셋 전수 조사 + 피아노 벤치·GIM-002 배경카드 반영 (2026-10-23, 스물네 번째 후속)
+사용자가 "모델링 에셋들 중 사용되지 못한 에셋이 있습니까?"라고 물어서 `Assets/VARCO 3D/KWJ/Prefabs`의 166개 프리팹을 Develop·KJH 씬이 실제로 참조하는 메시·머티리얼 기준으로 전수 대조함(단순히 "프리팹 자체가 씬에 인스턴스로 있는가"만 보면 안 됨 — 지금까지 여러 교체 작업을 자기 자신의 `MeshFilter`/`MeshRenderer`에 메시만 복사해 넣는 방식으로도 많이 해서, 프리팹 GUID 기준으로만 찾으면 오탐이 많이 남는다. 실제 사용된 메시/머티리얼 에셋 경로를 모아 대조해야 정확함).
+
+**결과: 135개 사용 중, 31개 미사용.** 조사 중 단순 "미배치"가 아니라 실제 불일치 2건을 발견:
+- **`Gimmick/Furn_PianoBench.prefab`** — 씬의 "Furn_PianoBench" 오브젝트가 실제로는 `Furn_BedBench.fbx`(침대 벤치) 메시를 쓰고 있었음. 반영함(아래 참고).
+- **`Props/Prop_Candle.prefab`** — 플레이어가 상시 들고 다니는 촛불(`Candle`/`Candle0~2`)이 지금도 기본 큐브. 아직 미반영(이번엔 범위 밖, 다음에 처리).
+
+나머지 29개는 배경 가구(아직 어디에도 안 놓임: `Furn_BookCart`/`CardCatalogue`/`ChildDesk`/`CoatStand`/`CoffeeTable`/`CopperBoiler`/`KitchenStove`/`Lectern`/`LibraryLadder`/`Ottoman`/`Stool`/`TelescopeStand`/`TowelRail`/`VanityTable`/`WingbackChair`), 장식 조명(`Prop_Chandelier`/`Prop_WallSconce`), 단서 소품(`Clues/Prop_Goblet_Broken`/`Prop_KeroseneCan`/`Prop_KeroseneCan_Burnt`), LGH 기믹 메커니즘 교체 후보(`Prop_CombinationLock`/`Prop_GearLarge`/`Prop_GearSmall`/`Prop_ServantBellBoard` — 지금 다락 자물쇠·종 등은 전부 원시도형), GIM-001 무전기(이전에 이미 확인한 미배치 장식용, `Prop_Radio`/`Furn_RadioTable`), 크기 안 맞아 의도적으로 보류 중인 것(`Furn_WallShelf`/`Furn_HallBench`, GIM-004 선반용으로 검토했다가 기각된 건)으로 분류됨.
+
+**이번에 실제로 반영한 것 — 피아노 벤치 + GIM-002 배경카드 프레임**:
+- **피아노 벤치**: 씬의 `Furn_PianoBench` 오브젝트(F1_Music)의 `MeshFilter`/`MeshRenderer`를 진짜 `Furn_PianoBench.prefab`의 메시·머티리얼로 교체(둘 다 단일 메시 루트라 자기 자신의 렌더러만 바꾸면 되는 단순 치환 — 회전(270,0,0 + 추가 180Y)·콜라이더는 이미 올바르게 맞춰져 있어서 그대로 둠).
+- **GIM-002 배경카드 5장**(`BG_Castle`/`BG_NightForest`/`BG_Greenhouse`/`BG_MusicRoom`/`BG_Sea`): 큐브+텍스트 placeholder를 `_NeedsCollider/Prop_PuppetBGFrame.prefab`(Frame+Picture 2파츠, Picture는 머티리얼로 그림을 바꿔 끼우는 구조)로 교체. `Assets/VARCO 3D/KWJ/Images/`에 5장 전부 실제 일러스트(`BG_Castle_Tower`/`BG_Forest_Stars`/`BG_Glasshouse_Pots`/`BG_Room_GrandPiano`/`BG_Sea_Lighthouse`)가 이미 있어서, 각 그림을 `_BaseMap`으로 물린 머티리얼 5개(`Assets/Prefabs/KJH/Gim002/Materials/M_BGPicture_*.mat`, 공용 `M_PuppetBGPicture` 복제)를 새로 만들어 연결. 루트의 `BoxCollider`/`Gim002StageItem`(판정 로직)은 손대지 않고 시각 요소(자식)만 교체 — 기존 "교체 시 부모 그대로, 자식만 바꾸기" 원칙 그대로.
+- **덤으로 발견**: `Assets/VARCO 3D/KWJ/Images/`에 `PianoSymbol_Cloud/Flower/Moon/Star/Sun.png`(건반에 그려질 5개 문양 이미지)도 이미 있음 — GIM-002 피아노 건반에 아직 적용 안 됐다면 다음 라운드 후보로 메모.
+
+**검증**: 밝은 하늘 위에서 피아노 벤치·배경카드 5장 전부 스크린샷으로 모양·그림 매칭 확인(5장이 나란히 놓고 보니 각자 다른 그림이 정확히 들어간 것 확인). Play 모드에서 GIM-002 슬롯 판정(`RequestSlotChanged`)이 여전히 정상 작동(Staging→Accompany 전환)해서 자식 교체가 `Gim002StageItem`의 `doll`/`background` enum 판정에 영향 없음을 재확인. `Tools/Network/Validate Scene NetworkObjects` 문제 없음, 콘솔 에러 0건. 이번엔 전부 Edit 모드에서 작업(Play 모드는 확인 전용으로만 사용 — 지난 라운드 교훈 적용).
+
 ## 사용 가능한 Unity 전용 스킬
 이 환경에는 `unity:` 접두사의 스킬들(unity-cli, ui, urp-postprocessing, physics-3d-collision 등)이 이미 연결되어 있습니다. 관련 작업을 할 때는 먼저 해당 스킬을 확인하세요.
 
