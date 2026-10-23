@@ -101,8 +101,8 @@
     <Compile Include="Assets\Scripts\KJH\KeySafe\LockedSafe.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim002\Runtime\Gim002Curtain.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim007\Runtime\Gim007WeightPlate.cs" />
-    <Compile Include="Assets\Scripts\KJH\Gim005\Runtime\Gim005Config.cs" />
     <Compile Include="Assets\Scripts\KJH\AtticTreasure\AtticTreasureStatue.cs" />
+    <Compile Include="Assets\Scripts\KJH\Gim005\Runtime\Gim005Config.cs" />
     <Compile Include="Assets\Scripts\KJH\ObjectEcho\ObjectEchoTarget.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim005\Runtime\Gim005NetSync.cs" />
     <Compile Include="Assets\Scripts\LGH\UiScale.cs" />
@@ -266,6 +266,7 @@
     <None Include="Assets\Objects\LGH\Backup\StarLockBox_beforeInspect.cs.txt" />
     <None Include="Assets\AssetPacks\Supercyan Free Forest Sample\Shaders\SupercyanShaderLighting.cginc" />
     <None Include="Assets\TutorialInfo\StyleSheets\ReadmeEditor.uss" />
+    <None Include="Assets\Images\KSM\MeetYou_UI_Resources_Individual\MeetYou_UI_Resources_Individual\README.txt" />
     <None Include="Assets\Objects\LGH\Backup\PlayerInventory_beforeInk.cs.txt" />
     <None Include="Assets\Objects\LGH\Backup\PaperNote_src.cs.txt" />
     <None Include="Assets\Objects\LGH\Backup\PistolLoader_beforeCarry.cs.txt" />
