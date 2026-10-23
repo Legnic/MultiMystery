@@ -528,6 +528,12 @@ KJH 브랜치를 Develop에 다시 머지한 뒤 "방금 머지해온 KJH 씬에
 
 **검증**: 밝은 하늘 위에서 피아노 벤치·배경카드 5장 전부 스크린샷으로 모양·그림 매칭 확인(5장이 나란히 놓고 보니 각자 다른 그림이 정확히 들어간 것 확인). Play 모드에서 GIM-002 슬롯 판정(`RequestSlotChanged`)이 여전히 정상 작동(Staging→Accompany 전환)해서 자식 교체가 `Gim002StageItem`의 `doll`/`background` enum 판정에 영향 없음을 재확인. `Tools/Network/Validate Scene NetworkObjects` 문제 없음, 콘솔 에러 0건. 이번엔 전부 Edit 모드에서 작업(Play 모드는 확인 전용으로만 사용 — 지난 라운드 교훈 적용).
 
+## 피아노 벤치 콜라이더 수정 + 건반 문양 이미지 적용 (2026-10-23, 스물다섯 번째 후속)
+- **피아노 벤치 콜라이더**: 지난번 메시만 올바른 `Furn_PianoBench`로 바꾸고 콜라이더는 손 안 댔었는데, 옛 `Furn_BedBench` 메시 기준 크기(`size=(0.48,1.20,0.46)`)가 그대로 남아 있어서 실제 벤치 모양과 전혀 안 맞았음. 렌더러의 실제 월드 바운드를 로컬 좌표로 역산해서 새 콜라이더(`size=(0.90,0.57,0.44)`)로 교체 — 이제 `BoxCollider` 바운드가 `MeshRenderer` 바운드와 정확히 일치.
+- **피아노 건반 문양**: GIM-002 건반 5개(`OBJ_PIANO_KEYS/Key_1~5`)에 붙어 있던 "Label"(한글 텍스트 TextMesh: 해/구름/달/꽃/별)을 실제 문양 이미지로 교체. `Assets/VARCO 3D/KWJ/Images/PianoSymbol_Sun/Cloud/Moon/Flower/Star.png`(투명 배경, 단순 선 형태 아이콘 — 지난번 "미사용 에셋 조사"에서 발견해둔 것)를 사용해 머티리얼 5개(`Assets/Prefabs/KJH/Gim002/Materials/M_PianoSymbol_*.mat`, URP/Unlit + Surface Type Transparent)를 새로 만들고, 기존 Label 자리에 똑같은 위치·회전으로 Quad를 놓아 교체. 크기는 처음 0.09m로 했다가 밝은 곳에서 확대해 보니 건반 대비 너무 작아서(원본 PNG 자체는 캔버스의 90% 이상을 아이콘이 채우고 있어 패딩 문제가 아니었음 — 그냥 처음 잡은 배율이 작았음) 0.15m로 키움. `Gim002PianoKey`의 `symbol`/`hasSymbol` 판정 로직은 전혀 건드리지 않음(시각 요소만 교체).
+
+**검증**: 밝은 곳 확대 스크린샷으로 피아노 벤치 콜라이더 모양·건반 문양 5개 전부 확인(사분면마다 다른 문양이 맞게 들어간 것 확인). Play 모드에서 `Gim002PianoKey.Symbol`/`HasSymbol` 데이터 그대로 유지되는 것 재확인. `Tools/Network/Validate Scene NetworkObjects` 문제 없음, 콘솔 에러 0건. 전부 Edit 모드에서 작업 후 저장.
+
 ## 사용 가능한 Unity 전용 스킬
 이 환경에는 `unity:` 접두사의 스킬들(unity-cli, ui, urp-postprocessing, physics-3d-collision 등)이 이미 연결되어 있습니다. 관련 작업을 할 때는 먼저 해당 스킬을 확인하세요.
 
