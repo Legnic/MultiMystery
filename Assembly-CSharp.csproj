@@ -74,6 +74,7 @@
     <Compile Include="Assets\Scripts\KJH\Puzzle\PortraitTilt.cs" />
     <Compile Include="Assets\Scripts\KSM\Player\ToyActionNetwork.cs" />
     <Compile Include="Assets\Scripts\KJH\PotionCraft\PotionTypes.cs" />
+    <Compile Include="Assets\Scripts\KJH\Gim004\Runtime\Gim004Controller.cs" />
     <Compile Include="Assets\Scripts\KJH\Puzzle\PortraitPuzzleScene.cs" />
     <Compile Include="Assets\Scripts\KJH\Dumbwaiter\DumbwaiterWindow.cs" />
     <Compile Include="Assets\Scripts\KJH\Dumbwaiter\DumbwaiterNetworkSync.cs" />
@@ -86,6 +87,7 @@
     <Compile Include="Assets\Scripts\KJH\Gim002\Runtime\Gim002ScreenFlash.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim002\Runtime\Gim002StageCrank.cs" />
     <Compile Include="Assets\Scripts\LGH\HeldCandle.cs" />
+    <Compile Include="Assets\Scripts\KJH\Gim004\Runtime\Gim004Journal.cs" />
     <Compile Include="Assets\Scripts\KJH\PotionCraft\FinalRecipeData.cs" />
     <Compile Include="Assets\Scripts\KJH\PotionCraft\MixerClearButton.cs" />
     <Compile Include="Assets\Scripts\KJH\Dumbwaiter\IWorldInteractable.cs" />
@@ -124,14 +126,17 @@
     <Compile Include="Assets\Scripts\KWJ\UI\MainMenuButtonHover.cs" />
     <Compile Include="Assets\Scripts\KJH\ObjectEcho\IHandReach.cs" />
     <Compile Include="Assets\Scripts\KJH\PotionCraft\PotionCatalog.cs" />
+    <Compile Include="Assets\Scripts\KJH\Gim004\Runtime\Gim004ShelfSlot.cs" />
     <Compile Include="Assets\Scripts\KSM\UI\MultiplayerBackButton.cs" />
     <Compile Include="Assets\Scripts\KJH\Photo\InteractionPromptUI.cs" />
+    <Compile Include="Assets\Scripts\KJH\Gim004\Runtime\LocalGim004Net.cs" />
     <Compile Include="Assets\Scripts\LGH\CandleFlicker.cs" />
     <Compile Include="Assets\Scripts\LGH\DoorNetworkSync.cs" />
     <Compile Include="Assets\Scripts\LGH\CandleSconce.cs" />
     <Compile Include="Assets\Scripts\KJH\Photo\IPhotoSubject.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim002\Runtime\Gim002StageItem.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim002\Runtime\Gim002StageLight.cs" />
+    <Compile Include="Assets\Scripts\KJH\Gim004\Runtime\Gim004Pot.cs" />
     <Compile Include="Assets\Scripts\KSM\Player\ToyActionAnimator.cs" />
     <Compile Include="Assets\Scripts\KSM\Options\OptionsMenuController.cs" />
     <Compile Include="Assets\Scripts\KJH\KeySafe\SafeClue.cs" />
@@ -176,8 +181,10 @@
     <Compile Include="Assets\Scripts\KJH\PotionCraft\GrinderStation.cs" />
     <Compile Include="Assets\Scripts\KJH\KeySafe\ISafeOpenSequence.cs" />
     <Compile Include="Assets\Scripts\KJH\ObjectEcho\PlaceholderHandReach.cs" />
+    <Compile Include="Assets\Scripts\KJH\Gim004\Runtime\Gim004ShelfFeedback.cs" />
     <Compile Include="Assets\Scripts\KSM\UI\MultiplayerMenuUI.cs" />
     <Compile Include="Assets\Scripts\KJH\Puzzle\PortraitPuzzle.cs" />
+    <Compile Include="Assets\Scripts\KJH\Gim004\Runtime\Gim004Config.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim002\Runtime\Gim002Puppet.cs" />
     <Compile Include="Assets\Scripts\LGH\StarLockPart.cs" />
     <Compile Include="Assets\Scripts\KSM\GameFlow\GameFlowSync.cs" />
@@ -185,12 +192,14 @@
     <Compile Include="Assets\Scripts\KJH\GameTime\TimeUnlock.cs" />
     <Compile Include="Assets\Scripts\KJH\Photo\CameraModeController.cs" />
     <Compile Include="Assets\Scripts\KJH\PotionCraft\PotionStation.cs" />
+    <Compile Include="Assets\Scripts\KJH\Gim004\Runtime\Gim004NetSync.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim002\Runtime\Gim002FeedbackSpeaker.cs" />
     <Compile Include="Assets\Scripts\KJH\Common\PlayerAbilities.cs" />
     <Compile Include="Assets\Scripts\KJH\Photo\PhotoItemData.cs" />
     <Compile Include="Assets\Scripts\KSM\Voice\VoiceChatManager.cs" />
     <Compile Include="Assets\Scripts\KWJ\UI\MainMenuController.cs" />
     <Compile Include="Assets\Scripts\KJH\Clue\InspectableClue.cs" />
+    <Compile Include="Assets\Scripts\KJH\Gim004\Runtime\IGim004Net.cs" />
     <Compile Include="Assets\Scripts\KJH\Photo\PhotoInventory.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim005\Runtime\Gim005SymbolData.cs" />
     <Compile Include="Assets\Scripts\KJH\Common\PlayerAbility.cs" />
@@ -1742,12 +1751,12 @@
       <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.Core.Editor.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Unity.Netcode.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.Netcode.Editor.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="Unity.AppUI.Navigation">
       <HintPath>Library\ScriptAssemblies\Unity.AppUI.Navigation.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.Netcode.Editor">
+      <HintPath>Library\ScriptAssemblies\Unity.Netcode.Editor.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEditor.UI.Analytics">
@@ -1960,6 +1969,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="Gim004.Core.csproj" />
     <ProjectReference Include="Gim005.Core.csproj" />
     <ProjectReference Include="OccaSoftware.Crosshairs.Editor.csproj" />
     <ProjectReference Include="Gim002.Core.csproj" />

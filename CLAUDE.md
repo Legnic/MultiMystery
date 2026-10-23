@@ -297,6 +297,48 @@ KWJ님이 만든 실제 3D 모델(바르코, 인형극 소품·도르래 부품�
 **검증 공통**: 전 과정 `Tools/Network/Validate Scene NetworkObjects` 문제 없음, 콘솔 에러 0건. 새로 배치한 모델들은 전부 비상호작용 장식(부모 스크립트가 애니메이션)이거나 이미 콜라이더가 있던 자리(Vat)라서 콜라이더를 새로 추가할 필요는 없었음.
 **남은 일**: GIM-002 무대 자체는 이제 완료됐지만, 아직 안 쓴 VARCO 프리팹(`Prop_PulleyCrank`, `Prop_PuppetBGFrame` 등 — 대응하는 더미가 불명확하거나 우선순위 밖)과 2인 실제 플레이로 커튼·표시등·도르래·믹서의 최종 비주얼을 확인하는 일이 남음.
 
+## GIM-004(온실 화분 퍼즐) Develop 통합 (2026-10-23)
+KJH 브랜치의 GIM-004 구현을 머지해온 뒤(GIM-005는 지난 세션에 이미 통합돼 있어 그대로 확인만 함), KJH 쪽 CLAUDE.md의 "Develop 적용 방법" 그대로 `GIM004_Conservatory.prefab`(61.5, 0, -12.5), `GIM004_Journal.prefab`(62.55, 4.665, 3.5, 회전 y 180), `Gim004Sync.prefab`(최상위)을 Develop 씬 루트에 프리팹 인스턴스로 배치. 코드/프리팹은 수정하지 않음(GIM-002/003/005와 동일한 "KJH 프리팹 원본 그대로 쓰기" 원칙).
+
+**검증**: `Validate Scene NetworkObjects` 문제 없음. Play 모드에서 `StartHost()` 호스트로 `Gim004Controller`가 Config 연결된 채 초기화되고 네트워크 시작 시 `LocalGim004Net`→`Gim004NetSync`로 정상 전환(`IsAuthority=True`) 확인. 정답 순서(D-E-A-F)대로 `RequestPlace()` 호출 → `Judging`→`Complete` 상태 전환 확인. 완료 후 `Door_Courtyard_L`/`Door_Courtyard_R`/`Door_MaidRoom` 세 문이 전부 `IsOpen=True`로 열리는 것까지 확인(Develop 고유의 이름 기반 문 참조가 올바르게 맞아떨어짐). Play 모드 종료 후 문이 다시 `IsOpen=False`로 돌아와 저장된 씬에 새지 않는 것도 확인. 콘솔 에러 0건.
+
+**겸사겸사 확인한 것 — 버그 아님**: 씬을 저장할 때마다 `TitleCanvas/TitleRoot/ButtonPanel`의 버튼 3개(`StartButton`/`OptionsButton`/`QuitButton`) RectTransform이 git diff에서 0으로 찍혀서 처음엔 데이터 손상으로 의심했으나, `ButtonPanel`에 `VerticalLayoutGroup`이 붙어 있어서 그 자식들의 위치/크기는 Unity의 "driven RectTransform"(레이아웃이 매 로드마다 재계산)으로 분류돼 항상 0으로 직렬화되는 게 정상 동작이었음(실행하면 레이아웃이 다시 계산해 정상 위치로 보임). **앞으로 이 3개 버튼의 RectTransform이 diff에 0으로 나타나도 무시해도 된다** — 실제 버그가 아니라 Layout Group이 있는 모든 UI에서 생기는 정상적인 직렬화 방식.
+
+**검증 한계**: 호스트 1개 프로세스에서 `RequestPlace()`를 직접 호출해 확인한 것 — 실제 두 사람이 1층에서 화분을 직접 들고 날라 선반에 꽂는 것, 2층에서 기록일지를 펼쳐 정답을 확인하는 것은 **다음 2인 플레이테스트에서 확인 필요**.
+
+## Develop 전체 기믹 동작 검증 (2026-10-23, 열 번째 후속)
+"기믹들이 KJH 씬에서처럼 Develop에서 똑같이 동작하는지" 전수 확인 요청. GIM-002/004/005는 과거에도 개별적으로 확인했지만, GIM-001(초상화)과 GIM-003(PotionCraft 약품 제조)은 이번이 Develop 기준 첫 전체 로직 통과 확인이었다. Play 모드 1회(호스트) 안에서 5개 기믹을 실제 판정 로직 호출로 순서대로 전부 끝까지 통과시켰다:
+
+- **GIM-001**: `PortraitPuzzleScene.Instance.answer`({1,1,-1})에 맞춰 `PortraitPuzzle.Instance.RequestShift()`로 3개 액자를 맞춤 → `Solved=True`, `SolvedEvent` 발화 → GIM-002가 자동으로 `Locked→Preparing` 전환되는 것까지 확인(두 기믹이 Develop에서도 올바르게 연결돼 있음).
+- **GIM-002**: 문 열기·태엽 감기 → 커튼 열기 → 3개 장면(`CurrentScene.doll/background/symbols`를 실시간으로 읽어 정답 그대로 입력) 전부 무대 정답→반주 정답→공연 통과 → `Complete, progress 3/3`.
+- **GIM-003(PotionCraft)**: 실제 스테이션 체인(재료/물 획득 → Brewer 숙성 → Grinder 10회 갈기 → Mixer 투입)으로 정답 레시피(`FinalRecipeData.sequence = Red,Blue,Red`, 각각 `SilverLeaf+Red물`/`GreenLeaf+Blue물`)를 3배치 실행 → `PotionCraftSync.Completed=True`, `MixerStation.IsLocked=True`. 지름길(`ServerSetHeld`)을 쓰지 않고 공급대→숙성기→분쇄기 전 과정을 실제로 통과시켜 확인.
+- **GIM-004**: 정답 순서(D-E-A-F)로 `RequestPlace()` → `Complete` → `Door_Courtyard_L/R`·`Door_MaidRoom` 3개 문 전부 `IsOpen=True`.
+- **GIM-005**: 진짜 길 게이트(G1,G3,G6,G7)에 배정된 문양을 리플렉션으로 `Gim005Logic.SymbolOfGate()`에서 직접 읽어 `RequestPress()` → `RequestCenter()` → `Complete` → `Rail_StairFront` 비활성화 확인.
+
+전 과정 콘솔 에러 0건(경고 4건은 기존에 알려진 오디오 리스너 중복 — 테스트 아티팩트, 기믹과 무관). Play 모드 종료 후 씬 `isDirty=False`로 깨끗이 복구되어 테스트 상태가 저장된 씬에 새지 않음을 재확인.
+
+**검증 한계는 그대로**: 전부 호스트 1개 프로세스에서 판정 메서드를 직접 호출해 확인한 것이라, 실제 E키 입력 경로·두 사람의 역할 분담(GIM-005 A/B, PotionCraft 손 나르기 등)·공간을 실제로 걸어서 통과하는 것은 여전히 **다음 2인 플레이테스트에서 확인 필요**.
+
+## 타이틀 화면이 안 보이던 버그 수정 + 전체 캔버스 점검 (2026-10-23, 열한 번째 후속)
+"에디터 플레이 시 타이틀 화면에 아무것도 안 보인다"는 보고를 받고 원인을 찾음.
+
+**원인**: `GameFlowUI.cs`가 `GameFlowSync.Instance`를 찾자마자(이건 `Awake()`에서 즉시 설정되고 네트워크 세션 시작과 무관) `sync.Stage`를 바로 읽어 화면에 반영하는데, `Stage`는 `NetworkVariable<GameStage>`라서 **스폰되기 전에도** 선언 시 기본값인 `Lobby`를 그대로 돌려준다. 그 결과 Play 버튼만 눌러도(호스트/참가를 누르기도 전에) `lobbyCanvas`(불투명 전체화면 배경, 여덟 번째 후속에서 추가)가 곧바로 켜져서 `TitleCanvas`를 완전히 덮어버리고 있었다. `GameFlowSync`가 실제로 네트워크 세션에 참여한 적이 없으면(`IsSpawned=false`) `Stage` 값 자체가 아직 아무 의미가 없다는 걸 놓친 게 원인.
+
+**수정**: `GameFlowUI.Update()`에서 `sync.IsSpawned`가 true일 때만 `Stage`를 반영하도록 가드 추가(`Assets/Scripts/KSM/GameFlow/GameFlowUI.cs`). 즉 타이틀 화면 단계(세션 시작 전)에는 어떤 GameFlow 캔버스도 건드리지 않고, 실제로 호스트/참가해서 `GameFlowSync`가 스폰된 뒤부터만 Lobby/Intro/Playing/Ending/Result 전환이 반영된다.
+
+**검증**: Play 모드 진입 직후(아무것도 안 누른 상태) `LobbyCanvas.activeSelf=False`, `TitleCanvas.activeSelf=True` 확인(수정 전엔 `LobbyCanvas=True`였음). `StartHost()` 후에는 `GameFlowSync.IsSpawned=True`, `Stage=Lobby`, `LobbyCanvas.activeSelf=True`로 정상적으로 대기방이 뜨는 것도 확인. `stage` NetworkVariable을 리플렉션으로 직접 돌려가며 Lobby→Intro→Playing→Ending→Result→Lobby 전 구간의 캔버스 전환(각 단계에서 해당 캔버스만 켜짐, 커서는 Playing일 때만 잠김)이 전부 정상임을 확인. `EventSystem` 1개, 정상 활성화. 콘솔 에러 0건, Play 모드 종료 후 씬 `isDirty=False`.
+
+**겸사겸사 확인한 것 — 버그 아니라 오래된 문서 미정리**: "모든 캔버스 점검" 과정에서 `ClueViewerUI`/`InteractionPrompt`/`PhotoInventoryPanel`/`EchoBlackout`/`SpectrumOverlay` 등 2026-10-06 라운드들에 기록된 UI가 현재 씬에 전혀 없는 것을 발견 — `git log`로 추적한 결과 `164d8d4` 커밋("Develop, KSM 초기화", 2026-10-08)에서 당시 `FPSPlayer.prefab`·`NetworkInteractionBridge.cs`·`NetworkFirstPersonController.cs` 등 KSM 프로토타입 플레이어 체계 전체를 LGH의 `NetworkPlayer`/`PlayerInteractor`(OnGUI 기반 HUD) 체계로 완전히 교체하면서 함께 삭제된 것이었다. 이번 세션에서 생긴 손실이 아니라 2주 넘게 이어진 상태이며, CLAUDE.md의 "Develop 씬 통합 현황"·"KJH 기능 전면 포팅"·"KJH 추가 머지 반영" 세 섹션은 그 이전 아키텍처 기준의 과거 기록이라 현재와 안 맞는다. **당장 동작에 영향은 없음**(그 코드/오브젝트를 참조하는 곳이 전혀 없어 컴파일·런타임 에러 0건) — 다만 문서 정리가 필요하면 별도로 처리할 것.
+
+## 방 만들기 화면에서 타이틀로 돌아가는 버튼이 사라지던 버그 수정 (2026-10-23, 열두 번째 후속)
+"방 만드는 화면에서 타이틀로 돌아가는 버튼이 없다"는 보고. 원인 조사 중 `LGH/MultiplayerMenu.cs`가 이 세션의 CLAUDE.md 기록(2026-10-02 KSM 단독 프로토타입 기준)보다 훨씬 발전해 있다는 걸 발견 — 지금은 Unity Multiplayer Services의 Sessions API로 방 목록 조회·방 만들기·방 이름으로 참가·코드로 참가를 전부 지원하는 완성된 로비 화면이다(이 발전 과정 자체는 이 세션 밖에서 있었던 일이라 CLAUDE.md에 별도 기록 없음 — "네트워킹 세팅 현황" 섹션도 그 이전 단계 기준이라 낡았다는 점 참고).
+
+**원인**: `Assets/Scripts/KSM/UI/MultiplayerBackButton.cs`의 표시 조건이 `NetworkPlayer.Local == null && (NetworkManager.Singleton == null || !NetworkManager.Singleton.IsListening)`이었다. 그런데 Sessions API로 "방 만들기"를 누르면 `MultiplayerService.Instance.CreateSessionAsync()`가 Relay 연결까지 전부 처리하면서 `NetworkManager.IsListening`이 **플레이어가 실제로 스폰되기 한참 전에** 먼저 True가 돼버린다 — 그 결과 "방을 만드는 중.../방을 만들었어요, 참가 코드: ..." 화면(아직 `NetworkPlayer.Local`은 없어서 `MultiplayerMenu` 자신은 계속 이 화면을 그리고 있음)에서 뒤로가기 버튼 조건의 `!IsListening`만 거짓이 돼 버튼이 먼저 사라져 있었다.
+
+**수정**: 표시 조건에서 `NetworkManager.IsListening` 체크를 제거하고 `MultiplayerMenu` 자신이 "인게임"을 판단하는 기준과 똑같이 `NetworkPlayer.Local == null`만 본다 — 방 목록/만들기/참가 중 화면이 떠 있는 동안(플레이어가 실제로 스폰되기 전까지)은 계속 보이고, 스폰되는 순간(대기방/일시정지 화면으로 바뀌는 시점)에만 사라진다. 또한 `OnBackClicked()`가 예전엔 `TitleMenuUI.ShowTitle()`만 불러서 이미 만들어진 세션이 정리 안 된 채 방 목록에 남거나 `NetworkManager`가 켜진 채로 남을 수 있었던 것도 같이 고침 — `ResultCanvasController`가 쓰던 것과 같은 패턴(`LGH.MultiplayerMenu.LeaveRoomAsync()`로 세션 정리 → 타이틀 표시)을 적용하고 연타 방지 플래그를 추가함.
+
+**검증**: Play 모드에서 타이틀 "시작" → 멀티플레이 메뉴 활성화 상태에서 뒤로가기 버튼 활성(`NetworkPlayer.Local==null`) 확인 → `NetworkManager.StartHost()`로 플레이어가 스폰된 뒤에는 버튼이 자동으로 꺼지는 것 확인(기존처럼 올바르게 인게임으로 판단) → 호스트를 종료한 뒤 `OnBackClicked()`를 직접 호출해 세션 정리 로직이 예외 없이 끝까지 돌고 타이틀 화면(`TitleRoot.activeSelf=True`, 멀티플레이 메뉴 `enabled=False`)으로 정상 복귀하는 것 확인. 콘솔 에러 0건, Play 모드 종료 후 씬 `isDirty=False`.
+
 ## 사용 가능한 Unity 전용 스킬
 이 환경에는 `unity:` 접두사의 스킬들(unity-cli, ui, urp-postprocessing, physics-3d-collision 등)이 이미 연결되어 있습니다. 관련 작업을 할 때는 먼저 해당 스킬을 확인하세요.
 

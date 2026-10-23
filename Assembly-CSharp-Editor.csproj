@@ -63,7 +63,9 @@
     <Compile Include="Assets\Scripts\KJH\Gim005\Editor\Gim005Builder.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim002\Editor\Gim002Builder.cs" />
     <Compile Include="Assets\Scripts\KSM\GameFlow\Editor\GameFlowBuilder.cs" />
+    <Compile Include="Assets\Scripts\KJH\Gim004\Editor\Gim004Art.cs" />
     <Compile Include="Assets\Scripts\KJH\GameTime\Editor\GameClockEditor.cs" />
+    <Compile Include="Assets\Scripts\KJH\Gim004\Editor\Gim004Builder.cs" />
     <Compile Include="Assets\Scripts\KJH\PotionCraft\Editor\PotionCraftBuilder.cs" />
     <Compile Include="Assets\Scripts\KJH\ObjectEcho\Editor\ObjectEchoSetupMenu.cs" />
     <Compile Include="Assets\Scripts\KJH\Common\Editor\GameUIGroups.cs" />
@@ -1634,12 +1636,12 @@
       <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.Core.Editor.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Unity.Netcode.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.Netcode.Editor.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="Unity.AppUI.Navigation">
       <HintPath>Library\ScriptAssemblies\Unity.AppUI.Navigation.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.Netcode.Editor">
+      <HintPath>Library\ScriptAssemblies\Unity.Netcode.Editor.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEditor.UI.Analytics">
@@ -1853,6 +1855,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="Assembly-CSharp.csproj" />
+    <ProjectReference Include="Gim004.Core.csproj" />
     <ProjectReference Include="Gim005.Core.csproj" />
     <ProjectReference Include="OccaSoftware.Crosshairs.Editor.csproj" />
     <ProjectReference Include="Gim002.Core.csproj" />

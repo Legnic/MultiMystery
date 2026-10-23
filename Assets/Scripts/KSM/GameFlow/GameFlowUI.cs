@@ -22,8 +22,13 @@ namespace CoopDemo
                 sync = GameFlowSync.Instance;
                 if (sync == null) return;
                 sync.StageChanged += OnStageChanged;
-                Apply(sync.Stage);
             }
+
+            // 네트워크 세션이 시작되기 전(타이틀 화면)에는 GameFlowSync가 아직 스폰되지 않아 Stage가 NetworkVariable
+            // 기본값(Lobby)일 뿐이다. 이 값을 그대로 믿고 대기방 배경(lobbyCanvas)을 띄우면 호스트/참가를 누르기도 전에
+            // 타이틀 화면 전체를 가려버리므로, 실제로 스폰된 뒤에만 반영한다.
+            if (!sync.IsSpawned) return;
+            if (shown == (GameStage)(-1)) Apply(sync.Stage);
 
             // Playing 중의 커서 상태(잠금/해제)는 옵션·소지품이 각자 관리하므로 건드리지 않는다.
             // 그 외 단계에서는 계속 풀려 있어야 하므로 혹시 뭔가 잠가 놨더라도 매 프레임 되돌린다.
