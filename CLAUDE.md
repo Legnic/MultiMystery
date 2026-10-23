@@ -171,6 +171,16 @@ git에 커밋되어 팀원 전원이 같은 내용을 공유합니다. 개인적
 - **Develop 적용 방법**: `AtticTreasure_Contents.prefab`(26.088, 9.115, 11.879, 회전 y 270 — 별 상자와 같은 위치·회전), `AtticTreasureSync.prefab`(최상위)을 프리팹 인스턴스로 두면 끝. 놓은 뒤 `Tools/Network/Validate Scene NetworkObjects`. `ItemDatabase_LGH` 변경(아이템 2개 추가)도 같이 머지돼야 한다.
 - 검증 한계: Play 모드 `StartHost()` 로컬 호스트에서 확인 — 상자 닫힘 시 집기 불가, 열면 안내 문구, 황금상 → 연출(임시) → 인벤토리, 열쇠 → 인벤토리, 열쇠 없이 현관문 "현관 열쇠이(가) 필요하다", 열쇠로 양문 잠금 해제·열림, 탈출 요청 지점 도달(KJH엔 GameFlowSync 없어 로그), Validate 0건, 콘솔 에러 0. 위 2번 콜라이더 문제 때문에 E 입력은 `Interact()` 직접 호출로 확인. **두 사람 동시 연출, Develop에서 실제 엔딩 전환은 직접 확인 필요.**
 
+## 기믹 완료 → 문 열림 연결 (2026-10-23, KJH 씬)
+- 요청: GIM-002(인형극) 완료 전까지 `Door_Kitchen`·`Door_Kitchen_Dining`(식당 쪽 우회로)·`Door_Guest2` 잠금, 완료 시 열림. GIM-003(약품 제조) 완료 전까지 `Door_Library`·`Door_Library_Guest1`(손님방1 쪽 우회로)·`Door_Conservatory` 잠금, 완료 시 열림. 전부 양문(`_B` 짝 자동).
+- 스크립트 `Assets/Scripts/KJH/GimmickDoors/GimmickDoorLink.cs`(네임스페이스 `GimmickDoors`): 기믹 하나 + 문 목록. 문은 이름으로 찾고(양문은 한쪽 이름만, 짝 자동), 모든 컴퓨터가 매 프레임 완료 여부로 잠금을 맞춘다(늦은 접속·방 초기화에도 같음). 완료되는 순간 판정 담당이 `DoorNetworkSync`로 한 번 열고, 그 뒤엔 자유롭게 여닫기. 완료 판정 출처: GIM-002 = `Gim002Controller.State.state == Complete`, GIM-003 = `PotionCraftSync.Completed`. 씬에 그 기믹이 없으면 잠그지 않음(`lockWhenGimmickMissing` 기본 꺼짐). 문은 복도 쪽(`openFrom`)에서 방 안으로 열린다.
+- 새 기믹-문 연결 추가: `DoorGimmick` enum에 기믹 하나 추가 + `IsComplete()`에 완료 판정 한 줄, 프리팹에 `GimmickDoorLink` 하나 더 붙이기. 네트워크 오브젝트가 아니라 DefaultNetworkPrefabs 등록 불필요.
+- 재생성: `Tools/KJH/GimmickDoors/Build`(프리팹 `Assets/Prefabs/KJH/GimmickDoors/GimmickDoors.prefab` 덮어쓰기 + 씬 `GimmickDoors_KJH` 재배치).
+- 완료 문구는 각 기믹 쪽이 띄운다(2026-10-23 변경): GIM-002 `Gim002Config.asset`의 `msgComplete` = "인형극이 끝났다. 어디선가 박수 소리와 함께 문이 열리는 소리가 들렸다.", GIM-003 `PotionCraftSync.prefab`의 `completionSubtitle` = "제작에 성공하였다. 건물 왼쪽편에 문이 열리는 소리가 들렸다." (KJH·Develop 씬 어디에도 덮어쓴 값이 없어 이 두 파일이 그대로 적용됨)
+- **Develop 적용 방법**: `GimmickDoors.prefab`을 아무 위치에 프리팹 인스턴스로 두면 끝(위치 무관, 문 이름만 같으면 됨). Develop에 GIM-002/GIM-003이 아직 없으면 그 문은 잠기지 않는다.
+- 검증: Play 모드 `StartHost()`에서 시작 시 8짝 잠김 → `PotionCraftSync.ServerComplete()`로 서재·온실 4짝 잠금 해제+열림(방 안쪽으로), 주방·객실2는 잠금 유지 → GIM-002는 `Gim002Controller.State`를 Complete로 바꿔(전체 진행 생략) 주방·객실2 4짝 열림 확인. 콘솔 에러 0, 씬 변경 없음. 실제 GIM-002 3장면 완주와 두 클라이언트 동시 확인은 직접 플레이 필요.
+- 우회로 확인 결과(2026-10-23): 서재는 `Door_Library_Guest1`, 주방은 `Door_Kitchen_Dining`으로도 들어갈 수 있어 같은 기믹에 묶어 같이 잠금. 온실 정원 쪽 `Door_GardenConservatory`는 원래 잠겨 있음. 맵에 문이 추가되면 우회로를 다시 확인할 것.
+
 ## 네트워크 동기화 정책 — "전면 재구축" 대신 "규칙 + 검사" (2026-10-21)
 팀원들과 실제 멀티플레이 플레이테스트를 하면서 같은 유형의 버그가 반복 발견됐다: `DumbwaiterSync_KJH`, `PortraitPuzzleSync_KJH`, `DoorSync_LGH`(+빠진 `CandleNetworkSync`) 전부 **코드 로직 자체는 멀쩡했는데, Develop 씬에 프리팹이 아닌 맨몸 오브젝트로 배치**돼 있었다. `NetworkManager`의 `EnableSceneManagement=False`라서, 게스트가 접속하면 씬에 맨몸으로 둔 `NetworkObject`(또는 `DefaultNetworkPrefabs`에 등록 안 된 프리팹)를 전부 지우고 호스트가 보낸 정보로 "등록된 프리팹"만 다시 만들기 때문이다. 호스트 혼자 테스트하면 멀쩡해 보여서 게스트 접속 전까지 못 알아챈다.
 
