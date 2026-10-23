@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-// 화면 기준으로 W는 앞(화면 안쪽), S는 뒤(카메라 쪽), A는 왼쪽, D는 오른쪽이다.
+// 화면 기준으로 W는 앞(카메라 쪽, 얼굴이 보임), S는 뒤(화면 안쪽), A는 왼쪽, D는 오른쪽이다.
 // 키를 누르는 동안 캐릭터들이 그쪽으로 돌아 같이 걷고, Shift를 같이 누르면 뛴다.
 // 키를 떼면 제자리에 서고, 스페이스바를 누르면 점프한다. (LHJ 테스트용)
 public class CharacterKeyMove : MonoBehaviour
@@ -47,12 +47,12 @@ public class CharacterKeyMove : MonoBehaviour
         }
     }
 
-    // 키 입력을 카메라가 보는 방향 기준의 바닥 위 방향으로 바꾼다.
+    // 키 입력을 화면 기준의 바닥 위 방향으로 바꾼다. 앞(W)은 카메라를 향하는 쪽이다.
     static Vector3 CameraRelative(Vector2 input)
     {
         var cam = Camera.main;
-        var forward = cam != null ? Vector3.ProjectOnPlane(cam.transform.forward, Vector3.up).normalized : Vector3.forward;
-        var right = Vector3.Cross(Vector3.up, forward);
-        return (right * input.x + forward * input.y).normalized;
+        var intoScreen = cam != null ? Vector3.ProjectOnPlane(cam.transform.forward, Vector3.up).normalized : Vector3.forward;
+        var screenRight = Vector3.Cross(Vector3.up, intoScreen);
+        return (screenRight * input.x - intoScreen * input.y).normalized;
     }
 }
