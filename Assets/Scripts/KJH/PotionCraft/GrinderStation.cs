@@ -80,7 +80,7 @@ namespace PotionCraft
             {
                 powderVisual.SetActive(phase == PowderReady);
                 var cat = Catalog;
-                if (phase == PowderReady && cat != null) PotionVisuals.TintMarked(powderVisual, cat.PowderColorOf((PowderColor)color));
+                if (phase == PowderReady && cat != null) PotionVisuals.ShowPowderDish(powderVisual, (PowderColor)color, cat.PowderColorOf((PowderColor)color));
             }
             if (progressBar != null)
             {

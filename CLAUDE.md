@@ -478,6 +478,27 @@ KJH 브랜치를 Develop에 다시 머지한 뒤 "방금 머지해온 KJH 씬에
 **검증**: Play 모드 `StartHost()`에서 초기 상태 6개 문 전부 `locked=True` 확인 → GIM-001 풀고 GIM-002를 실제 판정 요청(`RequestMusicDoorOpened`/`RequestStageWound`/`RequestCrankCompleted`/`RequestSlotChanged`/`RequestPianoKey`)으로 3개 장면 전부 완주해 `Complete`까지 보냄 → `Door_Kitchen`/`Door_Kitchen_Dining`/`Door_Guest2` 3개 모두 `locked=False, IsOpen=True`로 자동 전환 확인. GIM-003은 `PotionCraftSync.ServerComplete()`(최종 혼합 정답 시 호출되는 공개 메서드 — 전체 양조 체인은 지난 "Develop 전체 기믹 동작 검증" 세션에서 이미 실제 체인으로 검증했으므로 이번엔 문 연동만 보기 위해 바로 호출)로 완료 처리 → `Door_Library`/`Door_Library_Guest1`/`Door_Conservatory` 3개 모두 `locked=False, IsOpen=True` 확인. `Tools/Network/Validate Scene NetworkObjects` 문제 없음, 콘솔 에러 0건. 저장 후 `git diff`로 새 프리팹 인스턴스 1개(+58줄) 추가 외 기존 오브젝트 변경 없음 확인.
 **검증 한계**: 전부 판정 메서드 직접 호출로 확인한 것 — 실제로 문이 잠겨 있을 때 안내 문구("문이 잠겨 있다")가 뜨는지, 두 기믹을 실제로 플레이해서 완료하는 순간 문이 저절로 열리는 걸 눈으로 보는지는 다음 플레이테스트에서 확인 필요.
 
+## 기믹 더미 → VARCO 모델 교체 4차 — 노션 모델링 체크리스트 기반 (2026-10-23, 스물두 번째 후속)
+사용자가 노션 "[디자인] 기믹 관련 모델링 요청용" 문서(체크박스로 완료 여부 표시된 전체 모델 목록)와 "기믹 진행도" 문서를 붙여넣어 공유 — Notion 커넥터로는 두 페이지 모두 접근 불가(404, 연동 계정에 미공유)했으나 본문 내용으로 충분히 분석 가능했음. 이 문서를 `Assets/VARCO 3D/KWJ/Prefabs/Gimmick` 폴더(이전 라운드들에서 쓰던 `_NeedsCollider`와는 다른, 새로 정리된 폴더)와 대조해 Develop에 아직 반영 안 된 5가지를 찾아 전부 반영함.
+
+**조사 중 확인한 것 — 노션 메모 정정**: "GIM-003 도르레 모델링... 반영X"라는 메모는 KJH.unity와 Develop.unity의 `Dumbwaiter_Rig` 계층을 직접 통째로 대조해보니 완전히 동일 — 이미 지난 1차 교체 라운드에서 반영된 상태였고, 이 메모는 그보다 먼저 쓰인 오래된 기록으로 확인됨. GIM-002 피아노(`Furn_GrandPiano`+`Furn_PianoBench`)도 이미 반영돼 있고(옛 더미는 비활성화된 채 남아있음) 손댈 필요 없었음.
+
+**실제로 반영한 5가지**:
+1. **GIM-001 장난감 상자**(`KeyBox`): `Boxupper`/`BoxUnder` 큐브를 `Furn_ToyChest_Gimmick.prefab`(몸통+경첩+뚜껑 분리)로 교체. `KeyBox` 자신이 비균일 스케일(0.63, 0.35, 0.48)을 갖고 있어서, 새 모델의 실제 크기가 일그러지지 않도록 자식 오브젝트에 그 역수 스케일을 곱해 상쇄(`1/0.63, 1/0.35, 1/0.48`)한 뒤 원하는 실물 크기를 적용. `KeyBoxLid.cs`의 `hingeLocalOffset`/`hingeLocalAxis`/`openAngle`를 새 모델의 실제 경첩 위치(`LidHinge` 자식 오브젝트)에서 역산해 재설정(`(0, 0.27, -0.06)` / `Vector3.right` / `-110`). **교훈**: 이 스크립트는 `Open()`이 처음 호출될 때 그 순간의 `lid.position/rotation`을 "닫힌 기준"으로 캐시하므로, 힌지 값을 바꿔가며 여러 번 테스트할 때마다 반드시 뚜껑 오브젝트를 진짜 닫힌 위치로 직접 되돌린 뒤 재시도해야 한다 — 안 그러면 이전 테스트의 틀어진 자세가 "새 닫힌 기준"으로 잘못 캐시되어 디버깅이 꼬인다(이번에 실제로 몇 번 이 함정에 빠졌다가 알아챔).
+   - **사이드 이펙트로 생긴 버그와 수정**: 힌지 보정을 위해 `KeyBoxLid` 컴포넌트를 `DestroyImmediate`+`AddComponent`로 여러 번 리셋했는데, 이 때문에 `PortraitPuzzleScene.keyBox`(컴포넌트 직접 참조)가 고아 참조(null)가 되어 "GIM-001을 풀어도 상자가 안 열리는" 회귀가 생겼었다 — Play 모드 끝까지 통과시켜 재검증하는 과정에서 발견해 참조를 새 컴포넌트로 재연결해 수정함. **컴포넌트를 반복적으로 지웠다 새로 붙이는 디버깅 패턴을 쓸 때는, 그 컴포넌트를 가리키는 다른 스크립트의 참조도 끝에 반드시 재점검할 것.**
+2. **GIM-001 보상 열쇠 2개**(`Key_Behind_E3`, `Key_Behind_2F`): 원기둥+큐브 조합을 `Prop_Key_Treble.prefab`(높은음자리표 모양)로 교체, 표준 임포트 보정(270,0,0) 그대로 사용.
+3. **GIM-002 놀이책**(`OBJ_PLAYBOOK`): 큐브+장식 텍스트를 `Prop_PuppetBook.prefab`으로 교체. 이 모델은 **평평하게 눕는 쪽**이라(`Prop_SilverLeaf`/`Prop_RecipeBook`과 같은 예외) 표준 270 대신 **identity 회전**을 써야 책상 위에 눕는 모습이 된다 — 처음 270으로 적용했다가 책이 수직으로 선 모습(책등이 보이는)이 나와서 밝은 하늘 위 복제본으로 확인 후 identity로 정정함.
+4. **GIM-003 재료 공급대 7곳**(`Supply_Material_*`/`Supply_Water_*`의 `Crate`/`Shelf`): `Furn_IngredientTable.prefab`(원래 1.58m 폭, 7곳이 1.1~1.3m 간격이라 그대로 쓰면 서로 겹침)을 X축만 0.506배 줄여서(폭 0.8m로) 기존 자리 간격에 맞춤 — 세로/깊이는 원래 비율 그대로 둬서 높이가 기존 받침대 상판 높이(0.6)와 거의 정확히 일치(0.607), 재료 아이템 위치를 손댈 필요가 없었음. 기존 `Crate`/`Shelf`는 콜라이더는 남기고 렌더러만 꺼서 숨김.
+5. **GIM-003 가루 더미**(`Tint_Pile`): 예전엔 색상별 모델이 없어서 보류했었는데, 이제 `Prop_PowderDish_Red/Blue/Green/Pink/Black` 5종이 생겨서 실제로 반영함 — 이건 "하나를 염색해서 재사용"하던 구조라 단순 교체가 아니라 스크립트도 같이 고쳐야 했다:
+   - `PotionCatalog.PowderInfo`에 `prefab` 필드 추가(기존 `MaterialInfo`/`WaterInfo`와 같은 패턴), `VisualPrefab()`이 색상별 프리팹이 있으면 그걸, 없으면(Gold — 아직 전용 모델 없음) 기존 공용 `powderPrefab`을 돌려주도록 변경.
+   - `PotionVisuals.ShowPowderDish(root, color, fallbackTint)` 새 도우미 추가: `root` 밑에서 `"Dish_<색이름>"` 자식을 켜고 나머지는 끄며, 그런 자식이 없으면 `"Tint_Pile"`을 켜고 색칠(Gold용 대체 경로 유지).
+   - `GrinderStation.Refresh()`가 `TintMarked` 대신 이 도우미를 쓰도록 변경. 분쇄기의 `PowderOnPaper` 밑에 `Dish_Green/Red/Blue/Pink/Black` 5개를 전부 비활성 상태로 미리 배치(`Tint_Pile`은 Gold 대체용으로 그대로 둠).
+   - `PotionCatalog.asset`의 `powders` 배열 0~4번(Green/Red/Blue/Pink/Black)에 해당 프리팹 연결(5번 Gold는 비워둠 → 자동 대체 경로 탐).
+   - **겸사겸사 발견해 고친 버그**: `PotionCraftSync.BuildHeldVisual()`이 손에 든 모습을 만들 때마다 `go.transform.localRotation = Quaternion.identity`로 강제 덮어쓰고 있었다 — 기존엔 `catalog.materials/waters`의 프리팹이 전부 `Item_Material_*`/`Item_Water_*`라는 "이미 identity가 정답"인 전용 래퍼라 문제가 없었는데, 이번에 새로 연결한 `Prop_PowderDish_*`는 VARCO 원본(루트 자체가 270 회전 필요)이라 손에 든 가루 접시가 옆으로 선 채로 보이는 버그가 났다. `localRotation` 강제 대입 줄을 지워서 프리팹 자신의 로컬 회전을 그대로 쓰도록 고침(기존 Item_* 래퍼는 identity라 영향 없음, 원본 VARCO 모델도 자기 정회전을 그대로 받게 됨) — 이제 향후 어떤 새 카탈로그 프리팹을 연결하든(래퍼든 원본이든) 자동으로 올바르게 들리게 된다.
+   - 믹서(`MixerStation.layers[]`, 3칸짜리 `Renderer[]`)는 범위에서 제외함 — 칸마다 5가지 모델을 다 두려면 구조 변경(필드 타입 교체 + 15개 오브젝트 추가)이 더 크고, 믹서 통 안의 작은 표시등 수준이라 우선순위가 낮다고 판단. 여전히 기존 방식대로 단색 틴트로 표시됨.
+
+**검증**: 각 교체마다 밝은 하늘 위 복제본으로 모양/회전 확인(기존 세션들과 같은 기법), GIM-001은 Play 모드에서 `PortraitPuzzle.RequestShift()`로 실제로 풀어 상자가 열리고(`KeyBoxLid.IsOpen=True`) 열쇠를 주울 수 있는 것까지 전체 플로우로 재확인(참조 버그 발견 전후 둘 다 테스트해서 수정 효과를 직접 확인). GIM-003은 `GrinderStation`에 리플렉션으로 `phase=PowderReady`/`color`를 바꿔가며 `Refresh()` 호출 → 해당 색의 `Dish_*`만 켜지고 나머지+`Tint_Pile`이 꺼지는 것, Gold는 `Tint_Pile` 켜지고 색칠되는 것 확인. `PotionCraftSync.ServerSetHeld()`로 빨간 가루를 손에 쥐어 봐서 회전 버그 수정 전/후 차이(수정 전: 접시가 옆으로 선 모습 / 수정 후: 평평하게 접시 담긴 모습)까지 스크린샷으로 확인. `Tools/Network/Validate Scene NetworkObjects` 문제 없음, 콘솔 에러 0건. 씬 저장 후 `isDirty=False` 확인.
+
 ## 사용 가능한 Unity 전용 스킬
 이 환경에는 `unity:` 접두사의 스킬들(unity-cli, ui, urp-postprocessing, physics-3d-collision 등)이 이미 연결되어 있습니다. 관련 작업을 할 때는 먼저 해당 스킬을 확인하세요.
 

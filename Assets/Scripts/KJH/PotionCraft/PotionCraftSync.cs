@@ -302,7 +302,8 @@ namespace PotionCraft
             var go = Instantiate(prefab, parent);
             go.name = "Held_" + catalog.NameOf(code);
             go.transform.localPosition = localPos;
-            go.transform.localRotation = Quaternion.identity;
+            // 회전은 그대로 둔다: 프리팹 자신의 로컬 회전이 "손에 들었을 때" 모습이 되도록 이미 맞춰져 있다
+            // (Item_Material_* 같은 전용 래퍼는 identity, 원본 VARCO 모델을 직접 쓰는 경우는 보통 (270,0,0)).
             PotionVisuals.StripColliders(go);
             if (Item.KindOf(code) == ItemKind.Powder) PotionVisuals.TintMarked(go, catalog.ColorOf(code));
             return go;
