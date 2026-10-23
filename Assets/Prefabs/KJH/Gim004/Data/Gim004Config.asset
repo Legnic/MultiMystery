@@ -1,0 +1,52 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 26671d4d3374dd64db5f75df24827767, type: 3}
+  m_Name: Gim004Config
+  m_EditorClassIdentifier: Assembly-CSharp::Gim004.Gim004Config
+  rules:
+    answer: 03040005y
+    judgeDelaySeconds: 0.8
+  journalTitle: "\uC628\uC2E4 \uAE30\uB85D\uC77C\uC9C0"
+  journalLeftHeading: "\uC911\uC559 \uC120\uBC18\uC5D0 \uB193\uC544\uC57C \uD560 \uC2DD\uBB3C \uB9AC\uC2A4\uD2B8"
+  journalRightHeading: "\uBC30\uCE58 \uAE30\uB85D"
+  photoPots: 05040300y
+  photos:
+  - {fileID: 2800000, guid: 60316d1ebe544714584802c93f6d6386, type: 3}
+  - {fileID: 2800000, guid: 95d4f7562523d59478e4fa83540922f6, type: 3}
+  - {fileID: 2800000, guid: b1ed88f3560ac8f429113ba6cf27f112, type: 3}
+  - {fileID: 2800000, guid: a0b82142469564d43a95e2364d934b19, type: 3}
+  placementRecord: "\uC120\uBC18 \uC815\uBA74\uC5D0\uC11C \uBC14\uB77C\uBCF8 \uBC29\uD5A5\uC744 \uAE30\uC900\uC73C\uB85C \uD55C\uB2E4.\n1\uBC88\uC740 \uB9E8 \uC624\uB978\uCABD\uC5D0 \uB193\uC558\uB2E4.\n3\uBC88\uC740 \uB9E8 \uC67C\uCABD\uC5D0 \uB193\uC558\uB2E4.\n2\uBC88\uC740 1\uBC88\uBCF4\uB2E4 \uB450 \uCE78 \uC67C\uCABD\uC5D0 \uB193\uC558\uB2E4.\n4\uBC88\uC740 2\uBC88\uACFC 1\uBC88 \uC0AC\uC774\uC5D0 \uB193\uC558\uB2E4."
+  completeDoors:
+  - doorName: Door_Courtyard_L
+    openFrom: {x: 44, y: 0, z: 1.5}
+    lockedMessage: "\uC815\uC6D0\uBB38\uC774 \uAD73\uAC8C \uC7A0\uACA8 \uC788\uB2E4"
+  - doorName: Door_MaidRoom
+    openFrom: {x: 34.5, y: 3.9, z: -12.25}
+    lockedMessage: "\uC815\uC6D0 \uAD00\uB9AC\uC2E4 \uBB38\uC774 \uC7A0\uACA8 \uC788\uB2E4"
+  doorParentFilter: Ravenwood_LGH
+  lockEntryUntilPotionCraft: 0
+  entryDoors:
+  - doorName: Door_Conservatory
+    openFrom: {x: 0, y: 0, z: 0}
+    lockedMessage: "\uC628\uC2E4 \uBB38\uC774 \uC7A0\uACA8 \uC788\uB2E4"
+  - doorName: Door_Library
+    openFrom: {x: 0, y: 0, z: 0}
+    lockedMessage: "\uC11C\uACE0 \uBB38\uC774 \uC7A0\uACA8 \uC788\uB2E4"
+  - doorName: Door_Library_Guest1
+    openFrom: {x: 0, y: 0, z: 0}
+    lockedMessage: "\uC11C\uACE0 \uBB38\uC774 \uC7A0\uACA8 \uC788\uB2E4"
+  floorSplitY: 2
+  potName: "\uD654\uBD84"
+  msgCompleteFloor1: "\uC815\uC6D0\uBB38\uC774 \uC5F4\uB838\uC2B5\uB2C8\uB2E4."
+  msgCompleteFloor2: "\uC815\uC6D0 \uAD00\uB9AC\uC2E4 \uBB38\uC774 \uC5F4\uB838\uC2B5\uB2C8\uB2E4."
+  msgShelfLocked: "\uD654\uBD84\uC774 \uC120\uBC18\uC5D0 \uB2E8\uB2E8\uD788 \uACE0\uC815\uB418\uC5B4 \uC788\uB2E4"
+  msgJudging: ...
