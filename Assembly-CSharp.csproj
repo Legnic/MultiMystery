@@ -77,6 +77,7 @@
     <Compile Include="Assets\Scripts\KSM\Player\ToyActionNetwork.cs" />
     <Compile Include="Assets\Scripts\KJH\PotionCraft\PotionTypes.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim004\Runtime\Gim004Controller.cs" />
+    <Compile Include="Assets\Scripts\KJH\GimmickDoors\GimmickDoorLink.cs" />
     <Compile Include="Assets\Scripts\KJH\Puzzle\PortraitPuzzleScene.cs" />
     <Compile Include="Assets\Scripts\KJH\Dumbwaiter\DumbwaiterWindow.cs" />
     <Compile Include="Assets\Scripts\KJH\Dumbwaiter\DumbwaiterNetworkSync.cs" />

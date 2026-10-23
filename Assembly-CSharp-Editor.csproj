@@ -62,6 +62,7 @@
     <Compile Include="Assets\Scripts\KJH\Dumbwaiter\Editor\DumbwaiterBuilder.cs" />
     <Compile Include="Assets\Scripts\KJH\Clue\Editor\ClueSetupMenu.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim005\Editor\Gim005Builder.cs" />
+    <Compile Include="Assets\Scripts\KJH\GimmickDoors\Editor\GimmickDoorsBuilder.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim002\Editor\Gim002Builder.cs" />
     <Compile Include="Assets\Scripts\KSM\GameFlow\Editor\GameFlowBuilder.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim004\Editor\Gim004Art.cs" />

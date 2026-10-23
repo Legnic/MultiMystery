@@ -469,6 +469,15 @@ KJH님이 GIM-007·GIM-008을 KJH 브랜치에 구현·배치하고 Develop에 �
 **검증**: Play 모드 `StartHost()`에서 `LockBoxNetworkSync.Instance` 스폰 확인 + `sync.Online=True`로 실제 네트워크 경로를 타는 것 확인(이전엔 `Instance`가 없어서 `StarLockBox.Press()`가 무조건 로컬 판정으로 빠졌음) → 망원경 코드([3,5,7,4])대로 `Press()` → 호스트 RPC 경유로 `IsOpen=True` 전환 → 두 보상 아이템 `CanInteract=True` 정상 전환까지 재확인. 같은 `DoorSync_LGH` 오브젝트의 `ItemNetworkSync`/`DoorNetworkSync`/`CandleNetworkSync` 세 `Instance`도 전부 정상 스폰되어 충돌 없음 확인. `Tools/Network/Validate Scene NetworkObjects` 문제 없음, 콘솔 에러 0건, Play 모드 종료 후 씬 `isDirty=False`(프리팹만 바뀌었으므로 씬 자체는 더티가 안 됨).
 **검증 한계**: 전부 호스트 1개 프로세스에서 확인한 것이라, 실제로 게스트가 접속해 번호판을 돌릴 때 호스트 화면에도 같은 숫자·같은 순간에 열리는 것이 보이는지는 다음 2인 플레이테스트에서 확인 필요.
 
+## 기믹 완료 → 문 잠금(GimmickDoors) Develop 반영 (2026-10-23, 스물한 번째 후속)
+KJH 브랜치를 Develop에 다시 머지한 뒤 "방금 머지해온 KJH 씬에서 문들을 잠그는 기능을 가져와달라"는 요청. KJH 쪽이 이미 "Develop 적용 방법"으로 명시해둔 `GimmickDoors.prefab`(위치 무관, 문 이름만 같으면 됨)을 그대로 Develop 씬 루트에 인스턴스화.
+
+- `GimmickDoorLink`(`Assets/Scripts/KJH/GimmickDoors/GimmickDoorLink.cs`) 두 개가 같은 프리팹 안에 있음: **GIM-002(인형극) 완료 전까지** `Door_Kitchen`(+ 짝문)·`Door_Kitchen_Dining`·`Door_Guest2`를 잠그고, **GIM-003(PotionCraft) 완료 전까지** `Door_Library`·`Door_Library_Guest1`·`Door_Conservatory`를 잠근다. 완료되는 순간 판정 담당(호스트, 혼자면 로컬)이 직접 연다(LGH `DoorNetworkSync` 경유 — 모두에게 같은 각도로 열림). 문은 전부 이름으로 찾으므로(부모 경로에 `Ravenwood_LGH` 포함 조건) LGH 맵 프리팹은 전혀 건드리지 않는다. 네트워크 오브젝트가 아니라(평범한 `MonoBehaviour`) `DefaultNetworkPrefabs` 등록이나 `Validate Scene NetworkObjects` 대상도 아니다.
+- **새로 머지된 파일이라 처음엔 `AssetDatabase`가 못 찾았음**: `GimmickDoors.prefab`이 디스크엔 있는데 `AssetPathToGUID`가 빈 값을 반환 — `AssetDatabase.ImportAsset(..., ForceUpdate)` + `Refresh()`로 바로 해결(머지 직후 처음 다루는 새 에셋에서 가끔 나는 증상, 당황하지 않아도 됨).
+
+**검증**: Play 모드 `StartHost()`에서 초기 상태 6개 문 전부 `locked=True` 확인 → GIM-001 풀고 GIM-002를 실제 판정 요청(`RequestMusicDoorOpened`/`RequestStageWound`/`RequestCrankCompleted`/`RequestSlotChanged`/`RequestPianoKey`)으로 3개 장면 전부 완주해 `Complete`까지 보냄 → `Door_Kitchen`/`Door_Kitchen_Dining`/`Door_Guest2` 3개 모두 `locked=False, IsOpen=True`로 자동 전환 확인. GIM-003은 `PotionCraftSync.ServerComplete()`(최종 혼합 정답 시 호출되는 공개 메서드 — 전체 양조 체인은 지난 "Develop 전체 기믹 동작 검증" 세션에서 이미 실제 체인으로 검증했으므로 이번엔 문 연동만 보기 위해 바로 호출)로 완료 처리 → `Door_Library`/`Door_Library_Guest1`/`Door_Conservatory` 3개 모두 `locked=False, IsOpen=True` 확인. `Tools/Network/Validate Scene NetworkObjects` 문제 없음, 콘솔 에러 0건. 저장 후 `git diff`로 새 프리팹 인스턴스 1개(+58줄) 추가 외 기존 오브젝트 변경 없음 확인.
+**검증 한계**: 전부 판정 메서드 직접 호출로 확인한 것 — 실제로 문이 잠겨 있을 때 안내 문구("문이 잠겨 있다")가 뜨는지, 두 기믹을 실제로 플레이해서 완료하는 순간 문이 저절로 열리는 걸 눈으로 보는지는 다음 플레이테스트에서 확인 필요.
+
 ## 사용 가능한 Unity 전용 스킬
 이 환경에는 `unity:` 접두사의 스킬들(unity-cli, ui, urp-postprocessing, physics-3d-collision 등)이 이미 연결되어 있습니다. 관련 작업을 할 때는 먼저 해당 스킬을 확인하세요.
 
