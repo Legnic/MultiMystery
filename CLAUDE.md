@@ -339,6 +339,69 @@ KJH 브랜치의 GIM-004 구현을 머지해온 뒤(GIM-005는 지난 세션에 
 
 **검증**: Play 모드에서 타이틀 "시작" → 멀티플레이 메뉴 활성화 상태에서 뒤로가기 버튼 활성(`NetworkPlayer.Local==null`) 확인 → `NetworkManager.StartHost()`로 플레이어가 스폰된 뒤에는 버튼이 자동으로 꺼지는 것 확인(기존처럼 올바르게 인게임으로 판단) → 호스트를 종료한 뒤 `OnBackClicked()`를 직접 호출해 세션 정리 로직이 예외 없이 끝까지 돌고 타이틀 화면(`TitleRoot.activeSelf=True`, 멀티플레이 메뉴 `enabled=False`)으로 정상 복귀하는 것 확인. 콘솔 에러 0건, Play 모드 종료 후 씬 `isDirty=False`.
 
+## 방을 나가면 타이틀 버튼이 가려지던 버그 수정 — 직전 수정의 부작용 (2026-10-23, 열세 번째 후속)
+"방을 만들었다가 나오면 타이틀로 가는 버튼이 없어진다"는 보고. 직전(열한 번째 후속) "타이틀 화면이 안 보이던 버그" 수정이 만든 **새 부작용**이었다.
+
+**원인**: 그때 고친 `GameFlowUI.Update()`는 `sync.IsSpawned`가 false면 그냥 `return`하도록만 했다 — "아직 스폰 안 됨(세션 시작 전)"과 "스폰됐다가 다시 해제됨(방 나가기 등으로 세션 종료)"을 구분하지 않은 것. 그 결과 호스팅 중 켜졌던 `lobbyCanvas`(불투명 전체화면 배경)가 방을 나가 `GameFlowSync`가 스폰 해제된 뒤에도 꺼지지 않고 그대로 남아 화면을 계속 가렸다. `MultiplayerBackButton`의 뒤로가기 버튼 자체는 `activeSelf=True`로 멀쩡했지만 그 위에 깔린 `lobbyCanvas`(sortOrder가 더 높음)에 완전히 가려져 안 보이는 것이었다.
+
+**수정**: `GameFlowUI.cs`에 `HideAll()`을 추가 — `sync.IsSpawned`가 false로 바뀐 걸 감지하면(`shown != -1`일 때) 4개 캔버스를 전부 끄고 커서도 풀어서 `shown`을 "아직 반영 안 함" 상태로 리셋한다. 이러면 다음에 새로 호스팅/참가할 때 `Apply()`가 Stage를 처음부터 다시 반영한다.
+
+**검증**: Play 모드에서 호스팅(`LobbyCanvas` 켜짐) → `MultiplayerMenu.LeaveRoomAsync()` 호출(실제 "방 나가기" 버튼과 동일 경로) → `LobbyCanvas.activeSelf=False`로 꺼지고 뒤로가기 버튼이 정상적으로 다시 보임, 커서도 풀림을 확인. 같은 세션에서 다시 호스팅해도(`StartHost()` 두 번째 호출) `LobbyCanvas`가 다시 정상적으로 켜지는 것까지 확인(재진입 경로도 안전). 콘솔 에러 0건, Play 모드 종료 후 씬 `isDirty=False`.
+
+**교훈**: `IsSpawned` 같은 "지금 상태"만 보는 가드를 추가할 땐 "거짓이 됐을 때 이전에 켜 둔 것들을 정리하는 경로"도 같이 챙겨야 한다 — 한쪽 방향(꺼져있다가 켜짐)만 고치면 반대 방향(켜져있다가 꺼짐)에서 새 버그가 난다.
+
+## 기믹 더미 → VARCO 모델 교체 2차 (2026-10-23, 열네 번째 후속)
+"기믹 오브젝트들에 해당하는 모델이 있다면 교체"하는 작업. VARCO 3D 전체(특히 `Assets/VARCO 3D/KWJ/Prefabs/Gimmick`, 지금까지 전혀 안 쓰인 "기믹 전용" 폴더)와 `_NeedsCollider` 폴더를 전수 조사해 현재 원시도형인 기믹 오브젝트와 짝지을 수 있는 모델을 찾아 매핑을 제안하고 승인받아 진행함.
+
+**중요하게 확인한 패턴 — KWJ 모델의 좌표계**: 이 폴더의 FBX는 대부분 루트(또는 "Model" 자식)에 `(270,0,0)` 임포트 보정 회전이 구워져 있다. 대부분의 소품(서서 놓이는 병·절구공이·펜던트·받침대 등)은 이 보정 회전을 그대로 쓰면 자연스럽게 "세워진" 모습이 된다. 다만 **원본 메시 자체가 이미 Y축이 얇은(평평하게 눕는) 모델**(은잎사귀 `Prop_SilverLeaf`, 조리법 책 `Prop_RecipeBook`)은 거꾸로 **회전 없이(identity)** 써야 평평하게 눕는다 — 이 둘을 반대로 적용하면 옆으로 선 채로 렌더링된다(실제로 한 번 틀렸다가 밝은 곳에 임시로 복제해 눈으로 확인하고 고침). 액자처럼 "벽에 거는" 특수 상황(GIM-001)은 추가로 90°대각 축 치환 회전이 더 필요했다(아래 참고).
+
+**적용한 교체** (전부 기존 플레이스홀더 오브젝트에 자식 "Model"을 추가하는 방식 — 부모의 트랜스폼·콜라이더·스크립트 참조는 전혀 건드리지 않음, Dumbwaiter 때와 같은 원칙):
+- **GIM-001 초상화 퍼즐**: 액자 6개(`Portrait_E0~E2,W0~W2`)와 떨어지는 액자(`Portrait_E3`) 전부 `Prop_PortraitFrame.fbx`로 교체. 이 모델은 "눕혀서" 모델링돼 있어 원본 임포트 보정(270,0,0) 위에 추가로 120° 대각축 치환 회전(`AngleAxis(-120, (1,1,1))`)을 더해야 "벽에 거는" 방향이 나온다 — `PortraitTilt.cs`가 "로컬 X축 = 벽 안쪽"이라고 가정하고 그 축으로 기울이기 때문에, 부모 오브젝트의 회전/콜라이더는 절대 손대지 않고 자식 모델의 회전만으로 보정함(기울이기 애니메이션은 자식이 부모를 따라가므로 그대로 정상 동작).
+- **GIM-002 `Gim002_Lamp_Ready` 프리팹**: 렌즈 2개(Lens_L/Lens_R, Cube)를 지우고 `Prop_SuccessLightBulb.fbx` 하나로 교체, `Gim002IndicatorLamp.bulb` 참조를 새 렌더러로 재연결하고 `extraBulbs`는 비움(기존엔 두 렌즈를 같이 밝혔지만 이제 전구 하나). `MaterialPropertyBlock` 색칠 테스트로 점등 로직이 그대로 동작함을 확인(프리팹 자산을 직접 고쳐 모든 씬 인스턴스에 전파).
+- **도르래 바퀴(`Dumbwaiter_Rig/PulleyWheel/Wheel`)**: 남아있던 원시 Cylinder를 `Prop_PulleyCrank.fbx`로 교체. 바퀴는 `PulleyWheel` 부모가 Z축으로 회전해 "돈다"를 표현하므로, 새 모델의 축면(정면)이 부모 로컬 Z를 보도록(`Wheel` 자체는 identity, 자식 Model만 임포트 보정 270 적용) 맞춤 — 기존엔 축 방향이 X였던 것을 Z로 바로잡아 오히려 더 올바른 회전처럼 보이게 됨.
+- **GIM-003 PotionCraft**: 재료 3종(`Prop_SilverLeaf`=평평 눕힘, `Prop_GreenLeaf`/`Prop_BlueFlower`=임포트 보정만), 물 3종(`Prop_Bottle_Red/Blue/Green`), 분쇄기 사발→`Prop_Mortar`·공이→`Prop_Pestle`, 덩이(Brewer·Grinder 2곳 전부)→`Prop_GrayLump`, 조리법 책(`RecipeBook_F2`, Book+Pages 두 조각 → 책 모델 하나로 통합)→`Prop_RecipeBook`(평평 눕힘), 책/메모 받침대 2곳(`RecipeBook_F2`·`RecipeNote_F1`의 Stand)→`Furn_NotePedestal`.
+- **교체 안 함(마땅한 모델 없음, 승인받은 범위 밖)**: 재료 RedRoot, 숙성기(Brewer) 솥/액체, 쓰레기통(TrashStation), 가루 더미(`Tint_Pile`)·공급대 상자(Crate/Shelf) — 특히 가루 더미는 `PotionVisuals.TintMarked`가 이름이 "Tint"로 시작하는 렌더러를 런타임에 아무 색으로나 칠하는 구조라서, 특정 색으로 구워진 모델(`Prop_PowderDish_*`)로 바꾸면 다른 색일 때 안 맞아 보류함. GIM-004 화분 몸체·GIM-005 산울타리는 지난 조사에서 이미 "마땅한 모델 없음"으로 확인된 그대로 유지.
+
+**검증**: 각 교체마다 밝은 곳에 임시 조명+복제본을 놓고 눈으로 방향을 확인(도르래 샤프트처럼 원래 어두워서 촬영이 안 되던 곳은 수치 검증 + 별도 밝은 곳 복제본 확인으로 대체, 기존에 문서화된 한계와 동일). `Tools/Network/Validate Scene NetworkObjects` 문제 없음, 콘솔 에러 0건(교체 작업 자체에서 발생한 에러 없음 — 세션 중 도구 사용 실수로 찍힌 과거 에러 3건은 이 작업과 무관). 씬 저장 완료.
+
+## 기믹 더미 → VARCO 모델 교체 3차 — GIM-002 인형 4체 + 기록일지 (2026-10-23, 열다섯 번째 후속)
+직전 턴에서 "여전히 더미인 오브젝트"를 전수 스캔(모든 MeshFilter를 뒤져 builtin Cube/Sphere/Cylinder/Capsule/Quad 사용처를 기믹별로 나열)한 결과를 바탕으로 두 가지를 마저 진행함.
+
+- **GIM-002 인형 4체**: `DOLL_FrogCan`/`DOLL_OwlBook`/`DOLL_CatViolin`/`DOLL_OwlScope`(전부 Capsule+Sphere 조합 더미)를 VARCO `_NeedsCollider` 폴더의 완성된 손인형 모델로 교체 — `Prop_PuppetFrog`(개구리+물뿌리개 일체형), `Prop_PuppetOwlBook`, `Prop_PuppetCatViolin`, `Prop_PuppetOwlTelescope`. 이 넷은 캐릭터+소품이 이미 하나로 합쳐진 완성품이라 기존 "Body" 자식을 통째로 지우고 프리팹을 그대로 인스턴스화하기만 하면 됐다(내부 회전은 프리팹 자체에 이미 올바르게 박혀 있음). 피벗이 중심이라 바닥에 닿도록 로컬 Y를 절반 높이만큼(0.15 또는 0.125) 띄워줬다.
+  - **검증 중 헷갈렸던 점**: 밝은 곳에 복제해서 처음 봤을 때 개구리 인형이 "거꾸로"처럼 보였는데, 더 줌아웃해서 보니 실제로는 동그란 몸통 위에 손을 넣는 소매/커프스가 있는 정통 **장갑 인형(글러브 퍼펫)** 디자인이었다(얼굴이 뚜렷한 치비 인형이 아니라 실제 인형극 손인형 모양이라 달라 보였을 뿐). 부엉이 쪽은 부리가 위를 향한 게 명확히 보여서 방향이 올바르다는 걸 확인함 — **회전 보정 없이 identity 그대로 쓰는 게 맞았음**.
+- **GIM-004 기록일지(`Gim004_JournalVisual.prefab`)**: Cover+Pages+PhotoMark+LineMark(전부 장식용 가짜 잉크 자국, `Gim004Builder.cs`가 굽는 정적 장식일 뿐 런타임 참조 없음을 코드로 확인) 전부 지우고 `Prop_RecipeBook` 하나로 교체.
+- **GIM-004 선반(`OBJ_CENTER_SHELF`)·화분 받침대(`OBJ_POT_BENCH`)는 보류로 정정**: 직전 제안("Furn_WallShelf"/"Furn_Planter"로 교체)이 실측 없이 나온 성급한 추천이었음을 발견 — 실제 크기가 선반 2.9m, 받침대 7.3m로 VARCO 가구 소품(전부 2m 이하)보다 훨씬 길어서 1개로는 어림도 없고, 여러 개를 이어붙이는 건 배경 소품치고 과한 작업이라 판단해 보류함. 현재의 각목 조립형 원시도형 구조(도르래 Shell 벽체와 같은 성격)를 그대로 유지하는 게 더 합리적.
+
+**검증**: `Tools/Network/Validate Scene NetworkObjects` 문제 없음, 콘솔 에러 0건(세션 중 과거 도구 사용 실수 3건만 남아있고 신규 에러 없음). 씬 저장 완료.
+
+## PotionCraft 소지품을 오른손 대신 왼손에 들도록 수정 (2026-10-23, 열여섯 번째 후속)
+"주방에서 재료를 집을 때 촛불을 든 오른손 말고 왼손으로 들게 해달라"는 요청.
+
+**확인한 내용**: `PotionCraftSync.cs`의 `BuildHeldVisual()`이 집은 재료/물건의 모양을 카메라 자식으로 띄우는데, 로컬 플레이어 기준 위치가 `(0.3, -0.28, 0.6)`로 **양수 X(오른쪽)** — 촛불이 이미 쓰고 있는 자리였다. 같은 프로젝트의 `Assets/Scripts/LGH/PistolLoader.cs`에도 "the pistol is in your (left) hand" 주석과 함께 음수 X 좌표를 쓰고 있어서, 이 프로젝트의 관례가 **오른손 = 양수 X(촛불), 왼손 = 음수 X(그 외 손에 드는 것)** 임을 재확인함.
+
+**수정**: `PotionCraftSync.BuildHeldVisual()`의 로컬 플레이어용 위치를 `(0.3, -0.28, 0.6)` → `(-0.3, -0.28, 0.6)`으로, 다른 플레이어가 보는 위치도 `(0.25, 1.15, 0.5)` → `(-0.25, 1.15, 0.5)`로 좌우 반전. 재료/물/덩이/가루 전부 이 한 함수를 거치므로 PotionCraft에서 손에 드는 모든 것에 적용됨.
+
+**검증**: Play 모드에서 `StartHost()` → 재료 집기 → `pi.viewCamera` 자식의 `Held_*` 오브젝트 `localPosition`이 `(-0.30, -0.28, 0.60)`로 정확히 왼쪽에 생기는 것을 확인. 콘솔 에러 0건.
+
+## GIM-002 열쇠를 손에 들지 않고 인벤토리로 줍게 변경 (2026-10-23, 열일곱 번째 후속)
+"열쇠류를 습득 시 인벤토리에 들어가도록 하고 사용에 문제가 없도록" 요청.
+
+**조사 결과 — 이미 완성된 공용 인벤토리 시스템이 있었음**: `LGH.PlayerInventory`(소지품 창, [I]키)·`LGH.ItemData`/`ItemDatabase`(아이템 정의, Resources의 `ItemDatabase_LGH`)·`LGH.WorldItem`(바닥에 놓인 아이템, 보기+E로 줍기)·`LGH.ItemNetworkSync`(호스트 권한으로 줍기/버리기 RPC 처리)로 구성된 "키·편지·동전" 전용 시스템이 이미 있었고, 실제로 놋쇠 열쇠(`Item_BrassKey`)·다락방 열쇠(`Item_AtticKey`) 등으로 이미 쓰이고 있었다. GIM-002의 두 열쇠(`Gim002KeyItem`)만 예전 방식(공용 들기 시스템 `HoldableItem`, 손에 들고 다님)을 쓰고 있어서 이 기존 인벤토리로 갈아끼우는 작업이었다.
+
+**변경**:
+- `Gim002KeyData.cs`: `LGH.ItemData inventoryItem` 필드 추가 — 열쇠 정보 에셋 하나에 인벤토리 아이템까지 같이 연결해서, 어느 쪽(WorldItem/인벤토리 조회)도 따로 안 맞춰도 되게 함.
+- `Gim002KeyItem.cs`: `HoldableItem` 상속을 버리고 `[RequireComponent(typeof(LGH.WorldItem))]`를 쓰는 얇은 컴포넌트로 교체. "보기+E로 줍기"는 전부 `WorldItem`/`PlayerInteractor`/`ItemNetworkSync`가 전담하고, 여기서는 `keyData`만 들고 있다가 `Awake()`에서 `worldItem.item = keyData.inventoryItem`로 연결. GIM-001 전에는 못 줍게 하는 로직은 `HoldableItem.CanPickUp` 대신 매 프레임 콜라이더를 껐다 켜는 방식으로 재구현(조준 자체가 안 되게).
+- `Gim002KeyTarget.cs`: `PlayerHand.LocalHeld`(손에 든 것) 체크를 `LGH.PlayerInventory.Local.HasItem(...)`(인벤토리 보유 여부)로 교체. 사용 시 `key.Consume()` 대신 `LGH.ItemNetworkSync.RequestConsume(...)`로 인벤토리에서 1개 소비. **주의**: `Assets/Scripts/KJH/KeySafe/PlayerInventory.cs`(다른 미니퍼즐용, 네임스페이스 없음)와 이름이 겹쳐서 `using LGH;`만으로는 전역 네임스페이스 쪽이 먼저 잡혀 컴파일 에러가 남 — 반드시 `LGH.PlayerInventory`로 완전한 이름을 써야 한다(주석으로 남겨둠).
+- `LGH/ItemNetworkSync.cs`: `RequestConsume(PlayerInventory, ItemData, count)` 공개 메서드 + `ConsumeRpc` 추가. 인벤토리 쓰기는 서버만 할 수 있어서(기존 Pickup/Drop과 같은 이유), 게스트가 열쇠를 써도 항상 서버에서 제거되도록 하는 공용 경로.
+- `Gim002Builder.cs`: `HookKey()`가 이제 `WorldItem`도 같이 붙이고 `item` 필드를 연결하도록 갱신(기존에 쓰던 `holdOffset` 설정은 그 필드 자체가 없어졌으므로 제거) — KJH님이 나중에 Build All을 다시 돌려도 안 깨지게.
+- 인벤토리 아이템 신규 생성: `Assets/Objects/LGH/Items/Item_Gim002MusicKey.asset`(`gim002_music_key`), `Item_Gim002StageKey.asset`(`gim002_stage_key`) — 기존 `ItemDatabase_LGH`(인덱스 0~5, 네트워크로 인덱스째로 오가므로 절대 끼워넣지 않고 끝에 추가) 6·7번에 등록. `Gim002Key_MusicRoom.asset`/`Gim002Key_Windup.asset`의 새 `inventoryItem` 필드에 각각 연결.
+
+**발견해 같이 고친 더 근본적인 문제**: Develop 씬에는 애초에 `ItemNetworkSync`가 어디에도 없어서(`Instance`가 `null`), 이 인벤토리 시스템 자체가 Develop에서 전혀 작동할 수 없는 상태였다. 원인은 `DoorSync_LGH.prefab`(Door+Candle 동기화를 묶어 둔 공용 프리팹) 자체에는 `ItemNetworkSync`가 없고, LGH님이 본인 씬(`LGH.unity`)에서 같은 오브젝트에 **프리팹에 반영 안 하고 직접** `ItemNetworkSync`·`LockBoxNetworkSync`를 추가해 테스트만 해 둔 상태였기 때문. GIM-002 열쇠와 직접 관련 있는 `ItemNetworkSync`만 `DoorSync_LGH.prefab` 자산에 추가해 모든 인스턴스(Develop 포함)에 전파되게 했다(`LockBoxNetworkSync`는 별개 기믹이라 범위 밖으로 남겨둠).
+
+**검증**: Play 모드에서 `StartHost()` → GIM-001 해결 → 두 열쇠 모두 `ItemNetworkSync.RequestPickup()`으로 주움 → `PlayerInventory.Local.HasItem()` true 확인 → 각 사용처에서 `CanInteract=True`, 프롬프트 "[E] 음악실 열쇠 사용"/"[E] 태엽 열쇠 사용" 정상 표시 → `Interact()` 호출 → 인벤토리에서 소비(`HasItem` false로 복귀) + `musicDoorOpened`/`stageWound` 둘 다 true + 문이 실제로 열림(`door.IsOpen=True`) + GIM-002 상태가 `CurtainClosed`로 정상 전환까지 전부 확인. `Tools/Network/Validate Scene NetworkObjects` 문제 없음, 콘솔 에러 0건, 씬 저장 후 `isDirty=False`.
+
+**검증 한계**: 전부 메서드 직접 호출로 확인한 것이라 실제 E키로 줍고 쓰는 입력 경로, 그리고 인벤토리 창([I])을 직접 열어 눈으로 보는 것은 다음 실제 플레이로 확인 필요(이 환경의 기존 한계와 동일).
+
 ## 사용 가능한 Unity 전용 스킬
 이 환경에는 `unity:` 접두사의 스킬들(unity-cli, ui, urp-postprocessing, physics-3d-collision 등)이 이미 연결되어 있습니다. 관련 작업을 할 때는 먼저 해당 스킬을 확인하세요.
 

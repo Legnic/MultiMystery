@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 7398938033562790829}
   - component: {fileID: 7765855718131438641}
   - component: {fileID: 2113124026501252124}
+  - component: {fileID: 7661136430803861270}
   m_Layer: 0
   m_Name: DoorSync_LGH
   m_TagString: Untagged
@@ -92,3 +93,16 @@ MonoBehaviour:
   burnSeconds: 180
   infiniteCandles: 1
   minUsefulSeconds: 2
+--- !u!114 &7661136430803861270
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8031392657628942143}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd905d5513d651c48b75c823cff08e62, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LGH.ItemNetworkSync
+  ShowTopMostFoldoutHeaderGroup: 1

@@ -113,8 +113,18 @@ namespace Gim002.EditorTools
 
             musicKey = LoadOrCreate<Gim002KeyData>(DataDir + "/Gim002Key_MusicRoom.asset", out bool k1);
             if (k1) { musicKey.displayName = "음악실 열쇠"; musicKey.emblem = "높은음자리표"; EditorUtility.SetDirty(musicKey); }
+            if (musicKey.inventoryItem == null)
+            {
+                musicKey.inventoryItem = AssetDatabase.LoadAssetAtPath<LGH.ItemData>("Assets/Objects/LGH/Items/Item_Gim002MusicKey.asset");
+                EditorUtility.SetDirty(musicKey);
+            }
             windKey = LoadOrCreate<Gim002KeyData>(DataDir + "/Gim002Key_Windup.asset", out bool k2);
             if (k2) { windKey.displayName = "태엽 열쇠"; windKey.emblem = "나비"; EditorUtility.SetDirty(windKey); }
+            if (windKey.inventoryItem == null)
+            {
+                windKey.inventoryItem = AssetDatabase.LoadAssetAtPath<LGH.ItemData>("Assets/Objects/LGH/Items/Item_Gim002StageKey.asset");
+                EditorUtility.SetDirty(windKey);
+            }
 
             AssetDatabase.SaveAssets();
             return cfg;
@@ -528,11 +538,15 @@ namespace Gim002.EditorTools
                 Vector3 size = t.InverseTransformVector(b.size);
                 col.size = Vector3.Max(new Vector3(Mathf.Abs(size.x), Mathf.Abs(size.y), Mathf.Abs(size.z)), Vector3.one * 0.12f);
             }
+            // LGH 공용 소지품 인벤토리로 줍는다 — WorldItem이 "보기+E로 줍기"를 전담한다 (RequireComponent로도 강제됨).
+            var world = t.GetComponent<LGH.WorldItem>();
+            if (world == null) world = Undo.AddComponent<LGH.WorldItem>(t.gameObject);
+            if (data != null && data.inventoryItem != null) SetRef(world, "item", data.inventoryItem);
+
             var item = t.GetComponent<Gim002KeyItem>();
             if (item == null) item = Undo.AddComponent<Gim002KeyItem>(t.gameObject);
             SetRef(item, "keyData", data);
             SetEnum(item, "usedFor", (int)usedFor);
-            SetVector(item, "holdOffset", new Vector3(0.22f, -0.2f, 0.45f));
         }
 
         // =====================================================================

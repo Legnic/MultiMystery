@@ -11,5 +11,7 @@ namespace Gim002
         public string displayName = "열쇠";
         [Tooltip("열쇠에 새겨진 문양 (예: 높은음자리표)")]
         public string emblem = "";
+        [Tooltip("LGH 공용 소지품 인벤토리에 쓰일 아이템 정보. WorldItem.item과 인벤토리 보유 확인에 쓰인다.")]
+        public LGH.ItemData inventoryItem;
     }
 }

@@ -287,7 +287,8 @@ namespace PotionCraft
                 var pi = LGH.PlayerInteractor.Active;
                 if (pi == null || pi.viewCamera == null) return null;
                 parent = pi.viewCamera;
-                localPos = new Vector3(0.3f, -0.28f, 0.6f);
+                // 오른손은 촛불이 차지하고 있어서 재료/물건은 왼손(카메라 기준 왼쪽, 음수 X)에 든다.
+                localPos = new Vector3(-0.3f, -0.28f, 0.6f);
             }
             else
             {
@@ -295,7 +296,7 @@ namespace PotionCraft
                 var po = NetworkManager.SpawnManager.GetPlayerNetworkObject(client);
                 if (po == null) return null; // 아직 스폰 전이면 다음 프레임에 다시 시도
                 parent = po.transform;
-                localPos = new Vector3(0.25f, 1.15f, 0.5f);
+                localPos = new Vector3(-0.25f, 1.15f, 0.5f);
             }
 
             var go = Instantiate(prefab, parent);
