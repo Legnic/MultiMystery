@@ -1,0 +1,91 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &3572876029474250445
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3391448204880663464}
+  - component: {fileID: 7835446789744019067}
+  - component: {fileID: 8562086206091241579}
+  m_Layer: 0
+  m_Name: GimmickDoors
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3391448204880663464
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3572876029474250445}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7835446789744019067
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3572876029474250445}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 60a087b378b8ae14e8cc87df5e6572a6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GimmickDoors.GimmickDoorLink
+  gimmick: 0
+  doors:
+  - doorName: Door_Kitchen
+    openFrom: {x: 34.5, y: 0, z: -4.25}
+  - doorName: Door_Kitchen_Dining
+    openFrom: {x: 28, y: 0, z: 2.5}
+  - doorName: Door_Guest2
+    openFrom: {x: 34.5, y: 3.9, z: -3.25}
+  doorParentFilter: Ravenwood_LGH
+  lockedMessage: "\uBB38\uC774 \uC7A0\uACA8 \uC788\uB2E4"
+  openOnComplete: 1
+  lockWhenGimmickMissing: 0
+  logToConsole: 1
+  onOpenedAuthority:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!114 &8562086206091241579
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3572876029474250445}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 60a087b378b8ae14e8cc87df5e6572a6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GimmickDoors.GimmickDoorLink
+  gimmick: 1
+  doors:
+  - doorName: Door_Library
+    openFrom: {x: 53.5, y: 3.9, z: 1.5}
+  - doorName: Door_Library_Guest1
+    openFrom: {x: 63, y: 3.9, z: 9.5}
+  - doorName: Door_Conservatory
+    openFrom: {x: 53.5, y: 0, z: -12.85}
+  doorParentFilter: Ravenwood_LGH
+  lockedMessage: "\uBB38\uC774 \uC7A0\uACA8 \uC788\uB2E4"
+  openOnComplete: 1
+  lockWhenGimmickMissing: 0
+  logToConsole: 1
+  onOpenedAuthority:
+    m_PersistentCalls:
+      m_Calls: []
