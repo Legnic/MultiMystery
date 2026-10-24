@@ -428,7 +428,10 @@ namespace Gim002.EditorTools
             var item = go.AddComponent<Gim002StageItem>();
             SetEnum(item, "kind", (int)StageSlotKind.Background);
             SetEnum(item, "background", (int)id);
-            SetVector(item, "holdOffset", new Vector3(-0.3f, -0.25f, 0.6f));
+            // 카드(0.62×0.41m)는 크기 때문에 더 멀리 들어야 화면 안에 다 들어온다
+            SetVector(item, "holdOffset", new Vector3(-0.28f, -0.2f, 0.9f));
+            // 카드 그림 면은 앞면만 그려지고 모델의 앞쪽이 -Z를 보고 있어서, 들었을 때 그림이 보이도록 뒤집어 든다
+            SetVector(item, "holdEuler", new Vector3(0f, 180f, 0f));
         }
 
         // =====================================================================
@@ -508,7 +511,8 @@ namespace Gim002.EditorTools
 
         static void HookExisting(Gim002KeyData musicKey, Gim002KeyData windKey)
         {
-            foreach (var doorName in new[] { "Door_Hall_Music", "Door_Music_Smoking" })
+            // 음악실 입구는 양문이라 두 문짝 모두에 붙인다 (어느 쪽을 바라봐도 열쇠를 쓸 수 있게). 없는 이름은 경고만 하고 넘어간다.
+            foreach (var doorName in new[] { "Door_Hall_Music", "Door_Hall_Music_B", "Door_Music_Smoking" })
             {
                 var door = Object.FindObjectsByType<LGH.InteractableDoor>(FindObjectsInactive.Include).FirstOrDefault(d => d.name == doorName);
                 if (door == null) { Debug.LogWarning("[GIM-002] 문을 찾지 못함: " + doorName); continue; }
@@ -605,7 +609,22 @@ namespace Gim002.EditorTools
             tm.alignment = TextAlignment.Center;
             tm.color = color ?? Color.white;
             go.GetComponent<MeshRenderer>().sharedMaterial = font.material;
+            // 벽 너머로 글자가 비쳐 보이지 않게 실행 중 깊이 검사 머티리얼로 바꿔 끼운다
+            var depth = go.AddComponent<WorldTextDepth>();
+            var so = new SerializedObject(depth);
+            so.FindProperty("template").objectReferenceValue = TextTemplate();
+            so.ApplyModifiedPropertiesWithoutUndo();
             return tm;
+        }
+
+        // 깊이 검사 글자 템플릿 머티리얼 (셰이더는 GIM-005 것을 재사용)
+        public static Material TextTemplate()
+        {
+            const string path = Root + "/Materials/Gim002_WorldText.mat";
+            var m = AssetDatabase.LoadAssetAtPath<Material>(path);
+            var shader = Shader.Find("KJH/Gim005/WorldText");
+            if (m == null && shader != null) { m = new Material(shader); AssetDatabase.CreateAsset(m, path); }
+            return m;
         }
 
         static void StripColliders(Transform t)

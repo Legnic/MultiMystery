@@ -17,6 +17,9 @@ namespace CoopDemo
 
         PlayerOptionsData staged;
         int tab;
+        Vector2 tabScroll;
+        float dragStartY;
+        bool dragTracking, dragActive;
         LGH.FirstPersonController lockedController;
 
         // 해상도 변경 "되돌리기 타이머": 새 해상도를 고르면 바로 적용해보고, 확인을 안 누르면 자동으로 되돌린다.
@@ -166,6 +169,8 @@ namespace CoopDemo
             GUILayout.Space(10);
 
             GUILayout.BeginVertical(box, GUILayout.ExpandHeight(true));
+            // 장치가 많아 내용이 길어질 수 있으므로 스크롤 영역으로 감싼다 (휠, 스크롤바, 빈 곳 드래그).
+            tabScroll = GUILayout.BeginScrollView(tabScroll, false, false, GUILayout.ExpandHeight(true));
             switch (tab)
             {
                 case 0: DrawAudioTab(); break;
@@ -173,6 +178,8 @@ namespace CoopDemo
                 case 2: DrawControlsTab(); break;
                 case 3: DrawGameTab(); break;
             }
+            GUILayout.EndScrollView();
+            HandleDragScroll(GUILayoutUtility.GetLastRect());
             GUILayout.EndVertical();
 
             GUILayout.Space(10);
@@ -187,9 +194,43 @@ namespace CoopDemo
             GUILayout.EndArea();
         }
 
+        // 화면을 마우스로 끌어 내리는 스크롤. 버튼 위에서 시작한 드래그도 스크롤로 취급하되, 끌기 시작하면 그 버튼 클릭은 취소한다.
+        void HandleDragScroll(Rect area)
+        {
+            var e = Event.current;
+            if (e.type == EventType.MouseDown && e.button == 0 && area.Contains(e.mousePosition))
+            {
+                dragStartY = e.mousePosition.y;
+                dragActive = false;
+                dragTracking = true;
+            }
+            else if (e.type == EventType.MouseDrag && dragTracking && e.button == 0)
+            {
+                if (!dragActive && Mathf.Abs(e.mousePosition.y - dragStartY) > 6f)
+                {
+                    dragActive = true;
+                    GUIUtility.hotControl = 0; // 누르고 있던 버튼/슬라이더가 반응하지 않게 한다.
+                }
+                if (dragActive)
+                {
+                    tabScroll.y = Mathf.Max(0f, tabScroll.y - e.delta.y);
+                    e.Use();
+                }
+            }
+            else if (e.type == EventType.MouseUp)
+            {
+                dragTracking = false;
+                dragActive = false;
+            }
+        }
+
         void DrawTab(int index, string name)
         {
-            if (GUILayout.Button(name, tab == index ? tabBtnActive : tabBtn, GUILayout.Height(34))) tab = index;
+            if (GUILayout.Button(name, tab == index ? tabBtnActive : tabBtn, GUILayout.Height(34)))
+            {
+                if (tab != index) tabScroll = Vector2.zero;
+                tab = index;
+            }
         }
 
         void ApplyPreview(PlayerOptionsData data)

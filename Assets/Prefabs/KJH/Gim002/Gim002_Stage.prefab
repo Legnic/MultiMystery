@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 4250406962038667906}
   - component: {fileID: 5237023338253720767}
   - component: {fileID: 8429255368568152687}
+  - component: {fileID: 6728176084855698414}
   m_Layer: 0
   m_Name: Label
   m_TagString: Untagged
@@ -104,6 +105,19 @@ TextMesh:
   m_Color:
     serializedVersion: 2
     rgba: 4286631142
+--- !u!114 &6728176084855698414
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 18412234121601698}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8c1b421b44a1b574f9a20513ed917a65, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WorldTextDepth
+  template: {fileID: 2100000, guid: 6781bf9a45182ce42bf4194f9a204739, type: 2}
 --- !u!1 &334727232192065494
 GameObject:
   m_ObjectHideFlags: 0
@@ -1645,6 +1659,7 @@ GameObject:
   - component: {fileID: 2713546358006493725}
   - component: {fileID: 6270693132105061005}
   - component: {fileID: 9004003984355322034}
+  - component: {fileID: 4598544769590790951}
   m_Layer: 0
   m_Name: Label
   m_TagString: Untagged
@@ -1738,6 +1753,19 @@ TextMesh:
   m_Color:
     serializedVersion: 2
     rgba: 4286631142
+--- !u!114 &4598544769590790951
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3927111856578181219}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8c1b421b44a1b574f9a20513ed917a65, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WorldTextDepth
+  template: {fileID: 2100000, guid: 6781bf9a45182ce42bf4194f9a204739, type: 2}
 --- !u!1 &4059185040449595768
 GameObject:
   m_ObjectHideFlags: 0
@@ -1749,6 +1777,7 @@ GameObject:
   - component: {fileID: 3956531007224640910}
   - component: {fileID: 2075750539515428566}
   - component: {fileID: 6586038831898463371}
+  - component: {fileID: 4093213326833276121}
   m_Layer: 0
   m_Name: Label
   m_TagString: Untagged
@@ -1842,6 +1871,19 @@ TextMesh:
   m_Color:
     serializedVersion: 2
     rgba: 4294967295
+--- !u!114 &4093213326833276121
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4059185040449595768}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8c1b421b44a1b574f9a20513ed917a65, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WorldTextDepth
+  template: {fileID: 2100000, guid: 6781bf9a45182ce42bf4194f9a204739, type: 2}
 --- !u!1 &4142250959369705784
 GameObject:
   m_ObjectHideFlags: 0
@@ -2431,6 +2473,7 @@ GameObject:
   - component: {fileID: 3494933864618334061}
   - component: {fileID: 6704747694946449468}
   - component: {fileID: 7686336154351541317}
+  - component: {fileID: 3056885981216448854}
   m_Layer: 0
   m_Name: Label
   m_TagString: Untagged
@@ -2524,6 +2567,19 @@ TextMesh:
   m_Color:
     serializedVersion: 2
     rgba: 4290766578
+--- !u!114 &3056885981216448854
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6153694269386418589}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8c1b421b44a1b574f9a20513ed917a65, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WorldTextDepth
+  template: {fileID: 2100000, guid: 6781bf9a45182ce42bf4194f9a204739, type: 2}
 --- !u!1 &6171327527693824053
 GameObject:
   m_ObjectHideFlags: 0
@@ -2790,6 +2846,7 @@ GameObject:
   - component: {fileID: 5502829032067296792}
   - component: {fileID: 6214368014593334678}
   - component: {fileID: 2220882450624181822}
+  - component: {fileID: 3786624078915046069}
   m_Layer: 0
   m_Name: Label
   m_TagString: Untagged
@@ -2883,6 +2940,19 @@ TextMesh:
   m_Color:
     serializedVersion: 2
     rgba: 4287420914
+--- !u!114 &3786624078915046069
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6602050967005289828}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8c1b421b44a1b574f9a20513ed917a65, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WorldTextDepth
+  template: {fileID: 2100000, guid: 6781bf9a45182ce42bf4194f9a204739, type: 2}
 --- !u!1 &6621321047617278406
 GameObject:
   m_ObjectHideFlags: 0

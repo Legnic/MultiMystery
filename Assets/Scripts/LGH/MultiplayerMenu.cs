@@ -42,7 +42,13 @@ namespace LGH
         // IMGUI needs the same controls in Layout and Repaint, so OnGUI draws from a snapshot taken at Layout
         readonly List<ISessionInfo> shown = new List<ISessionInfo>();
         bool gInGame, gPaused, gHasSession, gReady;
-        GUIStyle title, label, small, box, button, field, rowName, rowInfo;
+        // Layout과 Repaint 사이에 값이 바뀌면 컨트롤 수가 어긋나 그 프레임에 일부 요소가 안 그려진다 — 구조에 영향을 주는 값도 전부 Layout 시점에 고정한다.
+        bool gBusy, gSessionNull, gTwoPlayers, gHasFlow, gLocalReady, gOtherReady;
+        CoopDemo.GameStage gStage;
+        double gCountdown = -1;
+        string gStatus = "", gSessionName = "", gSessionCode = "", gPlayerNames = "";
+        int gPlayerCount, gMaxPlayers;
+        GUIStyle title, label, small, box, button, field, rowName, rowInfo, countdown;
 
         async void Start()
         {
@@ -345,6 +351,7 @@ namespace LGH
             field = new GUIStyle(GUI.skin.textField) { fontSize = 20, alignment = TextAnchor.MiddleCenter };
             rowName = new GUIStyle(GUI.skin.button) { fontSize = 18, alignment = TextAnchor.MiddleLeft, padding = new RectOffset(14, 14, 4, 4) };
             rowInfo = new GUIStyle(GUI.skin.label) { fontSize = 16, alignment = TextAnchor.MiddleRight };
+            countdown = new GUIStyle(GUI.skin.label) { fontSize = 22, alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold, wordWrap = true };
         }
 
         void OnGUI()
@@ -354,27 +361,38 @@ namespace LGH
             {
                 shown.Clear(); shown.AddRange(rooms);
                 gInGame = InGame; gPaused = paused; gHasSession = session != null; gReady = ready;
+                gBusy = busy; gSessionNull = session == null; gStatus = status;
+                gSessionName = session != null ? session.Name : ""; gSessionCode = session != null ? session.Code : "";
+                gPlayerCount = session != null ? session.PlayerCount : 0; gMaxPlayers = session != null ? session.MaxPlayers : 0;
+                gTwoPlayers = gPlayerCount >= 2;
+                gPlayerNames = PlayerNames();
+                var f = CoopDemo.GameFlowSync.Instance;
+                gHasFlow = f != null;
+                if (f != null)
+                {
+                    gStage = f.Stage; gLocalReady = f.LocalLobbyReady; gOtherReady = f.OtherLobbyReady; gCountdown = f.LobbyCountdownRemaining;
+                }
             }
 
             // 도입부/엔딩/결과 단계에서는 이 화면 대신 해당 Canvas가 화면을 차지한다.
             // 플레이어는 그 단계들 중에도 이미 스폰돼 있어서(InGame=true) 이 가드가 없으면 두 화면이 겹쳐 그려진다.
             // Lobby(대기방)와 Playing(일시정지/상단 정보)은 이 스크립트가 계속 그린다.
             var flow = CoopDemo.GameFlowSync.Instance;
-            bool flowOwnsScreen = gInGame && flow != null &&
-                (flow.Stage == CoopDemo.GameStage.Intro || flow.Stage == CoopDemo.GameStage.Ending || flow.Stage == CoopDemo.GameStage.Result);
+            bool flowOwnsScreen = gInGame && gHasFlow &&
+                (gStage == CoopDemo.GameStage.Intro || gStage == CoopDemo.GameStage.Ending || gStage == CoopDemo.GameStage.Result);
             if (flowOwnsScreen) return;
 
-            bool lobbyStage = gInGame && flow != null && flow.Stage == CoopDemo.GameStage.Lobby;
+            bool lobbyStage = gInGame && gHasFlow && gStage == CoopDemo.GameStage.Lobby;
 
             var v = UiScale.Apply();
             float w = v.x, h = v.y;
 
             if (gInGame && !lobbyStage && !gPaused)
             {
-                if (session != null)
+                if (gHasSession)
                 {
-                    string info = session.Name + "   참가 코드 " + session.Code + "   " + session.PlayerCount + "/" + session.MaxPlayers + "명";
-                    string names = PlayerNames();
+                    string info = gSessionName + "   참가 코드 " + gSessionCode + "   " + gPlayerCount + "/" + gMaxPlayers + "명";
+                    string names = gPlayerNames;
                     if (names.Length > 0) info += "      " + names;
                     GUI.Label(new Rect(14, 8, w - 28, 28), info, small);
                 }
@@ -405,7 +423,7 @@ namespace LGH
                 NicknameRow();
                 GUILayout.Space(8);
 
-                bool canAct = ready && !busy && session == null;
+                bool canAct = gReady && !gBusy && gSessionNull;
                 GUI.enabled = canAct;
 
                 // create
@@ -451,7 +469,7 @@ namespace LGH
 
                 GUI.enabled = true;
                 GUILayout.Space(8);
-                GUILayout.Label(status, label);
+                GUILayout.Label(gStatus, label);
             }
             GUILayout.EndArea();
         }
@@ -460,7 +478,7 @@ namespace LGH
         void DrawPauseBody()
         {
             GUILayout.Label("일시정지", title, GUILayout.Height(48));
-            if (gHasSession) GUILayout.Label(session != null ? session.Name + "  (참가 코드: " + session.Code + ")" : "", label);
+            if (gHasSession) GUILayout.Label(gSessionName + "  (참가 코드: " + gSessionCode + ")", label);
             GUILayout.Space(8);
             NicknameRow();
             GUILayout.Space(8);
@@ -468,7 +486,7 @@ namespace LGH
             GUILayout.Space(6);
             if (GUILayout.Button("옵션", button, GUILayout.Height(42))) CoopDemo.OptionsMenuController.Open();
             GUILayout.Space(6);
-            GUI.enabled = !busy;
+            GUI.enabled = !gBusy;
             if (GUILayout.Button("방 나가기", button, GUILayout.Height(42))) LeaveRoom();
             GUI.enabled = true;
         }
@@ -477,28 +495,29 @@ namespace LGH
         void DrawLobbyWaitingRoomBody(CoopDemo.GameFlowSync flow)
         {
             GUILayout.Label("대기방", title, GUILayout.Height(48));
-            if (session != null) GUILayout.Label(session.Name + "   참가 코드 " + session.Code, label);
+            if (!gSessionNull) GUILayout.Label(gSessionName + "   참가 코드 " + gSessionCode, label);
             GUILayout.Space(6);
             NicknameRow();
             GUILayout.Space(10);
 
-            bool twoPlayers = session != null && session.PlayerCount >= 2;
-            GUILayout.Label(twoPlayers ? PlayerNames() : "상대를 기다리는 중... 상대는 방 목록에서 이 방을 누르면 들어와요", label);
+            bool twoPlayers = gTwoPlayers;
+            GUILayout.Label(twoPlayers ? gPlayerNames : "상대를 기다리는 중... 상대는 방 목록에서 이 방을 누르면 들어와요", label);
             GUILayout.Space(6);
 
-            if (flow != null)
+            if (gHasFlow && flow != null)
             {
-                bool localReady = flow.LocalLobbyReady;
-                bool otherReady = flow.OtherLobbyReady;
+                bool localReady = gLocalReady;
+                bool otherReady = gOtherReady;
                 string readyLine = "나: " + (localReady ? "준비 완료" : "준비 안 됨");
                 if (twoPlayers) readyLine += "   ·   상대: " + (otherReady ? "준비 완료" : "준비 안 됨");
                 GUILayout.Label(readyLine, label);
                 GUILayout.Space(8);
 
-                double remain = flow.LobbyCountdownRemaining;
+                double remain = gCountdown;
                 if (remain >= 0)
                 {
-                    GUILayout.Label("모두 준비 완료! " + Mathf.CeilToInt((float)remain) + "초 후 시작합니다...", title, GUILayout.Height(40));
+                    // 패널 폭(약 470)에 안 들어가면 잘리므로 줄바꿈 되는 작은 글씨체를 쓴다.
+                    GUILayout.Label("모두 준비 완료!\n" + Mathf.CeilToInt((float)remain) + "초 후 시작합니다...", countdown, GUILayout.Height(64));
                 }
                 else
                 {
@@ -511,7 +530,7 @@ namespace LGH
             GUILayout.Space(6);
             if (GUILayout.Button("옵션", button, GUILayout.Height(36))) CoopDemo.OptionsMenuController.Open();
             GUILayout.Space(6);
-            GUI.enabled = !busy;
+            GUI.enabled = !gBusy;
             if (GUILayout.Button("방 나가기", button, GUILayout.Height(36))) LeaveRoom();
             GUI.enabled = true;
         }
