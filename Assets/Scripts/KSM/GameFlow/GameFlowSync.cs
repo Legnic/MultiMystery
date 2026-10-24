@@ -19,7 +19,7 @@ namespace CoopDemo
         readonly NetworkVariable<GameStage> stage = new NetworkVariable<GameStage>(
             GameStage.Lobby, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
-        // 2인 전제: 슬롯 0/1 별로 "이번 단계를 끝냈는가"만 기억한다 (NetworkPlayer와 같은 OwnerClientId % 2 슬롯 규칙).
+        // 2인 전제: 슬롯 0/1 별로 "이번 단계를 끝냈는가"만 기억한다 (NetworkPlayer와 같은 PlayerSlot 규칙: 호스트=0, 그 외=1).
         readonly NetworkVariable<bool> introDone0 = new NetworkVariable<bool>(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
         readonly NetworkVariable<bool> introDone1 = new NetworkVariable<bool>(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
         readonly NetworkVariable<bool> endingDone0 = new NetworkVariable<bool>(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
@@ -102,7 +102,8 @@ namespace CoopDemo
 
         void OnStageChanged(GameStage prev, GameStage now) { StageChanged?.Invoke(now); }
 
-        static int SlotOf(ulong clientId) { return (int)(clientId % 2ul); }
+        // 호스트 = 0, 그 외 = 1 (게스트가 다시 들어와 clientId가 바뀌어도 같은 자리를 쓴다 — PlayerSlot 참고)
+        static int SlotOf(ulong clientId) { return PlayerSlot.Of(clientId); }
         int LocalSlot() { return SlotOf(NetworkManager.Singleton != null ? NetworkManager.Singleton.LocalClientId : 0); }
 
         // 두 명 다 접속해 있고 둘 다 준비를 눌렀으면 카운트다운을 시작/진행하고, 끝나면 Intro로 넘어간다.
