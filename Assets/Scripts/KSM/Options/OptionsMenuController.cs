@@ -46,7 +46,16 @@ namespace CoopDemo
         {
             if (Instance != null && Instance != this) { Destroy(gameObject); return; }
             Instance = this;
+            IsOpen = false;
             DontDestroyOnLoad(gameObject);
+        }
+
+        // 도메인 리로드를 끄고 Play하면 정적 값이 이전 실행 것 그대로 남는다.
+        // 옵션을 연 채로 Play를 끝내면 다음 실행이 옵션 창이 열린 채로 시작하므로 매번 초기화한다.
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetStatics()
+        {
+            IsOpen = false;
         }
 
         void OnDestroy()
@@ -128,14 +137,24 @@ namespace CoopDemo
 
         // ---------------- GUI ----------------
 
+        int styleVersion = -1;
+
         void Styles()
         {
-            if (title != null) return;
+            // 스킨이 새로 만들어졌으면(예: 새 Play 실행) 이전 스타일은 파괴된 텍스처를 가리키므로 다시 만든다
+            if (title != null && styleVersion == MeetYouGuiSkin.Version) return;
+            styleVersion = MeetYouGuiSkin.Version;
             title = new GUIStyle(GUI.skin.label) { fontSize = 28, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter };
             tabBtn = new GUIStyle(GUI.skin.button) { fontSize = 16 };
             tabBtnActive = new GUIStyle(tabBtn);
             tabBtnActive.normal.textColor = Color.white;
             tabBtnActive.fontStyle = FontStyle.Bold;
+            // 선택된 탭/장치는 "눌린" 금색 모양으로 보여준다 (스킨이 없으면 기본 모양 그대로)
+            if (tabBtnActive.onNormal.background != null)
+            {
+                tabBtnActive.normal.background = tabBtnActive.onNormal.background;
+                tabBtnActive.hover.background = tabBtnActive.onNormal.background;
+            }
             label = new GUIStyle(GUI.skin.label) { fontSize = 16, alignment = TextAnchor.MiddleLeft };
             small = new GUIStyle(GUI.skin.label) { fontSize = 13, alignment = TextAnchor.MiddleLeft, wordWrap = true };
             box = new GUIStyle(GUI.skin.box);
@@ -149,13 +168,20 @@ namespace CoopDemo
         void OnGUI()
         {
             if (!IsOpen) return;
+            var prevSkin = MeetYouGuiSkin.Begin();
+            try { DrawGui(); }
+            finally { MeetYouGuiSkin.End(prevSkin); }
+        }
+
+        void DrawGui()
+        {
             Styles();
             var v = LGH.UiScale.Apply();
             float w = v.x, h = v.y;
 
             float pw = Mathf.Min(620f, w - 60f), ph = Mathf.Min(560f, h - 60f);
             var r = new Rect((w - pw) / 2f, (h - ph) / 2f, pw, ph);
-            GUI.Box(r, GUIContent.none, box);
+            GUI.Box(r, GUIContent.none, MeetYouGuiSkin.Window);
             GUILayout.BeginArea(new Rect(r.x + 20f, r.y + 14f, pw - 40f, ph - 28f));
 
             GUILayout.Label("옵션", title, GUILayout.Height(40));
@@ -443,21 +469,52 @@ namespace CoopDemo
             GUILayout.Space(8);
             GUILayout.Label("조준점 색상", label);
             GUILayout.BeginHorizontal();
+            if (circleTex == null) circleTex = MakeCircle(64);
             for (int i = 0; i < CrosshairPresets.Length; i++)
             {
                 var c = CrosshairPresets[i];
                 bool isActive = staged.crosshairColor == c;
-                var old = GUI.backgroundColor;
-                GUI.backgroundColor = c;
-                if (GUILayout.Button(isActive ? "●" : " ", isActive ? tabBtnActive : tabBtn, GUILayout.Width(48), GUILayout.Height(32)))
+                Rect cr = GUILayoutUtility.GetRect(40f, 40f, GUILayout.Width(40f), GUILayout.Height(40f));
+                // 단순한 원형 색 견본. 선택된 색은 바깥에 흰 테두리 원을 한 겹 더 그린다.
+                if (Event.current.type == EventType.Repaint)
+                {
+                    var old = GUI.color;
+                    if (isActive) { GUI.color = MeetYouGuiSkin.Gold; GUI.DrawTexture(cr, circleTex); }
+                    else if (cr.Contains(Event.current.mousePosition)) { GUI.color = new Color(1f, 1f, 1f, 0.45f); GUI.DrawTexture(cr, circleTex); }
+                    GUI.color = c;
+                    float pad = isActive ? 5f : 4f;
+                    GUI.DrawTexture(new Rect(cr.x + pad, cr.y + pad, cr.width - pad * 2f, cr.height - pad * 2f), circleTex);
+                    GUI.color = old;
+                }
+                if (GUI.Button(cr, GUIContent.none, GUIStyle.none))
                 {
                     staged.crosshairColor = c;
                     PlayerOptions.Preview(staged);
                 }
-                GUI.backgroundColor = old;
-                GUILayout.Space(4);
+                GUILayout.Space(6);
             }
             GUILayout.EndHorizontal();
+        }
+
+        Texture2D circleTex;
+
+        // 가장자리가 부드러운 흰색 원 (GUI.color로 색을 입혀 쓴다)
+        static Texture2D MakeCircle(int size)
+        {
+            var t = new Texture2D(size, size, TextureFormat.RGBA32, false);
+            var px = new Color[size * size];
+            float r = size / 2f;
+            for (int y = 0; y < size; y++)
+                for (int x = 0; x < size; x++)
+                {
+                    float d = Mathf.Sqrt((x + 0.5f - r) * (x + 0.5f - r) + (y + 0.5f - r) * (y + 0.5f - r));
+                    px[y * size + x] = new Color(1f, 1f, 1f, Mathf.Clamp01(r - d));
+                }
+            t.SetPixels(px);
+            t.Apply(false, false);
+            t.filterMode = FilterMode.Bilinear;
+            t.wrapMode = TextureWrapMode.Clamp;
+            return t;
         }
 
         void ChangeCrosshairShape(int index)

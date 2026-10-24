@@ -340,9 +340,13 @@ namespace LGH
 
         // ---------- GUI ----------
 
+        int styleVersion = -1;
+
         void Styles()
         {
-            if (title != null) return;
+            // 스킨이 새로 만들어졌으면(예: 새 Play 실행) 이전 스타일은 파괴된 텍스처를 가리키므로 다시 만든다
+            if (title != null && styleVersion == CoopDemo.MeetYouGuiSkin.Version) return;
+            styleVersion = CoopDemo.MeetYouGuiSkin.Version;
             title = new GUIStyle(GUI.skin.label) { fontSize = 34, alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold };
             label = new GUIStyle(GUI.skin.label) { fontSize = 17, alignment = TextAnchor.MiddleCenter, wordWrap = true };
             small = new GUIStyle(GUI.skin.label) { fontSize = 17, alignment = TextAnchor.MiddleLeft };
@@ -355,6 +359,14 @@ namespace LGH
         }
 
         void OnGUI()
+        {
+            // Meet You UI 스킨 (KSM/UI/MeetYouGuiSkin). 테마가 없으면 기본 IMGUI 모양 그대로.
+            var prevSkin = CoopDemo.MeetYouGuiSkin.Begin();
+            try { DrawGui(); }
+            finally { CoopDemo.MeetYouGuiSkin.End(prevSkin); }
+        }
+
+        void DrawGui()
         {
             Styles();
             if (Event.current.type == EventType.Layout)
@@ -404,7 +416,7 @@ namespace LGH
 
             float pw = 520f, ph = !gInGame ? Mathf.Min(680f, h - 40f) : (lobbyStage ? 420f : 320f);
             var r = new Rect((w - pw) / 2f, (h - ph) / 2f, pw, ph);
-            GUI.Box(r, GUIContent.none, box);
+            GUI.Box(r, GUIContent.none, CoopDemo.MeetYouGuiSkin.Window);
             GUILayout.BeginArea(new Rect(r.x + 24, r.y + 16, pw - 48, ph - 32));
 
             if (gInGame)

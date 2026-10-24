@@ -13,6 +13,8 @@ namespace CoopDemo
         [SerializeField] Text micText;
         [SerializeField] Slider micVolumeSlider;
         [SerializeField] Text micVolumeText;
+        [Tooltip("마이크 켜짐/꺼짐 아이콘 (스프라이트는 Resources/MeetYouUiTheme의 micOn/micMuted)")]
+        [SerializeField] Image micIcon;
 
         static readonly Color k_Idle = new Color(0.85f, 0.85f, 0.85f, 1f);
         static readonly Color k_Speaking = new Color(0.45f, 1f, 0.55f, 1f);
@@ -65,8 +67,21 @@ namespace CoopDemo
                 micText.color = manager.SelfSpeaking ? k_Speaking : k_Idle;
             }
 
+            UpdateMicIcon();
+
             statusText.color = manager.RemoteSpeaking ? k_Speaking : k_Idle;
             if (manager.RemoteSpeaking) statusText.text += "   상대가 말하는 중";
+        }
+
+        // 켜짐/꺼짐에 맞는 아이콘으로 바꾸고, 내가 말하는 중이면 초록빛으로 밝힌다 (꺼짐 아이콘은 빨간 X가 이미 들어 있다)
+        void UpdateMicIcon()
+        {
+            if (micIcon == null) return;
+            var theme = MeetYouGuiSkin.Theme;
+            if (theme == null) return;
+            var sprite = manager.IsMicMuted ? theme.micMuted : theme.micOn;
+            if (sprite != null && micIcon.sprite != sprite) micIcon.sprite = sprite;
+            micIcon.color = (!manager.IsMicMuted && manager.SelfSpeaking) ? new Color(0.7f, 1f, 0.7f, 1f) : Color.white;
         }
 
         void OnMicVolumeSliderChanged(float value)

@@ -48,6 +48,7 @@ namespace LGH
         readonly Dictionary<int, int> lastCounts = new Dictionary<int, int>();
 
         GUIStyle titleStyle, hintStyle, countStyle, nameStyle, descStyle, smallStyle, readStyle, toastStyle, buttonStyle;
+        int styleVersion = -1;   // CoopDemo.MeetYouGuiSkin.Version — 스킨이 새로 만들어지면 스타일도 다시 만든다
         Texture2D candleIcon;
 
         public int Candles { get { return IsSpawned ? candles.Count : offlineCandles.Count; } }
@@ -359,7 +360,8 @@ namespace LGH
 
         void Styles()
         {
-            if (titleStyle != null) return;
+            if (titleStyle != null && styleVersion == CoopDemo.MeetYouGuiSkin.Version) return;
+            styleVersion = CoopDemo.MeetYouGuiSkin.Version;
             titleStyle = new GUIStyle(GUI.skin.label) { fontSize = 22, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleLeft };
             titleStyle.normal.textColor = new Color(0.93f, 0.82f, 0.58f);
             hintStyle = new GUIStyle(GUI.skin.label) { fontSize = 14, alignment = TextAnchor.MiddleRight };
@@ -377,13 +379,17 @@ namespace LGH
             toastStyle = new GUIStyle(GUI.skin.label) { fontSize = 17, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleLeft };
             toastStyle.normal.textColor = new Color(1f, 0.86f, 0.55f);
             buttonStyle = new GUIStyle(GUI.skin.button) { fontSize = 15, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter };
-            var bn = Solid(new Color(0.24f, 0.17f, 0.10f, 1f));
-            var bh = Solid(new Color(0.42f, 0.30f, 0.15f, 1f));
-            buttonStyle.normal.background = bn; buttonStyle.focused.background = bn;
-            buttonStyle.hover.background = bh; buttonStyle.active.background = bh;
-            var bt = new Color(0.96f, 0.88f, 0.68f);
-            buttonStyle.normal.textColor = bt; buttonStyle.hover.textColor = Color.white; buttonStyle.active.textColor = Color.white; buttonStyle.focused.textColor = bt;
-            buttonStyle.border = new RectOffset(0, 0, 0, 0);
+            if (!Skinned)
+            {
+                // Meet You 스킨이 없을 때만 예전 갈색 단색 버튼을 쓴다 (스킨이 있으면 스킨의 버튼 이미지를 그대로 쓴다)
+                var bn = Solid(new Color(0.24f, 0.17f, 0.10f, 1f));
+                var bh = Solid(new Color(0.42f, 0.30f, 0.15f, 1f));
+                buttonStyle.normal.background = bn; buttonStyle.focused.background = bn;
+                buttonStyle.hover.background = bh; buttonStyle.active.background = bh;
+                var bt = new Color(0.96f, 0.88f, 0.68f);
+                buttonStyle.normal.textColor = bt; buttonStyle.hover.textColor = Color.white; buttonStyle.active.textColor = Color.white; buttonStyle.focused.textColor = bt;
+                buttonStyle.border = new RectOffset(0, 0, 0, 0);
+            }
             candleIcon = MakeCandleIcon();
         }
 
@@ -403,9 +409,21 @@ namespace LGH
             Fill(new Rect(r.xMax - t, r.y, t, r.height), c);
         }
 
+        static bool Skinned
+        {
+            get { var t = CoopDemo.MeetYouGuiSkin.Theme; return t != null && t.buttonNormal != null; }
+        }
+
         void OnGUI()
         {
             if (!Mine) return;
+            var prevSkin = CoopDemo.MeetYouGuiSkin.Begin();
+            try { DrawGui(); }
+            finally { CoopDemo.MeetYouGuiSkin.End(prevSkin); }
+        }
+
+        void DrawGui()
+        {
             Styles();
             var v = UiScale.Apply();
             float w = v.x, h = v.y;
@@ -441,9 +459,15 @@ namespace LGH
             int cols = slotCount;
             float pw = cols * slot + (cols - 1) * gap + 48f, ph = 2 * slot + gap + 200f;
             var r = new Rect((w - pw) / 2f, h - ph - 50f, pw, ph);
-            Fill(r, new Color(0.06f, 0.045f, 0.035f, 0.93f));
-            Frame(r, brass, 2f);
-            Frame(new Rect(r.x + 5f, r.y + 5f, r.width - 10f, r.height - 10f), new Color(brass.r, brass.g, brass.b, 0.35f), 1f);
+            var theme = CoopDemo.MeetYouGuiSkin.Theme;
+            bool skinned = Skinned;
+            if (skinned) GUI.Box(r, GUIContent.none, CoopDemo.MeetYouGuiSkin.Window);
+            else
+            {
+                Fill(r, new Color(0.06f, 0.045f, 0.035f, 0.93f));
+                Frame(r, brass, 2f);
+                Frame(new Rect(r.x + 5f, r.y + 5f, r.width - 10f, r.height - 10f), new Color(brass.r, brass.g, brass.b, 0.35f), 1f);
+            }
             GUI.Label(new Rect(r.x + 24f, r.y + 12f, 200f, 32f), "소지품", titleStyle);
             GUI.Label(new Rect(r.xMax - 470f, r.y + 12f, 370f, 32f), "클릭 선택 · 더블클릭 읽기 · 우클릭 내려놓기", hintStyle);
             if (GUI.Button(new Rect(r.xMax - 92f, r.y + 14f, 70f, 28f), "닫기", buttonStyle)) { SetOpen(false); return; }
@@ -455,8 +479,18 @@ namespace LGH
             {
                 var sr = SlotRect(r, sy, slot, gap, i, cols);
                 bool hover = i < total && sr.Contains(ev.mousePosition);
-                Fill(sr, hover ? new Color(0.22f, 0.16f, 0.10f, 1f) : new Color(0.13f, 0.10f, 0.08f, 1f));
-                Frame(sr, new Color(brass.r, brass.g, brass.b, 0.3f), 1.5f);
+                if (skinned && theme.slotNormal != null)
+                {
+                    // 선택된 칸은 아이템 아래에 먼저 깔아야 해서(칸 이미지 안쪽이 불투명) 여기서 같이 그린다
+                    var slotTex = (i < total && i == selected && theme.slotSelected != null) ? theme.slotSelected
+                                : (hover && theme.slotHover != null) ? theme.slotHover : theme.slotNormal;
+                    GUI.DrawTexture(sr, slotTex, ScaleMode.StretchToFill, true);
+                }
+                else
+                {
+                    Fill(sr, hover ? new Color(0.22f, 0.16f, 0.10f, 1f) : new Color(0.13f, 0.10f, 0.08f, 1f));
+                    Frame(sr, new Color(brass.r, brass.g, brass.b, 0.3f), 1.5f);
+                }
                 if (hover && ev.type == EventType.MouseDown) { ClickEntry(i, ev.button, ev.clickCount); ev.Use(); }
             }
             total = EntryCount();
@@ -468,11 +502,12 @@ namespace LGH
                 {
                     var st = StackAt(EntryStack(e));
                     var d = db != null ? db.Get(st.id) : null;
-                    if (d != null && d.icon != null) GUI.DrawTexture(new Rect(sr.x + 8f, sr.y + 8f, slot - 16f, slot - 16f), d.icon, ScaleMode.ScaleToFit);
+                    if (d != null && d.icon != null) GUI.DrawTexture(new Rect(sr.x + 12f, sr.y + 12f, slot - 24f, slot - 24f), d.icon, ScaleMode.ScaleToFit);
                     else GUI.Label(new Rect(sr.x + 4f, sr.y + 4f, slot - 8f, slot - 8f), d != null ? d.NameOrFallback : "?", smallStyle);
                     if (st.count > 1) GUI.Label(new Rect(sr.x, sr.y, sr.width - 6f, sr.height - 2f), "×" + st.count, countStyle);
                 }
-                Frame(sr, new Color(brass.r, brass.g, brass.b, e == selected ? 1f : 0.6f), e == selected ? 3f : 1.5f);
+                if (!(skinned && theme.slotNormal != null))
+                    Frame(sr, new Color(brass.r, brass.g, brass.b, e == selected ? 1f : 0.6f), e == selected ? 3f : 1.5f);
             }
 
             float ty = sy + 2 * slot + gap + 14f;

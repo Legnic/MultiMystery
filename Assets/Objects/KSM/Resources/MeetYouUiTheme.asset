@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b718e3479adf4314bbe98f04d990df92, type: 3}
+  m_Name: MeetYouUiTheme
+  m_EditorClassIdentifier: Assembly-CSharp::CoopDemo.MeetYouUiTheme
+  windowPanel: {fileID: 2800000, guid: b7e0aa193667f994daf4080b5bcbf8a7, type: 3}
+  innerPanel: {fileID: 2800000, guid: 1634e14bd7a87a44780ce4912d3dda62, type: 3}
+  fieldPanel: {fileID: 2800000, guid: 9f7f54a6fd8a47949bf92848d0388478, type: 3}
+  buttonNormal: {fileID: 2800000, guid: 9fa1a41b079d6c14f845f6afbd31b38a, type: 3}
+  buttonHover: {fileID: 2800000, guid: 4ac893173fe52f948aaabfaa4def2b11, type: 3}
+  buttonPressed: {fileID: 2800000, guid: d5ec3dbe3322bfe43a0398bfb1efe0a9, type: 3}
+  buttonSelected: {fileID: 2800000, guid: 462e443164ea626499bc0691e0085718, type: 3}
+  slotNormal: {fileID: 2800000, guid: f6e45788c7837a8419472564145ef722, type: 3}
+  slotHover: {fileID: 2800000, guid: dbfe81a678885264b90a951a9329ed42, type: 3}
+  slotSelected: {fileID: 2800000, guid: 713d16bb827314b45b3000c7f5b15feb, type: 3}
+  micOn: {fileID: 21300000, guid: fb9056d29c8cd5e4589aeba966e329dd, type: 3}
+  micMuted: {fileID: 21300000, guid: 7adbc38af07efe54c94203f9a50726ee, type: 3}
+  sliderBar: {fileID: 2800000, guid: 9fa1a41b079d6c14f845f6afbd31b38a, type: 3}
+  sliderThumb: {fileID: 2800000, guid: 275d4c623a11a664e9335c3b5d553d35, type: 3}
+  toggleBox: {fileID: 2800000, guid: 7b01271ec0bfb554c921c483d32f78c5, type: 3}
+  checkIcon: {fileID: 2800000, guid: 301284a2de81aed40ba8b401ae0aee26, type: 3}
