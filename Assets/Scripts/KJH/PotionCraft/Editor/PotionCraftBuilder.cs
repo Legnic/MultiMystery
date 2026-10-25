@@ -18,6 +18,10 @@ namespace PotionCraft.EditorTools
         const string DataDir = Root + "/Data";
         const string ItemDir = Root + "/Items";
         const string StationDir = Root + "/Stations";
+        const string VarcoGimmickDir = "Assets/VARCO 3D/KWJ/Prefabs/Gimmick";
+        const string MixerModelPath = "Assets/VARCO 3D/KWJ/FBX/Props/Prop_IngredientMixer.fbx";
+        const string NoteImagePath = "Assets/Images/KJH/PotionCraft/RecipeNote_Final.png";
+        const string BookImagePath = "Assets/Images/KJH/PotionCraft/조합법{0}쪽.png";
 
         static readonly Dictionary<string, Material> mats = new Dictionary<string, Material>();
 
@@ -228,6 +232,16 @@ namespace PotionCraft.EditorTools
             d.catalog.lumpColor = LumpC;
             d.catalog.lumpPrefab = items.lump;
             d.catalog.powderPrefab = items.powder;
+            // 손에 드는 모양: VARCO 모델이 있으면 그것을 쓴다 (붉은 뿌리·황금 가루는 아직 모델이 없어 임시 도형 유지)
+            UseVarco(ref d.catalog.materials[1].prefab, "Prop_SilverLeaf");
+            UseVarco(ref d.catalog.materials[2].prefab, "Prop_GreenLeaf");
+            UseVarco(ref d.catalog.materials[3].prefab, "Prop_BlueFlower");
+            UseVarco(ref d.catalog.waters[0].prefab, "Prop_Bottle_Red");
+            UseVarco(ref d.catalog.waters[1].prefab, "Prop_Bottle_Blue");
+            UseVarco(ref d.catalog.waters[2].prefab, "Prop_Bottle_Green");
+            UseVarco(ref d.catalog.lumpPrefab, "Prop_GrayLump");
+            string[] powderModels = { "Prop_PowderDish_Green", "Prop_PowderDish_Red", "Prop_PowderDish_Blue", "Prop_PowderDish_Pink", "Prop_PowderDish_Black" };
+            for (int i = 0; i < powderModels.Length; i++) UseVarco(ref d.catalog.powders[i].prefab, powderModels[i]);
             d.catalog.fxMaterial = Mat("Fx_Particle", Color.white, true);
             EditorUtility.SetDirty(d.catalog);
 
@@ -253,13 +267,17 @@ namespace PotionCraft.EditorTools
                 new RecipeBookData.Page { entryA = "초록 잎사귀 + 파란색 물", entryB = "붉은 뿌리 + 검정색 물" },
                 new RecipeBookData.Page { entryA = "은빛 잎 + 보라색 물", entryB = "파란 꽃 + 빨간색 물" },
             };
+            // 쪽마다 그림(조합법N쪽.png)이 있으면 연결한다 → 책이 그림으로 한 쪽씩 넘어간다
+            for (int i = 0; i < d.book.pages.Length; i++)
+                d.book.pages[i].image = AssetDatabase.LoadAssetAtPath<Texture2D>(string.Format(BookImagePath, i + 1));
             EditorUtility.SetDirty(d.book);
 
             // 3-4 최종 레시피 (1층 쪽지)
             d.final = CreateOrLoad<FinalRecipeData>(DataDir + "/FinalRecipeData.asset");
             d.final.title = "쪽지";
-            d.final.noteText = "빨간색 가루 + 파란색 가루 + 빨간색 가루";
-            d.final.sequence = new[] { PowderColor.Red, PowderColor.Blue, PowderColor.Red };
+            d.final.noteText = "빨간색 가루 + 파란색 가루 + 분홍색 가루";
+            d.final.noteImage = AssetDatabase.LoadAssetAtPath<Texture2D>(NoteImagePath); // 그림이 있으면 글 대신 그림을 띄운다
+            d.final.sequence = new[] { PowderColor.Red, PowderColor.Blue, PowderColor.Pink };
             EditorUtility.SetDirty(d.final);
 
             AssetDatabase.SaveAssets();
@@ -267,6 +285,12 @@ namespace PotionCraft.EditorTools
         }
 
         // ---------------------------------------------------------------- 스테이션 프리팹
+
+        static void UseVarco(ref GameObject slot, string name)
+        {
+            var p = AssetDatabase.LoadAssetAtPath<GameObject>(VarcoGimmickDir + "/" + name + ".prefab");
+            if (p != null) slot = p;
+        }
 
         static GameObject Inst(GameObject prefab, Transform parent, Vector3 localPos, Vector3 localScale)
         {
@@ -281,7 +305,6 @@ namespace PotionCraft.EditorTools
             var wood = Mat("Station_Wood", new Color(0.42f, 0.28f, 0.16f));
             var stone = Mat("Station_Stone", new Color(0.35f, 0.35f, 0.38f));
             var dark = Mat("Station_Dark", new Color(0.12f, 0.12f, 0.13f));
-            var liquidMat = Mat("Station_Liquid", new Color(0.18f, 0.22f, 0.3f));
 
             // ---- 보관대 (기본 프리팹 2개 + 변형 7개)
             var matBaseRoot = new GameObject("Supply_Material");
@@ -321,19 +344,21 @@ namespace PotionCraft.EditorTools
             }
 
             // ---- 1층 제조 통
+            // 겉모습은 VARCO 혼합기 모델. Pot은 상호작용용 콜라이더만 남긴다.
             var brewer = new GameObject("Station_Brewer_F1");
-            Prim(PrimitiveType.Cylinder, "Pot", brewer.transform, new Vector3(0, 0.4f, 0), new Vector3(0.9f, 0.4f, 0.9f), dark, true);
-            var liquid = Prim(PrimitiveType.Cylinder, "Liquid", brewer.transform, new Vector3(0, 0.79f, 0), new Vector3(0.78f, 0.005f, 0.78f), liquidMat);
-            var lump = Inst(items.lump, brewer.transform, new Vector3(0, 0.9f, 0), Vector3.one * 1.6f);
+            var pot = Prim(PrimitiveType.Cylinder, "Pot", brewer.transform, new Vector3(0, 0.4f, 0), new Vector3(0.9f, 0.4f, 0.9f), dark, true);
+            pot.GetComponent<Renderer>().enabled = false;
+            var shake = new GameObject("MixerShake").transform; // 피벗 = 바닥 가운데 (제조 중 흔들림 기준점)
+            shake.SetParent(brewer.transform, false);
+            var mixerModel = AssetDatabase.LoadAssetAtPath<GameObject>(MixerModelPath);
+            if (mixerModel != null) Inst(mixerModel, shake, new Vector3(0, 0.4f, 0), Vector3.one * 0.9f).name = "Model";
+            else Debug.LogWarning("[PotionCraft] 혼합기 모델이 없다: " + MixerModelPath);
+            var lump = Inst(items.lump, brewer.transform, new Vector3(0, 0.85f, 0), Vector3.one * 1.6f); // 혼합기 깔때기 안에 얹힘
             lump.name = "Lump";
-            var matInd = Prim(PrimitiveType.Cube, "MaterialIndicator", brewer.transform, new Vector3(-0.3f, 0.86f, 0), Vector3.one * 0.12f, stone);
-            var watInd = Prim(PrimitiveType.Cylinder, "WaterIndicator", brewer.transform, new Vector3(0.3f, 0.86f, 0), new Vector3(0.1f, 0.06f, 0.1f), stone);
             var bs = brewer.AddComponent<BrewerStation>();
-            SetRef(bs, "materialIndicator", matInd.GetComponent<Renderer>());
-            SetRef(bs, "waterIndicator", watInd.GetComponent<Renderer>());
-            SetRef(bs, "liquid", liquid.GetComponent<Renderer>());
+            SetRef(bs, "shakeVisual", shake);
             SetRef(bs, "lumpVisual", lump);
-            matInd.SetActive(false); watInd.SetActive(false); lump.SetActive(false);
+            lump.SetActive(false);
             SavePrefab(brewer, StationDir + "/Station_Brewer_F1.prefab");
 
             // ---- 2층 빻는 도구
@@ -376,11 +401,7 @@ namespace PotionCraft.EditorTools
             for (int i = 0; i < layers.Length; i++) layersProp.GetArrayElementAtIndex(i).objectReferenceValue = layers[i];
             mso.ApplyModifiedPropertiesWithoutUndo();
             SetRef(ms, "effectPoint", fxPoint.transform);
-
-            var btn = Prim(PrimitiveType.Cube, "ClearButton", mixer.transform, new Vector3(0.7f, 0.5f, 0), new Vector3(0.2f, 0.2f, 0.2f), Mat("Station_Button", new Color(0.8f, 0.15f, 0.12f)), true);
-            Prim(PrimitiveType.Cube, "ButtonPost", mixer.transform, new Vector3(0.7f, 0.2f, 0), new Vector3(0.1f, 0.4f, 0.1f), wood);
-            var cb = btn.AddComponent<MixerClearButton>();
-            SetRef(cb, "mixer", ms);
+            // 비우기는 혼합 통을 보고 R (MixerStation.ServerSecondary) — 별도 버튼 없음
             SavePrefab(mixer, StationDir + "/Station_Mixer_F2.prefab");
 
             // ---- 책 / 쪽지

@@ -6,13 +6,18 @@ namespace PotionCraft
     // 약품 제조 퍼즐의 모든 "상호작용 가능한 장치" 공통 부모. IWorldInteractable이라서 LGH 플레이어(PlayerInteractor)의 E키로 바로 동작한다.
     // 규칙: 상태를 바꾸는 판정(ServerInteract)은 호스트(또는 혼자 플레이)에서만 실행되고,
     // 바뀐 상태(GetState)를 PotionCraftSync가 모든 클라이언트의 ApplyState로 전달한다. 연출은 Refresh/PlayFx에서 상태·신호로부터 만든다.
-    public abstract class PotionStation : MonoBehaviour, IWorldInteractable
+    public abstract class PotionStation : MonoBehaviour, IWorldSecondaryInteractable
     {
         public virtual bool CanInteract { get { return true; } }
         public abstract string InteractPrompt { get; }
 
         // 호스트 전용. 판정을 하고 손에 든 아이템(held)을 바꾼다. 안내/거부 문구를 돌려준다(없으면 null).
         public abstract string ServerInteract(ref int held);
+
+        // R키 동작이 있는 장치만 CanSecondary를 true로 바꾸고 ServerSecondary를 구현한다 (없으면 R은 원래대로 양초 바꾸기).
+        protected virtual bool CanSecondary { get { return false; } }
+        public virtual string ServerSecondary(ref int held) { return null; }
+        public bool CanSecondaryInteract { get { return CanInteract && CanSecondary; } }
         public virtual int[] GetState() { return System.Array.Empty<int>(); }
         public virtual void ApplyState(int[] s) { }
         // 상태가 바뀐 뒤 화면(모양)을 상태에 맞춘다. 호스트/클라이언트 모두 호출된다.
@@ -28,6 +33,13 @@ namespace PotionCraft
                 return;
             }
             sync.RequestInteract(this);
+        }
+
+        public void SecondaryInteract(GameObject interactor)
+        {
+            if (!CanSecondaryInteract) return;
+            var sync = PotionCraftSync.Instance;
+            if (sync != null) sync.RequestInteract(this, true);
         }
 
         protected PotionCraftSync Sync { get { return PotionCraftSync.Instance; } }

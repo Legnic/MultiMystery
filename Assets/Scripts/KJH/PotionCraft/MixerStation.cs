@@ -12,6 +12,8 @@ namespace PotionCraft
         [Header("모양 (비어 있어도 동작)")]
         [Tooltip("아래 칸부터 차례로 쌓이는 층 (3개).")]
         [SerializeField] private Renderer[] layers;
+        [Tooltip("넣은 가루를 통 위에 색 층으로 쌓아 보여줄지. 꺼 두면 층은 항상 숨겨진다 (판정은 그대로).")]
+        [SerializeField] private bool showLayers = false;
         [SerializeField] private Transform effectPoint;
 
         // 상태: 쌓인 개수, 칸 3개의 가루색, 잠김(완료)
@@ -28,10 +30,14 @@ namespace PotionCraft
         {
             get
             {
-                if (Item.KindOf(LocalHeld) == ItemKind.Powder) return "[E] " + NameOf(LocalHeld) + " 넣기 (" + count + " / " + SlotCount + ")";
-                return "혼합 통 (가루를 순서대로 " + SlotCount + "개 넣는다)";
+                if (Item.KindOf(LocalHeld) == ItemKind.Powder) return "[E] " + NameOf(LocalHeld) + " 넣기 (" + count + " / " + SlotCount + ")   [R] 비우기";
+                return "혼합 통 (가루를 순서대로 " + SlotCount + "개 넣는다)   [R] 비우기";
             }
         }
+
+        // R = 혼합 통 비우기 (넣은 가루는 돌려주지 않는다).
+        protected override bool CanSecondary { get { return !locked; } }
+        public override string ServerSecondary(ref int held) { return ServerClear(); }
 
         public override string ServerInteract(ref int held)
         {
@@ -60,7 +66,7 @@ namespace PotionCraft
             return "펑! 잘못된 조합이다";
         }
 
-        // 비우기 버튼이 호스트에서 호출한다 (넣은 가루는 돌려주지 않는다).
+        // R키(ServerSecondary)로 호스트에서 호출된다 (넣은 가루는 돌려주지 않는다).
         public string ServerClear()
         {
             if (locked) return null;
@@ -93,7 +99,7 @@ namespace PotionCraft
             for (int i = 0; i < layers.Length; i++)
             {
                 if (layers[i] == null) continue;
-                bool on = i < count;
+                bool on = showLayers && i < count;
                 layers[i].gameObject.SetActive(on);
                 if (on && cat != null) PotionVisuals.Tint(layers[i], cat.PowderColorOf((PowderColor)slots[i]));
             }

@@ -114,7 +114,12 @@ namespace LGH
             if (kb == null) return;
             if ((MultiplayerMenu.Typing || GUIUtility.keyboardControl != 0) && Cursor.lockState != CursorLockMode.Locked) return; // typing in a menu text box
             var candles = CandleNetworkSync.Instance;
-            if (kb.rKey.wasPressedThisFrame && candles != null && !PistolLoader.WantsR)   // R loads the pistol while you carry it unloaded
+            var secondary = focusedWorld as IWorldSecondaryInteractable;
+            if (kb.rKey.wasPressedThisFrame && secondary != null && secondary.CanSecondaryInteract)   // R on a device that has its own R action (e.g. KJH mixer: empty)
+            {
+                secondary.SecondaryInteract(gameObject);
+            }
+            else if (kb.rKey.wasPressedThisFrame && candles != null && !PistolLoader.WantsR)   // R loads the pistol while you carry it unloaded
             {
                 string swapMsg = candles.RequestSwapHeld(inventory);
                 if (!string.IsNullOrEmpty(swapMsg)) ShowMessage(swapMsg);

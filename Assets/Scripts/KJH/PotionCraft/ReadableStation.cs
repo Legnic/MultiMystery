@@ -17,7 +17,8 @@ namespace PotionCraft
 
         private int spread;
         private LGH.FirstPersonController lockedMove;
-        private GUIStyle titleStyle, bodyStyle, hintStyle;
+        // GUIStyle은 직렬화 가능한 타입이라, 에디터 재컴파일 때 빈 기본값으로 채워지면 null 검사로 만든 스타일이 건너뛰어진다 → 직렬화 제외.
+        [System.NonSerialized] private GUIStyle titleStyle, bodyStyle, hintStyle, imageHintStyle;
 
         public bool CanInteract { get { return PotionCraftSync.Instance != null; } }
 
@@ -36,6 +37,8 @@ namespace PotionCraft
             {
                 var book = PotionCraftSync.Instance != null ? PotionCraftSync.Instance.BookData : null;
                 int pages = book != null && book.pages != null ? book.pages.Length : 0;
+                // 그림 책은 한 번에 한 쪽, 글 책은 펼침면(2쪽)씩 넘긴다.
+                if (book != null && book.UsesImages) return pages;
                 return Mathf.Max(1, (pages + 1) / 2);
             }
         }
@@ -97,6 +100,15 @@ namespace PotionCraft
             var v = LGH.UiScale.Apply();
 
             bool book = kind == Kind.Book;
+            if (book && sync.BookData != null && sync.BookData.UsesImages)
+            {
+                int page = Mathf.Clamp(spread, 0, sync.BookData.pages.Length - 1);
+                DrawImagePage(v, sync.BookData.pages[page].image,
+                    "조합법 " + (page + 1) + "쪽   —   " + (page + 1) + " / " + SpreadCount + "   [E][D] 다음  [A] 이전  [Q] 닫기");
+                return;
+            }
+            var image = book ? null : (sync.FinalRecipe != null ? sync.FinalRecipe.noteImage : null);
+            if (image != null) { DrawImagePage(v, image, "[Q] 닫기"); return; }
             float pw = book ? 640f : 460f, ph = book ? 380f : 260f;
             var r = new Rect((v.x - pw) / 2f, (v.y - ph) / 2f - 20f, pw, ph);
             var old = GUI.color;
@@ -136,6 +148,26 @@ namespace PotionCraft
                 GUI.Label(new Rect(r.x + 36f, r.y + 80f, r.width - 72f, r.height - 140f), data != null ? data.noteText : string.Empty, bodyStyle);
                 GUI.Label(new Rect(r.x, r.yMax - 40f, r.width, 28f), "[Q] 닫기", hintStyle);
             }
+            GUI.color = old;
+        }
+
+        // 그림 쪽지·그림 책: 화면을 어둡게 덮고 그림을 가운데에 크게 띄운 뒤, 아래에 안내 문구를 쓴다.
+        private void DrawImagePage(Vector2 v, Texture2D image, string hint)
+        {
+            var old = GUI.color;
+            GUI.color = new Color(0f, 0f, 0f, 0.85f);
+            GUI.DrawTexture(new Rect(0f, 0f, v.x, v.y), Texture2D.whiteTexture);
+            GUI.color = Color.white;
+            float w = Mathf.Min(v.x * 0.8f, 1100f);
+            float h = w * image.height / image.width;
+            if (h > v.y * 0.8f) { h = v.y * 0.8f; w = h * image.width / image.height; } // 세로로 넘치지 않게
+            GUI.DrawTexture(new Rect((v.x - w) / 2f, (v.y - h) / 2f - 20f, w, h), image, ScaleMode.ScaleToFit);
+            if (imageHintStyle == null)
+            {
+                imageHintStyle = new GUIStyle(GUI.skin.label) { fontSize = 16, alignment = TextAnchor.MiddleCenter };
+                imageHintStyle.normal.textColor = new Color(0.85f, 0.8f, 0.7f);
+            }
+            GUI.Label(new Rect(0f, (v.y + h) / 2f - 14f, v.x, 28f), hint, imageHintStyle);
             GUI.color = old;
         }
     }

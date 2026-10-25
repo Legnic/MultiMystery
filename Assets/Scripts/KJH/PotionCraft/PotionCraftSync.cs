@@ -95,23 +95,24 @@ namespace PotionCraft
 
         // ---------- 진입점 ----------
 
-        public void RequestInteract(PotionStation s)
+        // secondary = R키 동작 (예: 혼합 통 비우기). 기본은 E키.
+        public void RequestInteract(PotionStation s, bool secondary = false)
         {
             int i = Array.IndexOf(stations, s);
             if (i < 0) return;
-            if (IsSpawned) { InteractRpc(i); return; }
+            if (IsSpawned) { InteractRpc(i, secondary); return; }
             if (Online) return;
-            ShowLocal(HandleInteract(i, 0UL));
+            ShowLocal(HandleInteract(i, 0UL, secondary));
         }
 
-        // 호스트 전용: 장치에 E를 눌렀을 때의 처리.
-        private string HandleInteract(int i, ulong client)
+        // 호스트 전용: 장치에 E(또는 R)를 눌렀을 때의 처리.
+        private string HandleInteract(int i, ulong client, bool secondary)
         {
             PotionStation st = stations[i];
             int before = GetHeld(client);
             int h = before;
             int[] stateBefore = st.GetState();
-            string msg = st.ServerInteract(ref h);
+            string msg = secondary ? st.ServerSecondary(ref h) : st.ServerInteract(ref h);
             if (h != before) ServerSetHeld(client, h);
             if (!SameState(stateBefore, st.GetState())) Publish(st);
             return msg;
@@ -171,11 +172,11 @@ namespace PotionCraft
         // ---------- RPC ----------
 
         [Rpc(SendTo.Server)]
-        private void InteractRpc(int index, RpcParams rpcParams = default)
+        private void InteractRpc(int index, bool secondary, RpcParams rpcParams = default)
         {
             if (index < 0 || index >= stations.Length) return;
             ulong sender = rpcParams.Receive.SenderClientId;
-            Reply(HandleInteract(index, sender), sender);
+            Reply(HandleInteract(index, sender, secondary), sender);
         }
 
         [Rpc(SendTo.NotServer)]
@@ -315,7 +316,8 @@ namespace PotionCraft
             if (code == 0 || catalog == null) return;
             if (hudStyle == null) hudStyle = new GUIStyle(GUI.skin.label) { fontSize = 15, alignment = TextAnchor.MiddleLeft };
             var v = LGH.UiScale.Apply();
-            var r = new Rect(16f, v.y - 86f, 260f, 32f);
+            // 오른쪽 아래, 획득 문구(-84) 위
+            var r = new Rect(v.x - 16f - 260f, v.y - 122f, 260f, 32f);
             var old = GUI.color;
             GUI.color = new Color(0f, 0f, 0f, 0.55f);
             GUI.DrawTexture(r, Texture2D.whiteTexture);

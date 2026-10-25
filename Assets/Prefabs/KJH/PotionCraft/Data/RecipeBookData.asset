@@ -16,9 +16,13 @@ MonoBehaviour:
   pages:
   - entryA: "\uC740\uBE5B \uC78E + \uBE68\uAC04\uC0C9 \uBB3C"
     entryB: "\uD30C\uB780 \uBFCC\uB9AC + \uD30C\uB780\uC0C9 \uBB3C"
+    image: {fileID: 2800000, guid: cbaaf350c0c2595499fb96831edae698, type: 3}
   - entryA: "\uB9CC\uB4DC\uB808\uC774\uD06C + \uBE68\uAC04\uC0C9 \uBB3C"
     entryB: "\uBD89\uC740 \uBFCC\uB9AC + \uCD08\uB85D\uC0C9 \uBB3C"
+    image: {fileID: 2800000, guid: 7f98ef514e72a934faef721eb9815027, type: 3}
   - entryA: "\uCD08\uB85D \uC78E\uC0AC\uADC0 + \uD30C\uB780\uC0C9 \uBB3C"
     entryB: "\uBD89\uC740 \uBFCC\uB9AC + \uAC80\uC815\uC0C9 \uBB3C"
+    image: {fileID: 2800000, guid: a17882658ef343f45bc4221786686974, type: 3}
   - entryA: "\uC740\uBE5B \uC78E + \uBCF4\uB77C\uC0C9 \uBB3C"
     entryB: "\uD30C\uB780 \uAF43 + \uBE68\uAC04\uC0C9 \uBB3C"
+    image: {fileID: 2800000, guid: 7f267e3591fc7e64dbc23d25730e3035, type: 3}

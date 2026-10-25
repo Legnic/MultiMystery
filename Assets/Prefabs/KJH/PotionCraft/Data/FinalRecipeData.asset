@@ -13,5 +13,6 @@ MonoBehaviour:
   m_Name: FinalRecipeData
   m_EditorClassIdentifier: Assembly-CSharp::PotionCraft.FinalRecipeData
   title: "\uCABD\uC9C0"
-  noteText: "\uBE68\uAC04\uC0C9 \uAC00\uB8E8 + \uD30C\uB780\uC0C9 \uAC00\uB8E8 + \uBE68\uAC04\uC0C9 \uAC00\uB8E8"
-  sequence: 010000000200000001000000i
+  noteText: "\uBE68\uAC04\uC0C9 \uAC00\uB8E8 + \uD30C\uB780\uC0C9 \uAC00\uB8E8 + \uBD84\uD64D\uC0C9 \uAC00\uB8E8"
+  noteImage: {fileID: 2800000, guid: bf460ff907407d84690a6d6c9f5c50b5, type: 3}
+  sequence: 010000000200000003000000i
