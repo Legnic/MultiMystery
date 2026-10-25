@@ -39,6 +39,10 @@ namespace LGH
         InteractableDrawer focusedDrawer;
         IWorldInteractable focusedWorld;   // KJH 도르래 승강기 버튼/창 등
         PortraitTilt focusedPortrait;
+
+        // E를 눌러 바라보던 대상과 상호작용을 시작한 순간 (아바타의 상호작용 동작이 이걸 듣는다)
+        public event System.Action Interacted;
+
         PlayerInventory inventory;
         HeldCandle held;
         string message;
@@ -121,6 +125,10 @@ namespace LGH
                 if (!string.IsNullOrEmpty(swapMsg)) ShowMessage(swapMsg);
             }
             if (!kb.eKey.wasPressedThisFrame) return;
+
+            if (focusedItem != null || focusedWorld != null || focusedPortrait != null || focusedPickup != null ||
+                focusedSconce != null || focusedDrawer != null || focused != null)
+                Interacted?.Invoke();
 
             if (focusedItem != null)
             {

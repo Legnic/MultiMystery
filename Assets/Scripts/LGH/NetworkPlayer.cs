@@ -61,13 +61,14 @@ namespace LGH
             nickname.OnValueChanged += OnNicknameChanged;
             RefreshName();
             var avatar = GetComponentInChildren<PlayerAvatar>(true);
-            if (avatar != null) avatar.SetSlot((int)OwnerClientId);
+            if (avatar != null) avatar.SetSlot(CoopDemo.PlayerSlot.Of(OwnerClientId));
 
             if (mine)
             {
                 Local = this;
                 SetNickname(MultiplayerMenu.Nickname);
-                int slot = (int)(OwnerClientId % (ulong)Mathf.Max(1, spawnPoints.Length));
+                // 호스트 = 0번 자리, 그 외 = 1번 자리. (clientId % N 으로 정하면 게스트가 다시 들어올 때 호스트 자리가 된다)
+                int slot = Mathf.Min(CoopDemo.PlayerSlot.Of(OwnerClientId), Mathf.Max(0, spawnPoints.Length - 1));
                 if (controller != null) controller.enabled = false;
                 // 씬에 PlayerSpawnPoint가 있으면 그 위치(방별 시작점)를 우선 사용
                 Vector3 pos = spawnPoints[slot];

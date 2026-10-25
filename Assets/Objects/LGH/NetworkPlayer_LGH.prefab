@@ -748,6 +748,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3465731065918437138}
   - component: {fileID: 6082758324832586586}
+  - component: {fileID: 6356242814591471789}
   m_Layer: 0
   m_Name: Avatar
   m_TagString: Untagged
@@ -811,6 +812,22 @@ MonoBehaviour:
   swing: 32
   stepRate: 9
   holdAngle: -68
+--- !u!114 &6356242814591471789
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2334959793501917015}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 73a9af33509ae8646a60107bda5d34ae, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CoopDemo.CharacterAvatar
+  ShowTopMostFoldoutHeaderGroup: 1
+  orangeModel: {fileID: 262698386504188681, guid: 18f44796b8cbb7f4eb015510f37470c2, type: 3}
+  blueModel: {fileID: 4096607278877690871, guid: 4c7c6e233cb9312428b7100105633f86, type: 3}
+  modelScale: 1.5
 --- !u!1 &2351712669423737341
 GameObject:
   m_ObjectHideFlags: 0
