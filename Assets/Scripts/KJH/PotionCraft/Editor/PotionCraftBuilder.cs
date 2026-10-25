@@ -401,11 +401,7 @@ namespace PotionCraft.EditorTools
             for (int i = 0; i < layers.Length; i++) layersProp.GetArrayElementAtIndex(i).objectReferenceValue = layers[i];
             mso.ApplyModifiedPropertiesWithoutUndo();
             SetRef(ms, "effectPoint", fxPoint.transform);
-
-            var btn = Prim(PrimitiveType.Cube, "ClearButton", mixer.transform, new Vector3(0.7f, 0.5f, 0), new Vector3(0.2f, 0.2f, 0.2f), Mat("Station_Button", new Color(0.8f, 0.15f, 0.12f)), true);
-            Prim(PrimitiveType.Cube, "ButtonPost", mixer.transform, new Vector3(0.7f, 0.2f, 0), new Vector3(0.1f, 0.4f, 0.1f), wood);
-            var cb = btn.AddComponent<MixerClearButton>();
-            SetRef(cb, "mixer", ms);
+            // 비우기는 혼합 통을 보고 R (MixerStation.ServerSecondary) — 별도 버튼 없음
             SavePrefab(mixer, StationDir + "/Station_Mixer_F2.prefab");
 
             // ---- 책 / 쪽지
