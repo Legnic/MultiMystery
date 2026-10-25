@@ -19,6 +19,8 @@ namespace PotionCraft.EditorTools
         const string ItemDir = Root + "/Items";
         const string StationDir = Root + "/Stations";
         const string MixerModelPath = "Assets/VARCO 3D/KWJ/FBX/Props/Prop_IngredientMixer.fbx";
+        const string NoteImagePath = "Assets/Images/KJH/PotionCraft/RecipeNote_Final.png";
+        const string BookImagePath = "Assets/Images/KJH/PotionCraft/조합법{0}쪽.png";
 
         static readonly Dictionary<string, Material> mats = new Dictionary<string, Material>();
 
@@ -254,13 +256,17 @@ namespace PotionCraft.EditorTools
                 new RecipeBookData.Page { entryA = "초록 잎사귀 + 파란색 물", entryB = "붉은 뿌리 + 검정색 물" },
                 new RecipeBookData.Page { entryA = "은빛 잎 + 보라색 물", entryB = "파란 꽃 + 빨간색 물" },
             };
+            // 쪽마다 그림(조합법N쪽.png)이 있으면 연결한다 → 책이 그림으로 한 쪽씩 넘어간다
+            for (int i = 0; i < d.book.pages.Length; i++)
+                d.book.pages[i].image = AssetDatabase.LoadAssetAtPath<Texture2D>(string.Format(BookImagePath, i + 1));
             EditorUtility.SetDirty(d.book);
 
             // 3-4 최종 레시피 (1층 쪽지)
             d.final = CreateOrLoad<FinalRecipeData>(DataDir + "/FinalRecipeData.asset");
             d.final.title = "쪽지";
-            d.final.noteText = "빨간색 가루 + 파란색 가루 + 빨간색 가루";
-            d.final.sequence = new[] { PowderColor.Red, PowderColor.Blue, PowderColor.Red };
+            d.final.noteText = "빨간색 가루 + 파란색 가루 + 분홍색 가루";
+            d.final.noteImage = AssetDatabase.LoadAssetAtPath<Texture2D>(NoteImagePath); // 그림이 있으면 글 대신 그림을 띄운다
+            d.final.sequence = new[] { PowderColor.Red, PowderColor.Blue, PowderColor.Pink };
             EditorUtility.SetDirty(d.final);
 
             AssetDatabase.SaveAssets();
