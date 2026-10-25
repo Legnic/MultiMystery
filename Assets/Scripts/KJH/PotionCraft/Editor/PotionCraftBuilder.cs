@@ -18,6 +18,7 @@ namespace PotionCraft.EditorTools
         const string DataDir = Root + "/Data";
         const string ItemDir = Root + "/Items";
         const string StationDir = Root + "/Stations";
+        const string VarcoGimmickDir = "Assets/VARCO 3D/KWJ/Prefabs/Gimmick";
         const string MixerModelPath = "Assets/VARCO 3D/KWJ/FBX/Props/Prop_IngredientMixer.fbx";
         const string NoteImagePath = "Assets/Images/KJH/PotionCraft/RecipeNote_Final.png";
         const string BookImagePath = "Assets/Images/KJH/PotionCraft/조합법{0}쪽.png";
@@ -231,6 +232,16 @@ namespace PotionCraft.EditorTools
             d.catalog.lumpColor = LumpC;
             d.catalog.lumpPrefab = items.lump;
             d.catalog.powderPrefab = items.powder;
+            // 손에 드는 모양: VARCO 모델이 있으면 그것을 쓴다 (붉은 뿌리·황금 가루는 아직 모델이 없어 임시 도형 유지)
+            UseVarco(ref d.catalog.materials[1].prefab, "Prop_SilverLeaf");
+            UseVarco(ref d.catalog.materials[2].prefab, "Prop_GreenLeaf");
+            UseVarco(ref d.catalog.materials[3].prefab, "Prop_BlueFlower");
+            UseVarco(ref d.catalog.waters[0].prefab, "Prop_Bottle_Red");
+            UseVarco(ref d.catalog.waters[1].prefab, "Prop_Bottle_Blue");
+            UseVarco(ref d.catalog.waters[2].prefab, "Prop_Bottle_Green");
+            UseVarco(ref d.catalog.lumpPrefab, "Prop_GrayLump");
+            string[] powderModels = { "Prop_PowderDish_Green", "Prop_PowderDish_Red", "Prop_PowderDish_Blue", "Prop_PowderDish_Pink", "Prop_PowderDish_Black" };
+            for (int i = 0; i < powderModels.Length; i++) UseVarco(ref d.catalog.powders[i].prefab, powderModels[i]);
             d.catalog.fxMaterial = Mat("Fx_Particle", Color.white, true);
             EditorUtility.SetDirty(d.catalog);
 
@@ -274,6 +285,12 @@ namespace PotionCraft.EditorTools
         }
 
         // ---------------------------------------------------------------- 스테이션 프리팹
+
+        static void UseVarco(ref GameObject slot, string name)
+        {
+            var p = AssetDatabase.LoadAssetAtPath<GameObject>(VarcoGimmickDir + "/" + name + ".prefab");
+            if (p != null) slot = p;
+        }
 
         static GameObject Inst(GameObject prefab, Transform parent, Vector3 localPos, Vector3 localScale)
         {
