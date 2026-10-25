@@ -449,7 +449,8 @@ namespace LGH
             }
             if (Time.time < toastUntil && !string.IsNullOrEmpty(toast) && !paused)
             {
-                var tr = new Rect(16f, h - 84f, 320f, 32f);
+                // 획득 문구는 오른쪽 아래 (왼쪽 아래는 음성 채팅 HUD와 겹친다)
+                var tr = new Rect(w - 16f - 320f, h - 84f, 320f, 32f);
                 Fill(tr, new Color(0f, 0f, 0f, 0.6f));
                 GUI.Label(new Rect(tr.x + 12f, tr.y, tr.width - 16f, tr.height), toast, toastStyle);
             }

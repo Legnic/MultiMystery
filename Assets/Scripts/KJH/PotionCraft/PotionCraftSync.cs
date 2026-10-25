@@ -316,7 +316,8 @@ namespace PotionCraft
             if (code == 0 || catalog == null) return;
             if (hudStyle == null) hudStyle = new GUIStyle(GUI.skin.label) { fontSize = 15, alignment = TextAnchor.MiddleLeft };
             var v = LGH.UiScale.Apply();
-            var r = new Rect(16f, v.y - 86f, 260f, 32f);
+            // 오른쪽 아래, 획득 문구(-84) 위
+            var r = new Rect(v.x - 16f - 260f, v.y - 122f, 260f, 32f);
             var old = GUI.color;
             GUI.color = new Color(0f, 0f, 0f, 0.55f);
             GUI.DrawTexture(r, Texture2D.whiteTexture);
