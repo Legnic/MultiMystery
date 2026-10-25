@@ -542143,6 +542143,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 755404445}
     m_Modifications:
+    - target: {fileID: 97033186412966881, guid: 424f089cf30cd5443bc1eaccc0d26710, type: 3}
+      propertyPath: m_Center.z
+      value: 0.151
+      objectReference: {fileID: 0}
     - target: {fileID: 1900741184262352447, guid: 424f089cf30cd5443bc1eaccc0d26710, type: 3}
       propertyPath: m_LocalScale.x
       value: 0.81
@@ -542156,8 +542160,12 @@ PrefabInstance:
       value: 0.81
       objectReference: {fileID: 0}
     - target: {fileID: 1900741184262352447, guid: 424f089cf30cd5443bc1eaccc0d26710, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -0.04819995
+      objectReference: {fileID: 0}
+    - target: {fileID: 1900741184262352447, guid: 424f089cf30cd5443bc1eaccc0d26710, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0.151
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4330231195969297444, guid: 424f089cf30cd5443bc1eaccc0d26710, type: 3}
       propertyPath: m_LocalPosition.x
@@ -542247,6 +542255,14 @@ PrefabInstance:
       propertyPath: 'symbolMaterials.Array.data[4]'
       value: 
       objectReference: {fileID: 2100000, guid: 9933c34855fbe8b49a2f88dd35c1cb62, type: 2}
+    - target: {fileID: 8421525938304451911, guid: 424f089cf30cd5443bc1eaccc0d26710, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -0.0088
+      objectReference: {fileID: 0}
+    - target: {fileID: 8421525938304451911, guid: 424f089cf30cd5443bc1eaccc0d26710, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0.151
+      objectReference: {fileID: 0}
     - target: {fileID: 9203109059757751155, guid: 424f089cf30cd5443bc1eaccc0d26710, type: 3}
       propertyPath: m_Name
       value: Gim002_Stage
