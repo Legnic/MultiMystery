@@ -12,6 +12,8 @@ namespace PotionCraft
         [Header("모양 (비어 있어도 동작)")]
         [Tooltip("아래 칸부터 차례로 쌓이는 층 (3개).")]
         [SerializeField] private Renderer[] layers;
+        [Tooltip("넣은 가루를 통 위에 색 층으로 쌓아 보여줄지. 꺼 두면 층은 항상 숨겨진다 (판정은 그대로).")]
+        [SerializeField] private bool showLayers = false;
         [SerializeField] private Transform effectPoint;
 
         // 상태: 쌓인 개수, 칸 3개의 가루색, 잠김(완료)
@@ -97,7 +99,7 @@ namespace PotionCraft
             for (int i = 0; i < layers.Length; i++)
             {
                 if (layers[i] == null) continue;
-                bool on = i < count;
+                bool on = showLayers && i < count;
                 layers[i].gameObject.SetActive(on);
                 if (on && cat != null) PotionVisuals.Tint(layers[i], cat.PowderColorOf((PowderColor)slots[i]));
             }
