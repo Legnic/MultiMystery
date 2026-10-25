@@ -13,13 +13,24 @@ namespace PotionCraft
         [Tooltip("제조에 걸리는 시간(초).")]
         [SerializeField] private float brewSeconds = 2f;
         [Header("모양 (비어 있어도 동작)")]
-        [SerializeField] private Renderer materialIndicator;
-        [SerializeField] private Renderer waterIndicator;
+        [Tooltip("제조 중에 덜컹덜컹 흔들리는 혼합기 모델. 피벗이 바닥에 있어야 바닥 기준으로 흔들린다.")]
+        [SerializeField] private Transform shakeVisual;
+        [SerializeField] private float shakeAngle = 3f;
+        [SerializeField] private float shakeBounce = 0.01f;
         [SerializeField] private Renderer liquid;
         [SerializeField] private GameObject lumpVisual;
 
         // 상태: 재료(-1=없음), 물(-1=없음), 단계, 결과 가루색
         private int mat = -1, wat = -1, phase = Idle, result;
+
+        private Vector3 shakeBasePos, liquidBaseScale = Vector3.one;
+        private Quaternion shakeBaseRot = Quaternion.identity;
+
+        private void Awake()
+        {
+            if (shakeVisual != null) { shakeBasePos = shakeVisual.localPosition; shakeBaseRot = shakeVisual.localRotation; }
+            if (liquid != null) liquidBaseScale = liquid.transform.localScale;
+        }
 
         public override string InteractPrompt
         {
@@ -89,28 +100,26 @@ namespace PotionCraft
 
         public override void Refresh()
         {
-            var cat = Catalog;
-            if (materialIndicator != null)
-            {
-                materialIndicator.gameObject.SetActive(mat >= 0);
-                if (mat >= 0 && cat != null) PotionVisuals.Tint(materialIndicator, cat.ColorOf(Item.Make(ItemKind.Material, mat)));
-            }
-            if (waterIndicator != null)
-            {
-                waterIndicator.gameObject.SetActive(wat >= 0);
-                if (wat >= 0 && cat != null) PotionVisuals.Tint(waterIndicator, cat.ColorOf(Item.Make(ItemKind.Water, wat)));
-            }
             if (lumpVisual != null) lumpVisual.SetActive(phase == Done);
-            if (liquid != null) { liquid.gameObject.SetActive(phase != Done); if (phase != Brewing) liquid.transform.localScale = Vector3.one; }
+            if (liquid != null) { liquid.gameObject.SetActive(phase != Done); if (phase != Brewing) liquid.transform.localScale = liquidBaseScale; }
+            if (shakeVisual != null && phase != Brewing) { shakeVisual.localPosition = shakeBasePos; shakeVisual.localRotation = shakeBaseRot; }
         }
 
         private void Update()
         {
-            // 제조 중에는 통 속 액체가 부글부글 움직인다.
-            if (liquid != null && phase == Brewing)
+            if (phase != Brewing) return;
+            float t = Time.time;
+            // 제조 중에는 혼합기가 바닥을 기준으로 덜컹덜컹 흔들린다.
+            if (shakeVisual != null)
             {
-                float k = 1f + 0.08f * Mathf.Sin(Time.time * 18f);
-                liquid.transform.localScale = new Vector3(k, 1f, k);
+                shakeVisual.localRotation = shakeBaseRot * Quaternion.Euler(shakeAngle * Mathf.Sin(t * 23f), 0f, shakeAngle * Mathf.Sin(t * 17f + 1.3f));
+                shakeVisual.localPosition = shakeBasePos + Vector3.up * (shakeBounce * Mathf.Abs(Mathf.Sin(t * 31f)));
+            }
+            // 통 속 액체가 있으면 부글부글 움직인다.
+            if (liquid != null)
+            {
+                float k = 1f + 0.08f * Mathf.Sin(t * 18f);
+                liquid.transform.localScale = new Vector3(liquidBaseScale.x * k, liquidBaseScale.y, liquidBaseScale.z * k);
             }
         }
     }

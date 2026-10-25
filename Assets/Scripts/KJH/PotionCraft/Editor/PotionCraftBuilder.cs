@@ -18,6 +18,7 @@ namespace PotionCraft.EditorTools
         const string DataDir = Root + "/Data";
         const string ItemDir = Root + "/Items";
         const string StationDir = Root + "/Stations";
+        const string MixerModelPath = "Assets/VARCO 3D/KWJ/FBX/Props/Prop_IngredientMixer.fbx";
 
         static readonly Dictionary<string, Material> mats = new Dictionary<string, Material>();
 
@@ -281,7 +282,6 @@ namespace PotionCraft.EditorTools
             var wood = Mat("Station_Wood", new Color(0.42f, 0.28f, 0.16f));
             var stone = Mat("Station_Stone", new Color(0.35f, 0.35f, 0.38f));
             var dark = Mat("Station_Dark", new Color(0.12f, 0.12f, 0.13f));
-            var liquidMat = Mat("Station_Liquid", new Color(0.18f, 0.22f, 0.3f));
 
             // ---- 보관대 (기본 프리팹 2개 + 변형 7개)
             var matBaseRoot = new GameObject("Supply_Material");
@@ -321,19 +321,21 @@ namespace PotionCraft.EditorTools
             }
 
             // ---- 1층 제조 통
+            // 겉모습은 VARCO 혼합기 모델. Pot은 상호작용용 콜라이더만 남긴다.
             var brewer = new GameObject("Station_Brewer_F1");
-            Prim(PrimitiveType.Cylinder, "Pot", brewer.transform, new Vector3(0, 0.4f, 0), new Vector3(0.9f, 0.4f, 0.9f), dark, true);
-            var liquid = Prim(PrimitiveType.Cylinder, "Liquid", brewer.transform, new Vector3(0, 0.79f, 0), new Vector3(0.78f, 0.005f, 0.78f), liquidMat);
-            var lump = Inst(items.lump, brewer.transform, new Vector3(0, 0.9f, 0), Vector3.one * 1.6f);
+            var pot = Prim(PrimitiveType.Cylinder, "Pot", brewer.transform, new Vector3(0, 0.4f, 0), new Vector3(0.9f, 0.4f, 0.9f), dark, true);
+            pot.GetComponent<Renderer>().enabled = false;
+            var shake = new GameObject("MixerShake").transform; // 피벗 = 바닥 가운데 (제조 중 흔들림 기준점)
+            shake.SetParent(brewer.transform, false);
+            var mixerModel = AssetDatabase.LoadAssetAtPath<GameObject>(MixerModelPath);
+            if (mixerModel != null) Inst(mixerModel, shake, new Vector3(0, 0.4f, 0), Vector3.one * 0.9f).name = "Model";
+            else Debug.LogWarning("[PotionCraft] 혼합기 모델이 없다: " + MixerModelPath);
+            var lump = Inst(items.lump, brewer.transform, new Vector3(0, 0.85f, 0), Vector3.one * 1.6f); // 혼합기 깔때기 안에 얹힘
             lump.name = "Lump";
-            var matInd = Prim(PrimitiveType.Cube, "MaterialIndicator", brewer.transform, new Vector3(-0.3f, 0.86f, 0), Vector3.one * 0.12f, stone);
-            var watInd = Prim(PrimitiveType.Cylinder, "WaterIndicator", brewer.transform, new Vector3(0.3f, 0.86f, 0), new Vector3(0.1f, 0.06f, 0.1f), stone);
             var bs = brewer.AddComponent<BrewerStation>();
-            SetRef(bs, "materialIndicator", matInd.GetComponent<Renderer>());
-            SetRef(bs, "waterIndicator", watInd.GetComponent<Renderer>());
-            SetRef(bs, "liquid", liquid.GetComponent<Renderer>());
+            SetRef(bs, "shakeVisual", shake);
             SetRef(bs, "lumpVisual", lump);
-            matInd.SetActive(false); watInd.SetActive(false); lump.SetActive(false);
+            lump.SetActive(false);
             SavePrefab(brewer, StationDir + "/Station_Brewer_F1.prefab");
 
             // ---- 2층 빻는 도구
