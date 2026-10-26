@@ -58,6 +58,8 @@ namespace LGH
             foreach (var r in body)
                 if (r != null) r.shadowCastingMode = mine ? ShadowCastingMode.ShadowsOnly : ShadowCastingMode.On;
             if (controller != null) controller.enabled = mine;
+            // performance: only your own candle casts shadows; other players' candles just light the room
+            if (!mine) foreach (var cl in GetComponentsInChildren<Light>(true)) cl.shadows = LightShadows.None;
             nickname.OnValueChanged += OnNicknameChanged;
             RefreshName();
             var avatar = GetComponentInChildren<PlayerAvatar>(true);
