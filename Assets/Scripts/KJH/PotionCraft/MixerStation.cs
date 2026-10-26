@@ -2,8 +2,8 @@ using UnityEngine;
 
 namespace PotionCraft
 {
-    // 2층 최종 혼합 통. 가루를 순서대로 3칸 쌓고, 3번째가 들어가는 순간 판정한다.
-    // 정답(FinalRecipeData.sequence)이면 황금빛 연출 + 기믹 완료(한 번), 이후 통은 잠긴다.
+    // 2층 최종 혼합 통. 가루를 3칸 쌓고, 3번째가 들어가는 순간 판정한다 (넣는 순서는 상관없다).
+    // 정답(FinalRecipeData.sequence의 가루 조합)이면 황금빛 연출 + 기믹 완료(한 번), 이후 통은 잠긴다.
     // 오답이면 펑 터지고 통이 자동으로 비워진다 (아이템은 생기지 않는다).
     public class MixerStation : PotionStation
     {
@@ -31,7 +31,7 @@ namespace PotionCraft
             get
             {
                 if (Item.KindOf(LocalHeld) == ItemKind.Powder) return "[E] " + NameOf(LocalHeld) + " 넣기 (" + count + " / " + SlotCount + ")   [R] 비우기";
-                return "혼합 통 (가루를 순서대로 " + SlotCount + "개 넣는다)   [R] 비우기";
+                return "혼합 통 (가루를 " + SlotCount + "개 넣는다)   [R] 비우기";
             }
         }
 
