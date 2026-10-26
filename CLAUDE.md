@@ -851,6 +851,89 @@ StudyBookcase`(민무늬 석고)와 `PanelDress_LGH`(몰딩+벗겨짐 데칼) �
 **검증**: 전부 Edit 모드에서 `activeInHierarchy`/`MeshRenderer.enabled` 둘 다 켜져 있는 것만 추려서 확인,
 비활성 중복 오브젝트는 걸러냄. 씬 변경 없음(조사만 진행).
 
+## 다락 진입 방식 변경 — 계단 → 사다리 (2026-10-26, 일곱 번째 라운드)
+"LGH씬에서 Attic 올라가는 방식이 계단에서 사다리로 바뀌었다, Develop에도 반영해달라"는 요청. LGH.unity를
+additive로 열어(읽기만 하고 저장 없음, 끝에 닫음) 새 구조를 확인함: 기존 `Ravenwood_LGH/Floor2/Stairs/
+AtticStair`는 **비활성 상태로 남겨둠**(삭제 안 함, LGH님이 되돌릴 경우 대비), 그 대신 씬 최상위에 새
+`AtticLadder_LGH`(바닥·천장 구멍 패치 + 호두나무 액자 테두리 + 레일 2개·가로대 15개로 만든 사다리 +
+`LGH.Ladder` 컴포넌트가 붙은 오르는 영역(`ClimbZone`) + 잠긴 다락방 뚜껑문(`AtticTrapdoor`, `InteractableDoor`,
+`Item_AtticKey`로 잠금 해제))가 추가돼 있었음. `Ravenwood_LGH`의 월드 좌표가 LGH.unity·Develop 둘 다 동일해서
+(68,0,-16) 좌표 변환 없이 그대로 가져올 수 있었음.
+
+- 이 구조 전체(원시도형 30여 개 조합)가 **프리팹이 아니라 LGH님 씬에만 있는 오브젝트**였어서, 이번에 처음으로
+  `Assets/Objects/LGH/AtticLadder_LGH.prefab`로 저장해 공유 프리팹화함(LGH.unity 쪽 인스턴스는 전혀 건드리지
+  않음 — `SaveAsPrefabAsset`은 원본을 프리팹에 연결하지 않고 그냥 복제본을 에셋으로 저장하므로 LGH.unity가
+  더러워지지 않음, 저장 후 `isDirty=False` 재확인). Develop에는 이 프리팹을 씬 최상위에 인스턴스화하고 기존
+  `AtticStair`는 똑같이 비활성화만 함.
+- **뚜껑문이 요구하는 `Item_AtticKey`가 숨어있던 곳도 같이 반영**: 자물쇠를 풀지 않으면 사다리를 타도 다락에
+  못 들어가므로(뚜껑문이 잠겨 있음), 열쇠가 어디서 나오는지 확인이 필요했음 — LGH.unity에서 `StarLockBox_LGH`
+  (별 자물쇠 상자, Develop에도 이미 있는 공유 프리팹)의 자식으로 `Item_AtticKey`(열쇠, WorldItem)와
+  `Note_KeySecret`(쪽지, `PaperNote` — "열쇠를 찾았다고 알릴지 숨길지" 둘 중 하나를 고르는 선택형 쪽지, 동료에게
+  알리면 `LockBoxNetworkSync.Announce()`로 전체 공지)가 **공유 프리팹 자산(`StarLockBox_LGH.prefab`)에는 반영
+  안 되고 LGH님 씬 인스턴스에만 직접 추가**돼 있었음 — `ItemNetworkSync`/`LockBoxNetworkSync` 때와 똑같은 유형의
+  함정. 두 자식 다 `StarLockBox_LGH.prefab` 자산에 추가하고(상자 열리기 전엔 비활성), Develop의 기존
+  `StarLockBox_LGH` 씬 인스턴스에서 `StarLockBox.revealOnOpen` 배열(2칸, 둘 다 씬 전용 참조라 프리팹에는 저장
+  안 되고 인스턴스마다 따로 연결해야 함)에 이 둘을 연결함 — 안 하면 상자를 열어도 영원히 안 나타남.
+- `PaperNote`/`InteractableDoor`/`Ladder`는 전부 이미 존재하는 공용 스크립트라 새로 작성한 코드 없음(순수
+  조립 작업).
+
+**검증**: Play 모드 `StartHost()`에서 호스트로 전체 흐름 확인 — `StarLockBox.ResetForNewRoom()`으로 초기화 후
+`Apply()`를 각 사분면 코드만큼 직접 호출해 열기(참고: `Press()`는 네트워크 경로라 즉시 반영 안 됨 — 직접
+`Apply()`를 써야 그 자리에서 확인 가능, 처음에 `Press()`로 시도했다가 상태가 꼬여서 `ResetForNewRoom()`으로
+되돌리고 `Apply()`로 재시도함) → `Item_AtticKey`/`Note_KeySecret` 둘 다 활성화 확인 → `ItemNetworkSync.
+RequestPickup()`으로 열쇠 습득 → `PlayerInventory.HasItem` true 확인 → `AtticTrapdoor.Interact(pos, inventory)`
+호출 → `locked=False, IsOpen=True`로 잠금 해제+열림 확인(열쇠는 `consumeKey=False`라 안 없어짐) → `Ladder.
+Interact()`로 `FirstPersonController.Climbing`이 사다리로 바뀌는 것 확인 → `Note_KeySecret.Interact()`로
+`PaperNote.Current`가 이 쪽지로 바뀌는 것(쪽지 읽기 UI 열림) 확인. `Tools/Network/Validate Scene NetworkObjects`
+문제 없음(이 오브젝트들은 네트워크 오브젝트가 아니라 영향 없음 — 문·상자·사다리 전부 기존 `DoorSync_LGH`가
+자동으로 찾아 동기화하는 방식 그대로). Play 모드 종료 후 열쇠·쪽지·상자 상태가 전부 기본값(닫힘/비활성)으로
+깨끗이 되돌아온 것 확인하고 저장.
+**검증 한계**: 전부 메서드 직접 호출로 확인한 것이라, 실제 E키로 사다리를 오르내리는 손맛, 별자물쇠를 실제로
+돌리는 입력 경로, 두 사람이 함께 쪽지의 "비밀/공개" 선택을 주고받는 것은 다음 2인 플레이테스트에서 확인 필요.
+
+**→ 되돌림 (같은 날, 사용자 요청)**: 사용자가 이 라운드 전체를 되돌려달라고 요청해 바로 위 다락 사다리
+기능을 전부 제거함. Develop 씬에서 `AtticLadder_LGH` 인스턴스를 삭제하고 `AtticStair`를 다시 활성화, 새로
+만들었던 `Assets/Objects/LGH/AtticLadder_LGH.prefab`도 삭제. `StarLockBox_LGH.prefab`에 추가했던
+`Item_AtticKey`/`Note_KeySecret`은 `git checkout`으로 커밋된 원래 상태로 되돌리고(이 파일은 이번 라운드
+전까지 이번 세션에서 전혀 건드리지 않았던 파일이라 통째로 되돌려도 안전했음), Develop 씬의 `StarLockBox_LGH`
+인스턴스에 남아있던 `revealOnOpen` 오버라이드도 `PrefabUtility.RevertPropertyOverride()`로 깨끗이 제거함
+(단순히 배열 크기를 0으로 다시 써넣으면 "값은 같지만 오버라이드가 새로 기록되는" 상태가 되어 diff가 지저분하게
+남았음 — 진짜 되돌리려면 오버라이드 자체를 지워야 함). **주의**: `Assets/Scenes/Develop.unity`는 같은 세션에서
+벽지 패치·호두나무 몰딩·쓰레기통 모델 교체 등 무관한 다른 수정도 섞여 있었던 파일이라, 이 파일은 `git checkout`
+하지 않고 Unity 에디터에서 사다리 관련 오브젝트만 선택적으로 되돌렸음(통째로 되돌리면 관련 없는 다른 작업까지
+같이 날아갈 뻔함) — 저장 후 `git diff`에 `AtticLadder`/`AtticStair`/`revealOnOpen` 관련 줄이 하나도 안 남은
+것으로 확인함. 다락방은 다시 기존 계단으로 접근한다.
+
+## 쓰레기통 모델 반영 — PotionCraft 1층·2층 (2026-10-26, 여덟 번째 라운드)
+KWJ 브랜치 머지로 `Prop_TrashBin.fbx`(+프리팹)가 들어옴 — "모델링 필요 목록"에 있던 항목 중 하나. 과거
+`_NeedsCollider/Prop_TrashBin.prefab`이 원본 FBX가 삭제돼 깨져 있던 적이 있었는데(10/22 기록), 이번 머지로
+FBX가 같이 들어와서 **정상적으로 로드됨**을 먼저 확인하고 진행함.
+
+- **임포트 주의점 발견**: 이 프리팹의 메시 노드 자체의 `localPosition`이 `(5715, 0, -16551)`처럼 터무니없이
+  큰 값으로 들어있었음(아티스트가 원점으로 안 옮기고 내보낸 FBX export 실수로 추정) — 하지만 `mesh.bounds`
+  (정점 데이터 자체)는 `(0,0,0)` 중심에 ±0.35 반지름으로 정상이었음. **트랜스폼 값은 무시하고 메시/머티리얼
+  데이터만 뽑아 쓰면 문제없다**는 걸 확인 — 다른 VARCO 소품 교체 때처럼 "자기 자신의 MeshFilter/MeshRenderer만
+  교체" 방식으로 진행.
+- `PotionCraft_F1/Station_Trash`(1층 주방)·`PotionCraft_F2/Station_Trash`(2층 손님방1) 둘 다 자식 `Bin`
+  (원기둥 더미 + `CapsuleCollider`)의 메시·머티리얼을 새 모델로 교체, 회전은 VARCO 표준 보정(270,0,0), 크기는
+  실제 치수 그대로(scale=1) 사용. 안쪽 더미 원판(`Inside`)은 새 모델 자체에 내부가 있다고 보고 렌더러만 꺼서
+  숨김(콜라이더·오브젝트는 남김, 기존 "숨기기" 관례 그대로).
+  - **같이 고친 버그**: `Bin`의 `CapsuleCollider`(radius 0.5 / height 2)는 옛 더미의 축소된 트랜스폼
+    (scale 0.5, 0.3, 0.5)을 전제로 맞춰둔 값이었음 — 메시만 바꾸고 트랜스폼 스케일을 1로 되돌리면서 그대로
+    뒀다면 콜라이더가 실제 모델보다 훨씬 커져서(반지름 1m) 판정 범위가 맞지 않았을 것 — 직접 잡기 전에 발견해
+    `radius=0.35, height=0.7`로 새 모델 크기에 맞게 다시 계산해 바꿈. 바닥에 묻히지 않도록 `Bin`의 로컬 Y도
+    0.30→0.35로 재조정(새 모델 높이가 옛 원기둥보다 살짝 커서 바닥 아래로 파고들던 것 보정).
+- `PotionCraft.TrashStation` 스크립트는 자식 이름이나 크기를 전혀 참조하지 않는 순수 레이캐스트 기반
+  상호작용이라 스크립트 변경 없이 교체만으로 끝남.
+- **같이 들어온 다른 모델(이번엔 손 안 댐)**: 같은 머지로 `Prop_GoldStatue.fbx`(다락 보상 황금상),
+  `Prop_Key_Escape.fbx`, `Prop_AstroTelescope.fbx`, `Prop_WeightPlate.fbx`(GIM-007 발판), `Prop_TreasureBox.fbx`,
+  `Furn_HeavyDresser_Single/Wide.fbx`(GIM-007 가구 후보로 보임)도 같이 들어와 있음 — "모델링 필요 목록"의 다른
+  항목들과 연결될 가능성이 높아 보이니, 다음에 확인해서 반영할지 결정하면 좋을 것 같음.
+- 검증: 월드 바운드 재계산으로 바닥 높이·콜라이더 크기 정합 확인(`renderer bottom Y` vs 바닥 Y 오차 4mm 이내
+  둘 다), 콘솔 에러 0건. 씬 저장 후 `git diff`로 의도한 변경만 반영됐는지 확인.
+- **한계**: 이번에도 스크린샷 도구 상태가 불안정해 실제 모양을 직접 보지 못함 — 치수·바닥 정렬은 수치로
+  검증했지만, 실제로 방 안에서 봤을 때 비율이 자연스러운지는 다음 확인 필요.
+
 ## 사용 가능한 Unity 전용 스킬
 이 환경에는 `unity:` 접두사의 스킬들(unity-cli, ui, urp-postprocessing, physics-3d-collision 등)이 이미 연결되어 있습니다. 관련 작업을 할 때는 먼저 해당 스킬을 확인하세요.
 
