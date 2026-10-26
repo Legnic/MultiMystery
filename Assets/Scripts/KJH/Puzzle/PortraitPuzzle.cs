@@ -104,34 +104,59 @@ public class PortraitPuzzle : NetworkBehaviour
         SolvedEvent?.Invoke();
     }
 
-    // 중력 낙하 + 앞으로 기울며 바닥에 쓰러지는 연출 (물리 엔진 없이 계산해서 모든 클라이언트가 같은 결과를 본다)
+    // 중력 낙하 → 바닥에 닿으면 앞쪽 아래 모서리를 축으로 방 안쪽으로 넘어져 바닥에 엎어지는 연출
+    // (물리 엔진 없이 계산해서 모든 클라이언트가 같은 결과를 본다)
     IEnumerator Drop(bool instant)
     {
         Transform f = fallingFrame;
         Vector3 startPos = f.position;
         Quaternion startRot = f.rotation;
-        float half = f.lossyScale.y * 0.5f;
+        // 보는 사람 → 액자 방향(transform.right)의 반대, 즉 방 안쪽으로 넘어진다
+        Vector3 fallDir = Vector3.ProjectOnPlane(-f.right, Vector3.up).normalized;
+
+        // 실제 겉모습(자식 모델) 크기로 바닥까지 거리와 앞면 위치를 잰다 — 부모 스케일은 모델 크기와 다를 수 있다
+        Bounds b = new Bounds(startPos, Vector3.zero);
+        foreach (var r in f.GetComponentsInChildren<Renderer>()) b.Encapsulate(r.bounds);
+        float bottom = startPos.y - b.min.y;
+        float front = Vector3.Dot(b.center - startPos, fallDir)
+                    + Mathf.Abs(fallDir.x) * b.extents.x + Mathf.Abs(fallDir.z) * b.extents.z;
+
         float floorY = 0f;
         if (Physics.Raycast(startPos, Vector3.down, out RaycastHit hit, 5f, ~0, QueryTriggerInteraction.Ignore)) floorY = hit.point.y;
-        float landY = floorY + half * 0.9f;
-        // 보는 사람 → 액자 방향(transform.right)의 반대, 즉 방 안쪽으로 윗부분이 쏟아지도록 기울인다
-        Vector3 lean = Vector3.Slerp(Vector3.up, -f.right, 0.35f);
-        Quaternion endRot = Quaternion.FromToRotation(Vector3.up, lean) * startRot;
+        floorY += 0.003f;   // 엎어졌을 때 앞면이 바닥과 겹쳐 깜빡이지 않게 살짝 띄움
+        Vector3 landPos = new Vector3(startPos.x, floorY + bottom, startPos.z);
+        Vector3 pivot = new Vector3(startPos.x, floorY, startPos.z) + fallDir * front;   // 앞쪽 아래 모서리
+        Vector3 axis = Vector3.Cross(Vector3.up, fallDir);
 
         if (!instant) yield return new WaitForSeconds(dropDelay);
 
-        float vy = 0f, tilt = 0f;
+        // 1) 수직 낙하
+        float vy = 0f;
         Vector3 pos = startPos;
-        while (!instant && pos.y > landY)
+        while (!instant && pos.y > landPos.y)
         {
             vy -= 9.81f * Time.deltaTime;
-            pos.y = Mathf.Max(landY, pos.y + vy * Time.deltaTime);
-            tilt = Mathf.Clamp01(tilt + Time.deltaTime * 2f);
-            f.SetPositionAndRotation(pos, Quaternion.Slerp(startRot, endRot, tilt));
+            pos.y = Mathf.Max(landPos.y, pos.y + vy * Time.deltaTime);
+            f.SetPositionAndRotation(pos, startRot);
             yield return null;
         }
-        pos.y = landY;
-        f.SetPositionAndRotation(pos, endRot);
+
+        // 2) 앞으로 넘어짐 (넘어질수록 빨라지게)
+        float angle = 0f, angVel = 30f;
+        while (!instant && angle < 90f)
+        {
+            angVel += 600f * Time.deltaTime;
+            angle = Mathf.Min(90f, angle + angVel * Time.deltaTime);
+            SetToppled(f, landPos, startRot, pivot, axis, angle);
+            yield return null;
+        }
+        SetToppled(f, landPos, startRot, pivot, axis, 90f);
+    }
+
+    static void SetToppled(Transform f, Vector3 landPos, Quaternion startRot, Vector3 pivot, Vector3 axis, float angle)
+    {
+        Quaternion q = Quaternion.AngleAxis(angle, axis);
+        f.SetPositionAndRotation(pivot + q * (landPos - pivot), q * startRot);
     }
 
     // ---- 나중에 들어온 플레이어에게 현재 상태 전달 ----
