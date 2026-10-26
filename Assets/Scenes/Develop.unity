@@ -64622,6 +64622,18 @@ PrefabInstance:
       propertyPath: holdOffset.x
       value: -0.38
       objectReference: {fileID: 0}
+    - target: {fileID: 2119712719582102562, guid: a2499a0c59792eb488b0cc984794fc39, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2119712719582102562, guid: a2499a0c59792eb488b0cc984794fc39, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2119712719582102562, guid: a2499a0c59792eb488b0cc984794fc39, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 180
+      objectReference: {fileID: 0}
     - target: {fileID: 2137519533159715355, guid: a2499a0c59792eb488b0cc984794fc39, type: 3}
       propertyPath: holdOffset.x
       value: -0.38
@@ -64633,6 +64645,18 @@ PrefabInstance:
     - target: {fileID: 3616963782683423505, guid: a2499a0c59792eb488b0cc984794fc39, type: 3}
       propertyPath: holdOffset.x
       value: -0.38
+      objectReference: {fileID: 0}
+    - target: {fileID: 5098518517895194123, guid: a2499a0c59792eb488b0cc984794fc39, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: 5098518517895194123, guid: a2499a0c59792eb488b0cc984794fc39, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: 5098518517895194123, guid: a2499a0c59792eb488b0cc984794fc39, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: -90
       objectReference: {fileID: 0}
     - target: {fileID: 5670378841134374441, guid: a2499a0c59792eb488b0cc984794fc39, type: 3}
       propertyPath: m_LocalPosition.x
@@ -64677,6 +64701,30 @@ PrefabInstance:
     - target: {fileID: 6012086131376706482, guid: a2499a0c59792eb488b0cc984794fc39, type: 3}
       propertyPath: holdOffset.x
       value: -0.38
+      objectReference: {fileID: 0}
+    - target: {fileID: 6130185353339103242, guid: a2499a0c59792eb488b0cc984794fc39, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6130185353339103242, guid: a2499a0c59792eb488b0cc984794fc39, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6130185353339103242, guid: a2499a0c59792eb488b0cc984794fc39, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: -180
+      objectReference: {fileID: 0}
+    - target: {fileID: 6609460072896908661, guid: a2499a0c59792eb488b0cc984794fc39, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6609460072896908661, guid: a2499a0c59792eb488b0cc984794fc39, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6609460072896908661, guid: a2499a0c59792eb488b0cc984794fc39, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: -180
       objectReference: {fileID: 0}
     - target: {fileID: 9003173921875002997, guid: a2499a0c59792eb488b0cc984794fc39, type: 3}
       propertyPath: holdOffset.x
@@ -177254,6 +177302,10 @@ PrefabInstance:
     - target: {fileID: 3572876029474250445, guid: 6074fef34f2206949927cf4776a9b5d0, type: 3}
       propertyPath: m_Name
       value: GimmickDoors
+      objectReference: {fileID: 0}
+    - target: {fileID: 3572876029474250445, guid: 6074fef34f2206949927cf4776a9b5d0, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
