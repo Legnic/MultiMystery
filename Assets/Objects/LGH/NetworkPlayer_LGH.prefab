@@ -152,8 +152,8 @@ MonoBehaviour:
   m_VolumeTrigger: {fileID: 0}
   m_VolumeFrameworkUpdateModeOption: 2
   m_RenderPostProcessing: 1
-  m_Antialiasing: 0
-  m_AntialiasingQuality: 2
+  m_Antialiasing: 2
+  m_AntialiasingQuality: 1
   m_StopNaN: 0
   m_Dithering: 0
   m_ClearDepth: 1
@@ -302,7 +302,7 @@ Light:
   m_CookieSize2D: {x: 0.5, y: 0.5}
   m_Shadows:
     m_Type: 2
-    m_Resolution: -1
+    m_Resolution: 0
     m_CustomResolution: -1
     m_Strength: 1
     m_Bias: 0.05
@@ -2701,7 +2701,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::LGH.PistolLoader
   ShowTopMostFoldoutHeaderGroup: 1
   pistol: {fileID: 11400000, guid: 05e893f3f6ac5b94d9ab1cb6c47b55d1, type: 2}
-  viewModel: {fileID: 919132149155446097, guid: 30f96c80f02c47c49bcbc550384009d6, type: 3}
+  viewModel: {fileID: 7630848119032855043, guid: 48d7174a0a1ce94459e8d209ea4504da, type: 3}
   viewModelMaterial: {fileID: 2100000, guid: bbd04de35a30ad74db39d1338f43972c, type: 2}
   ramrodMaterial: {fileID: 2100000, guid: 854cdc14dd4706842b4276e4af686fac, type: 2}
   loadSeconds: 90
