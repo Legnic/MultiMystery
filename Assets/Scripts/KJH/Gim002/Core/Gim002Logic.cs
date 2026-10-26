@@ -105,12 +105,12 @@ namespace Gim002
             return true;
         }
 
-        // PREPARING: 1층 음악실 문이 열쇠로 열렸다 → 2층 "반주자" 표시등 ON
+        // PREPARING 이후 아무 때나: 1층 음악실 문이 열쇠로 열렸다 → 2층 "반주자" 표시등 ON
+        // 무대는 태엽만으로 먼저 시작될 수 있으므로, 장면이 진행 중이어도 문 열기는 받아들인다(진행 상태는 그대로).
         public bool NotifyMusicDoorOpened()
         {
-            if (State != Gim002State.Preparing || MusicDoorOpened) return false;
+            if (State == Gim002State.Locked || MusicDoorOpened) return false;
             MusicDoorOpened = true;
-            TryStart();
             Commit();
             return true;
         }
@@ -125,10 +125,11 @@ namespace Gim002
             return true;
         }
 
-        // 두 표시등이 모두 켜지면 장면 1을 커튼 닫힌 상태로 시작한다. 순서는 상관없다.
+        // 태엽 열쇠를 꽂으면 바로 장면 1을 커튼 닫힌 상태로 시작한다(손잡이를 돌릴 수 있음).
+        // 1층 음악실 문은 기다리지 않는다 — 반주 단계에서 1층 플레이어가 피아노를 쳐야 하므로 그때 자연스럽게 필요해진다.
         void TryStart()
         {
-            if (MusicDoorOpened && StageWound) SetState(Gim002State.CurtainClosed);
+            if (State == Gim002State.Preparing && StageWound) SetState(Gim002State.CurtainClosed);
         }
 
         // CURTAIN_CLOSED → STAGING: 손잡이를 2초 돌렸다. (2초를 세는 건 손잡이 쪽, 여기는 "다 돌렸다"는 결과만 받는다)

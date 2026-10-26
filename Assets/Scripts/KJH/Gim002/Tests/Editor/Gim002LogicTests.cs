@@ -71,12 +71,14 @@ namespace Gim002.Tests
         }
 
         [Test]
-        public void 태엽만_사용이면_Preparing_유지()
+        public void 태엽만_사용해도_장면1_CurtainClosed()
         {
             logic.NotifyGim001Solved();
             logic.NotifyStageWound();
-            Assert.AreEqual(Gim002State.Preparing, logic.State);
+            Assert.AreEqual(Gim002State.CurtainClosed, logic.State);
+            Assert.AreEqual(1, logic.SceneIndex);
             Assert.IsTrue(logic.StageWound);
+            Assert.IsFalse(logic.MusicDoorOpened);
         }
 
         [Test]
@@ -88,13 +90,14 @@ namespace Gim002.Tests
         }
 
         [Test]
-        public void 준비_순서를_바꿔도_결과가_같다()
+        public void 태엽_먼저_장면_진행중에도_문_열기를_받는다()
         {
             logic.NotifyGim001Solved();
             logic.NotifyStageWound();
-            logic.NotifyMusicDoorOpened();
-            Assert.AreEqual(Gim002State.CurtainClosed, logic.State);
-            Assert.AreEqual(1, logic.SceneIndex);
+            OpenCurtain();
+            Assert.IsTrue(logic.NotifyMusicDoorOpened());
+            Assert.IsTrue(logic.MusicDoorOpened);
+            Assert.AreEqual(Gim002State.Staging, logic.State, "문을 열어도 진행 상태는 그대로");
         }
 
         [Test]
@@ -440,10 +443,10 @@ namespace Gim002.Tests
         public void 재접속은_Preparing과_Complete에_영향_없음()
         {
             logic.NotifyGim001Solved();
-            logic.NotifyStageWound();
+            logic.NotifyMusicDoorOpened();
             logic.ResetCurrentScene();
             Assert.AreEqual(Gim002State.Preparing, logic.State);
-            Assert.IsTrue(logic.StageWound, "열쇠 사용 여부 유지");
+            Assert.IsTrue(logic.MusicDoorOpened, "열쇠 사용 여부 유지");
         }
 
         // ---------- 동기화 ----------
