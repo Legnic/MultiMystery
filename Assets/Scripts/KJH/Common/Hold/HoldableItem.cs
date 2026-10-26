@@ -32,6 +32,10 @@ public class HoldableItem : MonoBehaviour, IWorldInteractable
     [Tooltip("자리에 꽂힐 때 움직이는 시간(초)")]
     [SerializeField] protected float placeSeconds = 0.15f;
 
+    // 외부(HoldableNetworkSync 등 네트워크 레이어)가 "이 물건은 지금 다른 플레이어가 들고 있다"를 알려줄 때 쓰는 훅.
+    // 연결된 게 없으면 항상 false (오프라인/미설치여도 기존 동작 그대로).
+    public static System.Func<HoldableItem, bool> HeldByOther;
+
     public virtual string DisplayName { get { return displayName; } }
     public Vector3 HoldOffset { get { return holdOffset; } }
     public Vector3 HoldEuler { get { return holdEuler; } }
@@ -97,6 +101,7 @@ public class HoldableItem : MonoBehaviour, IWorldInteractable
             if (!isActiveAndEnabled) return false;
             if (Location == Where.Placed && Socket != null) return Socket.CanUsePlaced(this);
             if (Location == Where.Held) return false;
+            if (HeldByOther != null && HeldByOther(this)) return false;
             return CanPickUp;
         }
     }
@@ -107,6 +112,7 @@ public class HoldableItem : MonoBehaviour, IWorldInteractable
         {
             if (Location == Where.Placed && Socket != null) return Socket.PromptForPlaced(this);
             if (PlayerHand.LocalHeld != null) return DisplayName + "  (손에 다른 물건을 들고 있다)";
+            if (HeldByOther != null && HeldByOther(this)) return DisplayName + "  (상대가 들고 있다)";
             return "[E] " + DisplayName + " 집기";
         }
     }
@@ -115,6 +121,7 @@ public class HoldableItem : MonoBehaviour, IWorldInteractable
     {
         if (Location == Where.Placed && Socket != null) { Socket.UsePlaced(this); return; }
         if (Location == Where.Held || !CanPickUp) return;
+        if (HeldByOther != null && HeldByOther(this)) return;
         PlayerHand.Local.TryTake(this);
     }
 
@@ -149,6 +156,18 @@ public class HoldableItem : MonoBehaviour, IWorldInteractable
         if (Location == Where.Home && moving == null) return;
         transform.SetParent(homeParent, true);
         MoveTo(homeLocalPos, homeLocalRot, homeLocalScale, seconds < 0f ? returnSeconds : seconds, Where.Home);
+    }
+
+    // 외부(HoldableNetworkSync)가 쓰는 전용 메서드: 이 컴퓨터의 Location은 안 바뀌었지만(상대가 들고 있는 동안
+    // 보여주기 위해 트랜스폼만 상대 손 쪽으로 옮겨뒀던 상태) 실제로는 자리에 없을 때, 애니메이션 없이 바로
+    // 원래 자리로 되돌린다. ReturnHome()은 Location이 이미 Home이면 "할 일 없음"으로 보고 넘어가므로 못 쓴다.
+    public void ForceReturnHome()
+    {
+        StopMoving();
+        transform.SetParent(homeParent, true);
+        transform.localPosition = homeLocalPos;
+        transform.localRotation = homeLocalRot;
+        transform.localScale = homeLocalScale;
     }
 
     // anchor 위치에 꽂는다. socket은 꽂힌 동안 E 입력을 대신 처리할 자리.

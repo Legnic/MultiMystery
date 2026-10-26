@@ -27,7 +27,7 @@ namespace PotionCraft
             get
             {
                 if (Current != this) return kind == Kind.Book ? "[E] 제조법 책 보기" : "[E] 쪽지 보기";
-                return kind == Kind.Book ? "[E] 다음 쪽   [A] 이전 쪽   [Q] 닫기" : "[Q] 닫기";
+                return kind == Kind.Book ? "[D] 다음 쪽   [A] 이전 쪽   [Q] 닫기" : "[Q] 닫기";
             }
         }
 
@@ -45,13 +45,8 @@ namespace PotionCraft
 
         public void Interact(GameObject interactor)
         {
-            if (Current == this)
-            {
-                // 읽는 중에 E를 다시 누르면 다음 쪽, 마지막 쪽이면 닫는다.
-                if (kind == Kind.Book && spread < SpreadCount - 1) spread++;
-                else Close();
-                return;
-            }
+            // 읽는 중에는 E가 아무 동작도 하지 않는다 (쪽 넘기기는 A/D·방향키, 닫기는 Q/Esc 전담 — 2026-10-26 결정).
+            if (Current == this) return;
             if (Current != null) return;
 
             Current = this;
@@ -104,7 +99,7 @@ namespace PotionCraft
             {
                 int page = Mathf.Clamp(spread, 0, sync.BookData.pages.Length - 1);
                 DrawImagePage(v, sync.BookData.pages[page].image,
-                    "조합법 " + (page + 1) + "쪽   —   " + (page + 1) + " / " + SpreadCount + "   [E][D] 다음  [A] 이전  [Q] 닫기");
+                    "조합법 " + (page + 1) + "쪽   —   " + (page + 1) + " / " + SpreadCount + "   [D] 다음  [A] 이전  [Q] 닫기");
                 return;
             }
             var image = book ? null : (sync.FinalRecipe != null ? sync.FinalRecipe.noteImage : null);
@@ -139,16 +134,34 @@ namespace PotionCraft
                     }
                     GUI.Label(new Rect(col.x, col.y + 34f, col.width, col.height - 34f), sb.ToString(), bodyStyle);
                 }
-                GUI.Label(new Rect(r.x, r.yMax - 40f, r.width, 28f), (spread + 1) + " / " + SpreadCount + "   —   [E][D] 다음  [A] 이전  [Q] 닫기", hintStyle);
+                GUI.Label(new Rect(r.x, r.yMax - 40f, r.width, 28f), (spread + 1) + " / " + SpreadCount + "   —   [D] 다음  [A] 이전  [Q] 닫기", hintStyle);
             }
             else
             {
                 var data = sync.FinalRecipe;
                 GUI.Label(new Rect(r.x, r.y + 14f, r.width, 36f), data != null ? data.title : "쪽지", titleStyle);
-                GUI.Label(new Rect(r.x + 36f, r.y + 80f, r.width - 72f, r.height - 140f), data != null ? data.noteText : string.Empty, bodyStyle);
+                string body = data != null ? data.noteText : string.Empty;
+                string order = BuildOrderHint(data, sync.Catalog);
+                if (!string.IsNullOrEmpty(order)) body = string.IsNullOrEmpty(body) ? order : body + "\n\n" + order;
+                GUI.Label(new Rect(r.x + 36f, r.y + 80f, r.width - 72f, r.height - 140f), body, bodyStyle);
                 GUI.Label(new Rect(r.x, r.yMax - 40f, r.width, 28f), "[Q] 닫기", hintStyle);
             }
             GUI.color = old;
+        }
+
+        // 쪽지 글 내용에 "넣는 순서"를 정답(FinalRecipeData.sequence) 그대로 생성해 덧붙인다.
+        // noteText는 분위기용 문구로 자유롭게 쓰고, 실제 순서는 항상 데이터와 어긋나지 않게 여기서 만든다.
+        static string BuildOrderHint(FinalRecipeData data, PotionCatalog cat)
+        {
+            if (data == null || data.sequence == null || data.sequence.Length == 0) return null;
+            var sb = new StringBuilder();
+            sb.Append("넣는 순서");
+            for (int i = 0; i < data.sequence.Length; i++)
+            {
+                string name = cat != null ? cat.PowderNameOf(data.sequence[i]) : data.sequence[i].ToString();
+                sb.Append("\n" + (i + 1) + ") " + name);
+            }
+            return sb.ToString();
         }
 
         // 그림 쪽지·그림 책: 화면을 어둡게 덮고 그림을 가운데에 크게 띄운 뒤, 아래에 안내 문구를 쓴다.

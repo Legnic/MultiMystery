@@ -19,6 +19,7 @@ namespace Gim002
 
         bool reading;
         int page;
+        LGH.FirstPersonController lockedMove;
         // NonSerialized: 에디터가 스크립트를 다시 불러올 때 GUIStyle을 "빈 스타일"로 채워 넣어서,
         // null 검사로는 "이미 만들었다"고 착각해 정렬·글자 크기 설정이 통째로 빠지는 문제가 있었다.
         [System.NonSerialized] GUIStyle titleStyle, bodyStyle, hintStyle;
@@ -27,19 +28,40 @@ namespace Gim002
         static Gim002Config Cfg { get { return Gim002Controller.Instance != null ? Gim002Controller.Instance.Config : null; } }
         int PageCount { get { return Cfg != null ? 1 + Cfg.scenes.Count : 1; } }
 
-        protected override void OnReleased() { reading = false; }
+        protected override void OnReleased() { SetReading(false); }
+
+        // 읽는 동안 이동을 멈춘다(게스트룸 제조법 책을 읽을 때와 같은 방식) — 책을 보면서 걸어다니면
+        // 화면이 흔들려 글이 잘 안 보이는 문제를 막는다.
+        void SetReading(bool value)
+        {
+            if (reading == value) return;
+            reading = value;
+            if (value)
+            {
+                lockedMove = LGH.PlayerInteractor.Active != null ? LGH.PlayerInteractor.Active.GetComponent<LGH.FirstPersonController>() : null;
+                if (lockedMove != null) lockedMove.enabled = false;
+            }
+            else
+            {
+                if (lockedMove != null) lockedMove.enabled = true;
+                lockedMove = null;
+            }
+        }
 
         void Update()
         {
-            if (!IsHeldLocally) { reading = false; return; }
+            if (!IsHeldLocally) { SetReading(false); return; }
             var kb = Keyboard.current;
             if (kb == null) return;
-            if (kb[readKey].wasPressedThisFrame) reading = !reading;
+            if (kb[readKey].wasPressedThisFrame) SetReading(!reading);
             if (!reading) return;
-            if (kb.leftArrowKey.wasPressedThisFrame) page = Mathf.Max(0, page - 1);
-            if (kb.rightArrowKey.wasPressedThisFrame) page = Mathf.Min(PageCount - 1, page + 1);
-            if (kb.escapeKey.wasPressedThisFrame) reading = false;
+            // 쪽 넘기기는 게스트룸 제조법 책과 같은 방식: A/← 이전 쪽, D/→ 다음 쪽 (2026-10-26 통일)
+            if (kb.leftArrowKey.wasPressedThisFrame || kb.aKey.wasPressedThisFrame) page = Mathf.Max(0, page - 1);
+            if (kb.rightArrowKey.wasPressedThisFrame || kb.dKey.wasPressedThisFrame) page = Mathf.Min(PageCount - 1, page + 1);
+            if (kb.escapeKey.wasPressedThisFrame) SetReading(false);
         }
+
+        void OnDisable() { SetReading(false); }
 
         void OnGUI()
         {
@@ -74,7 +96,7 @@ namespace Gim002
             GUI.Label(bodyRect, body, bodyStyle);
 
             GUI.Label(new Rect(rect.x, rect.yMax - hintH - 10f, rect.width, hintH),
-                (page > 0 ? "◀ ←   " : "") + (page + 1) + " / " + PageCount + (page < PageCount - 1 ? "   → ▶" : "") + "     [F] 덮기", hintStyle);
+                (page > 0 ? "A ◀ ←   " : "") + (page + 1) + " / " + PageCount + (page < PageCount - 1 ? "   → ▶ D" : "") + "     [F] 덮기", hintStyle);
             GUI.matrix = Matrix4x4.identity;
         }
 

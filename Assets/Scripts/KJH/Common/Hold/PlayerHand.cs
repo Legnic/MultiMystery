@@ -30,6 +30,11 @@ public class PlayerHand : MonoBehaviour
     // 손을 만들지 않고 "지금 이 물건을 들고 있나"만 확인하고 싶을 때 사용
     public static HoldableItem LocalHeld { get { return local != null ? local.Held : null; } }
 
+    // 이 컴퓨터에서 방금 집었다/놓았다 — HoldableNetworkSync가 구독해서 서버에 알리는 용도.
+    // (HoldableItem/PlayerHand는 네트워크를 몰라도 되게, 이벤트만 던지고 누가 듣는지는 신경 쓰지 않는다)
+    public static event System.Action<HoldableItem> LocalTaken;
+    public static event System.Action<HoldableItem> LocalReleased;
+
     [Tooltip("이미 무언가를 들고 있는데 또 집으려 할 때 띄울 문구")]
     public string handFullMessage = "손이 가득 찼다";
 
@@ -58,6 +63,7 @@ public class PlayerHand : MonoBehaviour
         }
         Held = item;
         item.NotifyTaken();
+        LocalTaken?.Invoke(item);
         return true;
     }
 
@@ -66,7 +72,7 @@ public class PlayerHand : MonoBehaviour
     {
         var item = Held;
         Held = null;
-        if (item != null) item.NotifyReleased();
+        if (item != null) { item.NotifyReleased(); LocalReleased?.Invoke(item); }
         return item;
     }
 

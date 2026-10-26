@@ -12,6 +12,16 @@ namespace LGH
         public float jumpHeight = 1.2f;
         public Transform cameraTransform;
 
+        [Header("달리기")]
+        public float sprintMultiplier = 1.6f;
+        [Header("웅크리기")]
+        [Tooltip("선 키 대비 웅크렸을 때 키 비율")]
+        public float crouchHeightMultiplier = 0.6f;
+        public float crouchSpeedMultiplier = 0.55f;
+        public float crouchTransitionSpeed = 8f;
+
+        public bool IsCrouching { get { return crouching; } }
+
         // IPlayerLock: lets a cutscene-style interaction (object echo, clue viewing, ...) pause
         // movement/look and drive the camera itself without needing to know this is a
         // FirstPersonController specifically.
@@ -50,6 +60,11 @@ namespace LGH
         private float verticalVelocity;
         private float pitch;
 
+        bool crouching;
+        float standingHeight, crouchHeight;
+        Vector3 standingCenter, crouchCenter;
+        float standingCamY, crouchCamY;
+
         void Awake()
         {
             controller = GetComponent<CharacterController>();
@@ -58,6 +73,23 @@ namespace LGH
                 Camera cam = GetComponentInChildren<Camera>();
                 if (cam != null) cameraTransform = cam.transform;
             }
+
+            standingHeight = controller.height;
+            standingCenter = controller.center;
+            crouchHeight = Mathf.Max(0.3f, standingHeight * crouchHeightMultiplier);
+            float drop = standingHeight - crouchHeight;
+            crouchCenter = standingCenter - new Vector3(0f, drop * 0.5f, 0f);
+            standingCamY = cameraTransform != null ? cameraTransform.localPosition.y : 0f;
+            crouchCamY = standingCamY - drop;
+        }
+
+        // 일어서려는 자리 바로 위가 막혀 있지 않은지(낮은 천장 등) 확인한다
+        bool CanStandUp()
+        {
+            float drop = standingHeight - crouchHeight;
+            Vector3 origin = transform.position + Vector3.up * (controller.height - controller.radius);
+            return !Physics.SphereCast(origin, controller.radius * 0.95f, Vector3.up, out _, drop + 0.05f,
+                ~0, QueryTriggerInteraction.Ignore);
         }
 
         void Start()
@@ -105,6 +137,28 @@ namespace LGH
             Vector3 moveDir = (transform.right * h + transform.forward * v);
             if (moveDir.sqrMagnitude > 1f) moveDir.Normalize();
 
+            // 웅크리기: 왼쪽 Ctrl을 누르고 있는 동안 웅크린다. 떼도 머리 위가 막혀 있으면 일어나지 못한다.
+            bool wantCrouch = !typing && !paused && kb.leftCtrlKey.isPressed;
+            if (!wantCrouch && crouching && !CanStandUp()) wantCrouch = true;
+            crouching = wantCrouch;
+
+            float heightDrop = standingHeight - crouchHeight;
+            float targetHeight = crouching ? crouchHeight : standingHeight;
+            Vector3 targetCenter = crouching ? crouchCenter : standingCenter;
+            float targetCamY = crouching ? crouchCamY : standingCamY;
+            controller.height = Mathf.MoveTowards(controller.height, targetHeight, crouchTransitionSpeed * heightDrop * Time.deltaTime + 0.001f);
+            controller.center = Vector3.MoveTowards(controller.center, targetCenter, crouchTransitionSpeed * heightDrop * Time.deltaTime + 0.001f);
+            if (cameraTransform != null)
+            {
+                var camLocal = cameraTransform.localPosition;
+                camLocal.y = Mathf.MoveTowards(camLocal.y, targetCamY, crouchTransitionSpeed * heightDrop * Time.deltaTime + 0.001f);
+                cameraTransform.localPosition = camLocal;
+            }
+
+            // 달리기: 왼쪽 Shift를 누르고 있는 동안, 웅크리지 않았고 실제로 움직이고 있을 때만
+            bool sprinting = !typing && !paused && !crouching && kb.leftShiftKey.isPressed && moveDir.sqrMagnitude > 0.01f;
+            float speedMul = crouching ? crouchSpeedMultiplier : (sprinting ? sprintMultiplier : 1f);
+
             // on a ladder (got on with E): W / S climb, no gravity
             if (Climbing != null)
             {
@@ -132,7 +186,7 @@ namespace LGH
                 verticalVelocity += gravity * Time.deltaTime;
             }
 
-            Vector3 velocity = moveDir * moveSpeed * SpeedMultiplier;
+            Vector3 velocity = moveDir * moveSpeed * speedMul * SpeedMultiplier;
             velocity.y = verticalVelocity;
             controller.Move(velocity * Time.deltaTime);
         }

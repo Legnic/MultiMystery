@@ -89,8 +89,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LGH.CandleNetworkSync
   ShowTopMostFoldoutHeaderGroup: 1
-  minCandles: 1
-  maxCandles: 4
+  minCandles: 0
+  maxCandles: 0
   burnSeconds: 180
   infiniteCandles: 1
   minUsefulSeconds: 2

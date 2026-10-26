@@ -159,6 +159,7 @@
     <Compile Include="Assets\Scripts\LGH\RoomResetter.cs" />
     <Compile Include="Assets\Scripts\LHJ\MouthFlapTest.cs" />
     <Compile Include="Assets\Scripts\LGH\StarLockBoxInspect.cs" />
+    <Compile Include="Assets\Scripts\KJH\Common\Hold\HoldableNetworkSync.cs" />
     <Compile Include="Assets\Scripts\LGH\FirstPersonController.cs" />
     <Compile Include="Assets\Scripts\KJH\Dumbwaiter\IWorldSecondaryInteractable.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim005\Runtime\LocalGim005Net.cs" />

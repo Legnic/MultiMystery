@@ -16,13 +16,25 @@ namespace CoopDemo
         [Header("뼈 (이름으로 자동 연결)")]
         public Transform hips, spine, spine1, spine2, neck, head;
         public Transform leftUpLeg, leftLeg, leftFoot, rightUpLeg, rightLeg, rightFoot;
-        public Transform leftArm, leftForeArm, rightArm, rightForeArm, rightHand;
+        public Transform leftArm, leftForeArm, rightArm, rightForeArm, rightHand, leftHand;
 
         [Header("손에 든 촛불 (상대에게 보이는 쪽)")]
         [Tooltip("오른손 위치 기준, 모델 좌표(오른쪽, 위, 앞)로 얼마나 띄울지 (접시 바닥이 손바닥에 오게)")]
         public Vector3 handCandleOffset = new Vector3(0.0f, 0.10f, 0.03f);
         [Tooltip("모델이 아니라 \"월드\"를 기준으로 촛불을 똑바로 세운다 (팔이 돌아가도 촛불은 기울지 않는다)")]
         public bool handCandleUpright = true;
+
+        [Header("왼손에 든 공용 물건 (인형·배경카드·화분 등, 상대에게 보이는 쪽)")]
+        [Tooltip("왼손 위치 기준, 모델 좌표(오른쪽, 위, 앞)로 얼마나 띄울지")]
+        public Vector3 handItemOffset = new Vector3(0.0f, 0.08f, 0.06f);
+        [Tooltip("손에 든 물건이 손 자체 기울기를 따라갈지(false, 자연스럽게 들린 느낌) 월드 기준으로 세울지(true)")]
+        public bool handItemUpright = false;
+
+        [Header("웅크리기 (상대에게 보이는 쪽)")]
+        [Tooltip("웅크렸을 때 모델 전체를 얼마나 낮출지(m)")]
+        public float crouchDrop = 0.30f;
+        [Tooltip("웅크림 상태 전환 속도(초당)")]
+        public float crouchBlendSpeed = 8f;
 
         [Header("그림")]
         public SkinnedMeshRenderer body;
@@ -65,6 +77,9 @@ namespace CoopDemo
         static readonly int InteractHash = Animator.StringToHash("Interact");
 
         Transform handCandleSocket;
+        Transform handItemSocket;
+        bool wantCrouch;
+        float crouchAmount;
 
         // 상대 화면에서 촛불을 손에 붙인다. 촛불 오브젝트 하나를 1인칭 카메라 앞에서 손 소켓으로 옮긴다.
         public void AttachHandCandle(Transform candle)
@@ -92,9 +107,36 @@ namespace CoopDemo
             handCandleSocket.rotation = handCandleUpright ? Quaternion.Euler(0f, transform.eulerAngles.y, 0f) : transform.rotation;
         }
 
+        // 공용 들기 시스템(HoldableItem)이 왼손에 든 물건을 상대 화면에서 왼손에 붙인다 (HoldableNetworkSync가 호출).
+        // AttachHandCandle과 같은 패턴 — 들고 있는 동안 걷기 팔 흔들림을 그대로 따라가서 "손이 움직이는" 게 보인다.
+        public void AttachLeftHandItem(Transform item)
+        {
+            if (item == null || leftHand == null) return;
+            if (handItemSocket == null)
+            {
+                var go = new GameObject("LeftHandItemSocket");
+                handItemSocket = go.transform;
+                handItemSocket.SetParent(transform, false);
+            }
+            float s = Mathf.Max(0.0001f, transform.lossyScale.x);
+            handItemSocket.localScale = Vector3.one / s;
+            item.SetParent(handItemSocket, false);
+            item.localPosition = Vector3.zero;
+            item.localRotation = Quaternion.identity;
+            UpdateHandItem();
+        }
+
+        void UpdateHandItem()
+        {
+            if (handItemSocket == null || leftHand == null) return;
+            handItemSocket.position = leftHand.position + transform.TransformVector(handItemOffset);
+            handItemSocket.rotation = handItemUpright ? Quaternion.Euler(0f, transform.eulerAngles.y, 0f) : leftHand.rotation;
+        }
+
         // ---- 바깥에서 부르는 것 ----
         public void SetSpeaking(bool value) { speaking = value; }
         public void SetHeadPitch(float degrees) { headPitch = Mathf.Clamp(degrees, -50f, 50f); }
+        public void SetCrouching(bool value) { wantCrouch = value; }
         public void TriggerInteract() { if (animator != null && animator.isActiveAndEnabled) animator.SetTrigger(InteractHash); }
 
         void Awake()
@@ -135,6 +177,7 @@ namespace CoopDemo
             rightArm = rightArm ? rightArm : Find("RightArm");
             rightForeArm = rightForeArm ? rightForeArm : Find("RightForeArm");
             rightHand = rightHand ? rightHand : Find("RightHand");
+            leftHand = leftHand ? leftHand : Find("LeftHand");
         }
 
         void CaptureRest()
@@ -182,9 +225,12 @@ namespace CoopDemo
         void LateUpdate()
         {
             float dt = Mathf.Max(Time.deltaTime, 1e-4f);
+            crouchAmount = Mathf.MoveTowards(crouchAmount, wantCrouch ? 1f : 0f, crouchBlendSpeed * dt);
             UpdateMotionState(dt);
             ApplyPose();
+            transform.localPosition = new Vector3(0f, -crouchDrop * crouchAmount, 0f);   // 웅크림: 모델 전체를 낮춘다(루트는 그대로)
             UpdateHandCandle();   // 뼈를 다 돌린 뒤에 손 위치를 읽는다
+            UpdateHandItem();
             UpdateMouth(dt);
         }
 
@@ -225,7 +271,8 @@ namespace CoopDemo
             float s = Mathf.Sin(phase);
             float c = Mathf.Cos(phase);
             float ground = 1f - airWeight;
-            float crouch = landTimer > 0f ? Mathf.Sin(landTimer / landCrouchSeconds * Mathf.PI) : 0f;
+            float landCrouch = landTimer > 0f ? Mathf.Sin(landTimer / landCrouchSeconds * Mathf.PI) : 0f;
+            float crouch = Mathf.Max(landCrouch, crouchAmount);   // 착지 순간의 짧은 굽힘 + 지속적인 웅크림, 둘 다 같은 다리 굽힘 공식을 쓴다
             float breathe = Mathf.Sin(Time.time * 1.7f) * 1.1f * (1f - amp);
 
             // 몸통: 살짝 앞으로 기울고, 서 있을 땐 숨쉬듯 흔들린다

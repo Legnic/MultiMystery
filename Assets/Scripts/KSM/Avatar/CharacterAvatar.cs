@@ -22,11 +22,17 @@ namespace CoopDemo
         readonly NetworkVariable<byte> interactCount = new NetworkVariable<byte>(
             0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
 
+        // 웅크림 여부 — 소유자(FirstPersonController.IsCrouching)가 쓰고, 다 같이 읽어서 모델 자세에 반영한다.
+        readonly NetworkVariable<bool> crouching = new NetworkVariable<bool>(
+            false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+
         public CharacterAvatarModel Model { get; private set; }
         public bool IsHostCharacter { get; private set; }
 
         LGH.PlayerInteractor interactor;
+        LGH.FirstPersonController firstPerson;
         Transform cameraTransform;
+        bool lastCrouchSent;
 
         // ---- 재접속 위치 기억 (서버 컴퓨터에만 쌓인다) ----
         // 자리(PlayerSlot)별로 "마지막으로 있던 곳"을 기억해 두었다가, 같은 자리 사람이 다시 들어오면 거기로 돌려보낸다.
@@ -43,10 +49,12 @@ namespace CoopDemo
             SpawnModel(IsHostCharacter ? orangeModel : blueModel);
 
             interactCount.OnValueChanged += OnInteractCountChanged;
+            crouching.OnValueChanged += OnCrouchChanged;
             if (IsOwner)
             {
                 interactor = GetComponentInParent<LGH.PlayerInteractor>();
                 if (interactor != null) interactor.Interacted += OnLocalInteract;
+                firstPerson = GetComponentInParent<LGH.FirstPersonController>();
             }
             var cam = GetComponentInParent<NetworkObject>().GetComponentInChildren<Camera>(true);
             cameraTransform = cam != null ? cam.transform : null;
@@ -69,6 +77,7 @@ namespace CoopDemo
         public override void OnNetworkDespawn()
         {
             interactCount.OnValueChanged -= OnInteractCountChanged;
+            crouching.OnValueChanged -= OnCrouchChanged;
             if (interactor != null) interactor.Interacted -= OnLocalInteract;
             interactor = null;
             // 방에 남은 사람(호스트)이 있는 동안 나간 사람의 마지막 위치를 기억한다
@@ -160,6 +169,11 @@ namespace CoopDemo
             Model.TriggerInteract();
         }
 
+        void OnCrouchChanged(bool before, bool now)
+        {
+            if (Model != null) Model.SetCrouching(now);
+        }
+
         void Update()
         {
             if (Model == null) return;
@@ -167,6 +181,13 @@ namespace CoopDemo
             var voice = VoiceChatManager.Instance;
             bool speaking = voice != null && (IsOwner ? voice.SelfSpeaking : voice.RemoteSpeaking);
             Model.SetSpeaking(speaking);
+
+            // 내가 웅크리고 있으면(로컬 FirstPersonController) 바뀐 순간에만 서버에 알려서 상대 화면에도 반영한다
+            if (IsOwner && firstPerson != null)
+            {
+                bool c = firstPerson.IsCrouching;
+                if (c != lastCrouchSent) { crouching.Value = c; lastCrouchSent = c; }
+            }
 
             if (cameraTransform != null)
             {
