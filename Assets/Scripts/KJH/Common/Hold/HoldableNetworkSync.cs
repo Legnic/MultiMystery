@@ -28,8 +28,9 @@ public class HoldableNetworkSync : NetworkBehaviour
 
     NetworkList<HeldEntry> held;
     HoldableItem[] items = new HoldableItem[0];
-    // 지금 이 컴퓨터가 "상대 손"으로 보이게 옮겨둔 아이템들 (itemIndex 기준)
+    // 지금 이 컴퓨터가 "상대 손"으로 보이게 옮겨둔 아이템들 (itemIndex 기준), 그리고 어느 모델의 왼손에 붙였는지
     readonly HashSet<int> attached = new HashSet<int>();
+    readonly Dictionary<int, CoopDemo.CharacterAvatarModel> attachedModel = new Dictionary<int, CoopDemo.CharacterAvatarModel>();
 
     ulong MyId { get { return NetworkManager.Singleton != null ? NetworkManager.Singleton.LocalClientId : 0; } }
 
@@ -158,6 +159,7 @@ public class HoldableNetworkSync : NetworkBehaviour
         if (avatar != null && avatar.Model != null)
         {
             avatar.Model.AttachLeftHandItem(t);
+            attachedModel[itemIndex] = avatar.Model;
         }
         else
         {
@@ -171,6 +173,11 @@ public class HoldableNetworkSync : NetworkBehaviour
     void Release(int itemIndex)
     {
         attached.Remove(itemIndex);
+        if (attachedModel.TryGetValue(itemIndex, out var model))
+        {
+            attachedModel.Remove(itemIndex);
+            if (model != null) model.DetachLeftHandItem();   // 왼팔을 드는 자세에서 평소 걷기 자세로 되돌린다
+        }
         if (itemIndex < 0 || itemIndex >= items.Length || items[itemIndex] == null) return;
         var item = items[itemIndex];
         // 이미 이 컴퓨터에서 직접 들었거나(PlayerHand), 기믹 로직이 자리에 꽂아 놓은 상태면 건드리지 않는다.

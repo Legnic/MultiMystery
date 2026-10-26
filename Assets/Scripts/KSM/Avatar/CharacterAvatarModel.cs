@@ -20,15 +20,17 @@ namespace CoopDemo
 
         [Header("손에 든 촛불 (상대에게 보이는 쪽)")]
         [Tooltip("오른손 위치 기준, 모델 좌표(오른쪽, 위, 앞)로 얼마나 띄울지 (접시 바닥이 손바닥에 오게)")]
-        public Vector3 handCandleOffset = new Vector3(0.0f, 0.10f, 0.03f);
+        public Vector3 handCandleOffset = new Vector3(0.0f, 0.10f, 0.10f);
         [Tooltip("모델이 아니라 \"월드\"를 기준으로 촛불을 똑바로 세운다 (팔이 돌아가도 촛불은 기울지 않는다)")]
         public bool handCandleUpright = true;
 
         [Header("왼손에 든 공용 물건 (인형·배경카드·화분 등, 상대에게 보이는 쪽)")]
         [Tooltip("왼손 위치 기준, 모델 좌표(오른쪽, 위, 앞)로 얼마나 띄울지")]
-        public Vector3 handItemOffset = new Vector3(0.0f, 0.08f, 0.06f);
+        public Vector3 handItemOffset = new Vector3(0.0f, 0.08f, 0.10f);
         [Tooltip("손에 든 물건이 손 자체 기울기를 따라갈지(false, 자연스럽게 들린 느낌) 월드 기준으로 세울지(true)")]
         public bool handItemUpright = false;
+        [Tooltip("왼손에 물건을 든 자세로 바뀌는 속도(초당)")]
+        public float holdPoseBlendSpeed = 8f;
 
         [Header("웅크리기 (상대에게 보이는 쪽)")]
         [Tooltip("웅크렸을 때 모델 전체를 얼마나 낮출지(m)")]
@@ -51,6 +53,10 @@ namespace CoopDemo
         [Header("오른손 (촛불을 든 자세)")]
         public float holdArmAngle = -34f;
         public float holdForeArmAngle = -26f;
+
+        [Header("왼손 (물건을 들었을 때 자세 — 오른손과 같은 방식)")]
+        public float leftHoldArmAngle = -34f;
+        public float leftHoldForeArmAngle = -26f;
 
         [Header("점프")]
         public float airLegAngle = -28f;
@@ -80,6 +86,8 @@ namespace CoopDemo
         Transform handItemSocket;
         bool wantCrouch;
         float crouchAmount;
+        bool holdingLeftItem;
+        float leftHoldAmount;
 
         // 상대 화면에서 촛불을 손에 붙인다. 촛불 오브젝트 하나를 1인칭 카메라 앞에서 손 소켓으로 옮긴다.
         public void AttachHandCandle(Transform candle)
@@ -123,7 +131,14 @@ namespace CoopDemo
             item.SetParent(handItemSocket, false);
             item.localPosition = Vector3.zero;
             item.localRotation = Quaternion.identity;
+            holdingLeftItem = true;   // 오른팔처럼 왼팔도 "드는 자세"로 굽힌다 (차렷 자세로 손목에 박혀 보이는 문제 방지)
             UpdateHandItem();
+        }
+
+        // 왼손이 비면 다시 평소 걷기 흔들림으로 돌아간다 (HoldableNetworkSync가 놓을 때 호출)
+        public void DetachLeftHandItem()
+        {
+            holdingLeftItem = false;
         }
 
         void UpdateHandItem()
@@ -226,6 +241,7 @@ namespace CoopDemo
         {
             float dt = Mathf.Max(Time.deltaTime, 1e-4f);
             crouchAmount = Mathf.MoveTowards(crouchAmount, wantCrouch ? 1f : 0f, crouchBlendSpeed * dt);
+            leftHoldAmount = Mathf.MoveTowards(leftHoldAmount, holdingLeftItem ? 1f : 0f, holdPoseBlendSpeed * dt);
             UpdateMotionState(dt);
             ApplyPose();
             transform.localPosition = new Vector3(0f, -crouchDrop * crouchAmount, 0f);   // 웅크림: 모델 전체를 낮춘다(루트는 그대로)
@@ -284,10 +300,11 @@ namespace CoopDemo
             // 고개: 카메라가 보는 위아래를 따라간다 (상대 플레이어가 어디를 보는지 보인다)
             Pose(head, (right, headPitch * 0.7f - lean * 0.5f * amp * ground));
 
-            // 팔: 왼팔은 다리 반대로 흔들고, 오른팔은 촛불을 든 채로 조금만 흔든다
+            // 팔: 왼팔은 다리 반대로 흔들고(물건을 들고 있으면 오른팔처럼 드는 자세로 굽혀서 조금만 흔든다), 오른팔은 촛불을 든 채로 조금만 흔든다
             float armAmp = armSwing * amp * ground;
-            Pose(leftArm, (swingAxis, s * armAmp), (right, airArmAngle * airWeight));
-            Pose(leftForeArm, (right, -8f * amp * ground + airArmAngle * 0.3f * airWeight));
+            float leftArmAmp = Mathf.Lerp(armAmp, armAmp * 0.35f, leftHoldAmount);
+            Pose(leftArm, (swingAxis, s * leftArmAmp), (right, airArmAngle * airWeight + leftHoldArmAngle * leftHoldAmount * ground));
+            Pose(leftForeArm, (right, -8f * amp * ground * (1f - leftHoldAmount) + airArmAngle * 0.3f * airWeight + leftHoldForeArmAngle * leftHoldAmount * ground));
             Pose(rightArm, (swingAxis, -s * armAmp * 0.35f), (right, holdArmAngle * ground + airArmAngle * airWeight));
             Pose(rightForeArm, (right, holdForeArmAngle * ground + airArmAngle * 0.3f * airWeight));
 
