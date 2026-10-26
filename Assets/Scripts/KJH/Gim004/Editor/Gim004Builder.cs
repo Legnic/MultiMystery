@@ -51,6 +51,10 @@ namespace Gim004.EditorTools
 
         const float SlotSpacing = 0.7f;
         const float ShelfTopY = 0.78f;
+        const float PotSpacing = 0.85f;   // 받침 벤치 위 화분 간격 (벤치 모델 Furn_GreenhouseBench 2개 = 6m 안에 7개)
+
+        // 자리 발판 모델. 없으면 임시 원판(Pad)으로 대신한다. 화분은 발판의 PotMount 높이에 놓인다.
+        const string PressPlatePath = "Assets/VARCO 3D/KWJ/Prefabs/_NeedsCollider/Prop_PressPlate.prefab";
 
         [MenuItem("Tools/KJH/GIM-004/Build All")]
         public static void BuildAll() { Build(false); }
@@ -355,7 +359,7 @@ namespace Gim004.EditorTools
 
         // ---------- 화분 받침 벤치 (북쪽 벽 앞) ----------
 
-        const float BenchTopY = 0.45f;
+        const float BenchTopY = 0.7f;   // 벤치 모델(Furn_GreenhouseBench) 윗면 높이에 맞춤
 
         static void BuildBenchVisual(Transform t)
         {
@@ -413,6 +417,9 @@ namespace Gim004.EditorTools
             shelf.gameObject.AddComponent<Gim004ShelfFeedback>();
 
             var padMat = Mat("SlotPad", new Color(0.22f, 0.15f, 0.09f));
+            var pressPlate = AssetDatabase.LoadAssetAtPath<GameObject>(PressPlatePath);
+            var potMount = pressPlate != null ? pressPlate.GetComponentsInChildren<Transform>(true).FirstOrDefault(c => c.name == "PotMount") : null;
+            float anchorY = potMount != null ? potMount.position.y - pressPlate.transform.position.y : 0.008f;
             var brass = Mat("Brass", new Color(0.78f, 0.6f, 0.28f), 0.55f);
             var ringMat = Mat("ButtonRing", new Color(0.15f, 0.12f, 0.1f));
             for (int i = 0; i < Gim004Rules.SlotCount; i++)
@@ -423,13 +430,20 @@ namespace Gim004.EditorTools
                 slot.SetParent(shelf, false);
                 slot.localPosition = new Vector3(x, ShelfTopY, 0.02f);
                 var col = slot.gameObject.AddComponent<BoxCollider>();
-                col.center = new Vector3(0f, 0.06f, 0f);
-                col.size = new Vector3(0.6f, 0.12f, 0.6f);
+                col.center = new Vector3(0f, anchorY * 0.5f + 0.06f, 0f);
+                col.size = new Vector3(0.6f, anchorY + 0.12f, 0.6f);
 
-                Prim(PrimitiveType.Cylinder, slot, "Pad", new Vector3(0f, 0.004f, 0f), new Vector3(0.44f, 0.004f, 0.44f), padMat);
+                if (pressPlate != null)
+                {
+                    var pad = (GameObject)PrefabUtility.InstantiatePrefab(pressPlate, slot);
+                    pad.name = "Pad";
+                    pad.transform.localPosition = Vector3.zero;
+                    pad.transform.localRotation = Quaternion.identity;
+                }
+                else Prim(PrimitiveType.Cylinder, slot, "Pad", new Vector3(0f, 0.004f, 0f), new Vector3(0.44f, 0.004f, 0.44f), padMat);
                 var anchor = new GameObject("Anchor").transform;
                 anchor.SetParent(slot, false);
-                anchor.localPosition = new Vector3(0f, 0.008f, 0f);
+                anchor.localPosition = new Vector3(0f, anchorY, 0f);
 
                 // 자리별 버튼 (앞쪽 가장자리): 화분이 놓이면 눌린다
                 Prim(PrimitiveType.Cylinder, slot, "ButtonRing", new Vector3(0f, 0.003f, -0.3f), new Vector3(0.1f, 0.003f, 0.1f), ringMat);
@@ -456,7 +470,7 @@ namespace Gim004.EditorTools
                 var id = BenchOrder[i];
                 var pot = BuildPot(id, potVisuals[id]);
                 pot.transform.SetParent(homes, false);
-                pot.transform.localPosition = new Vector3((i - 3f) * 1f, BenchTopY, 0f);
+                pot.transform.localPosition = new Vector3((i - 3f) * PotSpacing, BenchTopY, 0f);
                 pot.transform.localRotation = Quaternion.Euler(0f, i * 47f, 0f);   // 화분마다 조금씩 돌려 놓아 똑같이 보이지 않게
             }
             return go;
