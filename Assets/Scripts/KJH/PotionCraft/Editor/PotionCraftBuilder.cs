@@ -22,6 +22,7 @@ namespace PotionCraft.EditorTools
         const string MixerModelPath = "Assets/VARCO 3D/KWJ/FBX/Props/Prop_IngredientMixer.fbx";
         const string NoteImagePath = "Assets/Images/KJH/PotionCraft/RecipeNote_Final.png";
         const string BookImagePath = "Assets/Images/KJH/PotionCraft/조합법{0}쪽.png";
+        const string BookGuideImagePath = "Assets/Images/KJH/PotionCraft/조합법안내.png";
 
         static readonly Dictionary<string, Material> mats = new Dictionary<string, Material>();
 
@@ -270,6 +271,15 @@ namespace PotionCraft.EditorTools
             // 쪽마다 그림(조합법N쪽.png)이 있으면 연결한다 → 책이 그림으로 한 쪽씩 넘어간다
             for (int i = 0; i < d.book.pages.Length; i++)
                 d.book.pages[i].image = AssetDatabase.LoadAssetAtPath<Texture2D>(string.Format(BookImagePath, i + 1));
+            // 맨 앞 안내 쪽 (재료 + 물 + 절구 → 가루). 그림이 있을 때만 넣는다.
+            var guideImage = AssetDatabase.LoadAssetAtPath<Texture2D>(BookGuideImagePath);
+            if (guideImage != null)
+            {
+                var withGuide = new RecipeBookData.Page[d.book.pages.Length + 1];
+                withGuide[0] = new RecipeBookData.Page { label = "안내", image = guideImage };
+                System.Array.Copy(d.book.pages, 0, withGuide, 1, d.book.pages.Length);
+                d.book.pages = withGuide;
+            }
             EditorUtility.SetDirty(d.book);
 
             // 3-4 최종 레시피 (1층 쪽지)

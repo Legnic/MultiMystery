@@ -104,7 +104,7 @@ namespace PotionCraft
             {
                 int page = Mathf.Clamp(spread, 0, sync.BookData.pages.Length - 1);
                 DrawImagePage(v, sync.BookData.pages[page].image,
-                    "조합법 " + (page + 1) + "쪽   —   " + (page + 1) + " / " + SpreadCount + "   [E][D] 다음  [A] 이전  [Q] 닫기");
+                    sync.BookData.PageName(page) + "   —   " + (page + 1) + " / " + SpreadCount + "   [E][D] 다음  [A] 이전  [Q] 닫기");
                 return;
             }
             var image = book ? null : (sync.FinalRecipe != null ? sync.FinalRecipe.noteImage : null);
@@ -133,9 +133,8 @@ namespace PotionCraft
                     if (data != null && data.pages != null && pageIndex < data.pages.Length)
                     {
                         var p = data.pages[pageIndex];
-                        sb.AppendLine("· " + p.entryA);
-                        sb.AppendLine();
-                        sb.AppendLine("· " + p.entryB);
+                        if (!string.IsNullOrEmpty(p.entryA)) { sb.AppendLine("· " + p.entryA); sb.AppendLine(); }
+                        if (!string.IsNullOrEmpty(p.entryB)) sb.AppendLine("· " + p.entryB);
                     }
                     GUI.Label(new Rect(col.x, col.y + 34f, col.width, col.height - 34f), sb.ToString(), bodyStyle);
                 }
