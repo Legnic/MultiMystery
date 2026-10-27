@@ -20,6 +20,7 @@ namespace PotionCraft
         private int count;
         private readonly int[] slots = new int[SlotCount];
         private bool locked;
+        private MixerPowderFill powderFill;
 
         public bool IsLocked { get { return locked; } }
         public int Count { get { return count; } }
@@ -95,6 +96,19 @@ namespace PotionCraft
         public override void Refresh()
         {
             var cat = Catalog;
+
+            // 같은 오브젝트에 MixerPowderFill이 있으면 층 대신 "가루가 쌓이는" 모습으로 보여준다.
+            if (powderFill == null) powderFill = GetComponent<MixerPowderFill>();
+            if (powderFill != null)
+            {
+                var cols = new Color[SlotCount];
+                for (int i = 0; i < SlotCount; i++) cols[i] = cat != null ? cat.PowderColorOf((PowderColor)slots[i]) : Color.white;
+                Color goldColor = cat != null ? cat.PowderColorOf(PowderColor.Gold) : new Color(1f, 0.82f, 0.2f);
+                powderFill.Show(count, cols, locked, goldColor, cat != null ? cat.fxMaterial : null);
+                if (layers != null) foreach (var l in layers) if (l != null) l.gameObject.SetActive(false);
+                return;
+            }
+
             if (layers == null) return;
             for (int i = 0; i < layers.Length; i++)
             {

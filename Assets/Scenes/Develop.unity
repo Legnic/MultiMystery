@@ -2322,7 +2322,10 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 3800327849651544985, guid: d9ba911e44bd2544d8213cf537293cb0, type: 3}
       insertIndex: 0
       addedObject: {fileID: 1476340916}
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 7730204419171908547, guid: d9ba911e44bd2544d8213cf537293cb0, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1263252156}
   m_SourcePrefab: {fileID: 100100000, guid: d9ba911e44bd2544d8213cf537293cb0, type: 3}
 --- !u!4 &9713606 stripped
 Transform:
@@ -364477,6 +364480,44 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1262542453}
   m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &1263252154 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7730204419171908547, guid: d9ba911e44bd2544d8213cf537293cb0, type: 3}
+  m_PrefabInstance: {fileID: 9713605}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1263252156
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1263252154}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d194f203eaa85fe42a99e131258ecf41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PotionCraft.MixerPowderFill
+  floorCenter: {x: 0.003, y: 0.172, z: -0.003}
+  floorRadius: 0.17
+  pileRadius:
+  - 0.17
+  - 0.14
+  - 0.11
+  pileHeight:
+  - 0.04
+  - 0.032
+  - 0.034
+  pileOffset:
+  - {x: 0, y: 0}
+  - {x: 0.012, y: -0.008}
+  - {x: -0.01, y: 0.01}
+  baseThickness: 0.014
+  lumpiness: 0.005
+  powderMaterial: {fileID: 2100000, guid: fadd562ab77f85b4993cd77151c63757, type: 2}
+  pourSeconds: 1
+  collapseSeconds: 0.35
+  goldSeconds: 1.5
+  pourHeight: 0.45
 --- !u!1 &1263599543
 GameObject:
   m_ObjectHideFlags: 0
