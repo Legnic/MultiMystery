@@ -81,6 +81,8 @@
     <Compile Include="Assets\Scripts\LGH\PistolLoader.cs" />
     <Compile Include="Assets\Scripts\LGH\LockBoxNetworkSync.cs" />
     <Compile Include="Assets\Scripts\LGH\IRoomResettable.cs" />
+    <Compile Include="Assets\Scripts\KJH\Gim007\Runtime\Gim007PushPlayer.cs" />
+    <Compile Include="Assets\Scripts\KSM\Avatar\CharacterAvatar.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim002\Runtime\Gim002KeyData.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim002\Runtime\Gim002ScreenFlash.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim002\Runtime\Gim002StageCrank.cs" />
@@ -149,6 +151,7 @@
     <Compile Include="Assets\Scripts\KJH\Photo\FootstepSound.cs" />
     <Compile Include="Assets\Scripts\KJH\Clue\ViewableClue.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim002\Runtime\Gim002Scoreboard.cs" />
+    <Compile Include="Assets\Scripts\KJH\Gim007\Core\Gim007Logic.cs" />
     <Compile Include="Assets\Scripts\KJH\PotionCraft\RecipeBookData.cs" />
     <Compile Include="Assets\Scripts\KJH\ObjectEcho\IPlayerLock.cs" />
     <Compile Include="Assets\Scripts\KJH\SoundCue\SpectrumOverlay.cs" />
@@ -169,6 +172,7 @@
     <Compile Include="Assets\Scripts\KJH\GameTime\TimeUnlock.cs" />
     <Compile Include="Assets\Scripts\KJH\Photo\CameraModeController.cs" />
     <Compile Include="Assets\Scripts\KJH\PotionCraft\PotionStation.cs" />
+    <Compile Include="Assets\Scripts\KSM\Avatar\CharacterAvatarModel.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim002\Runtime\Gim002FeedbackSpeaker.cs" />
     <Compile Include="Assets\Scripts\KJH\Common\PlayerAbilities.cs" />
     <Compile Include="Assets\Scripts\KJH\Photo\PhotoItemData.cs" />
@@ -195,6 +199,7 @@
     <Compile Include="Assets\Scripts\LGH\NetworkPlayer.cs" />
     <Compile Include="Assets\Scripts\KJH\KeySafe\KeyData.cs" />
     <Compile Include="Assets\Scripts\KJH\Dumbwaiter\Dumbwaiter.cs" />
+    <Compile Include="Assets\Scripts\KJH\Gim007\Core\Gim007Types.cs" />
     <Compile Include="Assets\Scripts\KJH\Map\PlayerSpawnPoint.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim002\Runtime\Gim002StageSlot.cs" />
     <Compile Include="Assets\Scripts\LGH\DayNightCycle.cs" />

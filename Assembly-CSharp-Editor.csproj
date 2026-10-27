@@ -58,8 +58,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\Scripts\KJH\Common\Editor\NetworkSceneObjectValidator.cs" />
+    <Compile Include="Assets\Scripts\KJH\Gim007\Editor\Gim007Builder.cs" />
     <Compile Include="Assets\Scripts\KJH\Dumbwaiter\Editor\DumbwaiterBuilder.cs" />
+    <Compile Include="Assets\Scripts\KJH\Gim007\Tests\Editor\Gim007LogicTests.cs" />
     <Compile Include="Assets\Scripts\KJH\Clue\Editor\ClueSetupMenu.cs" />
+    <Compile Include="Assets\Scripts\KJH\Gim005\Editor\Gim005Builder.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim002\Editor\Gim002Builder.cs" />
     <Compile Include="Assets\Scripts\KJH\GameTime\Editor\GameClockEditor.cs" />
     <Compile Include="Assets\Scripts\KJH\PotionCraft\Editor\PotionCraftBuilder.cs" />
