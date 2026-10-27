@@ -23,8 +23,11 @@ MonoBehaviour:
   secretDoors:
   - doorName: Door_Master_Dressing
     openFrom: {x: 34.5, y: 3.9, z: 12.95}
+<<<<<<< HEAD
   - doorName: Door_Attic
     openFrom: {x: 39.15, y: 3.9, z: 7.5}
+=======
+>>>>>>> 59f30c0e01c910926ccee6b1a0e22ef4a1b30780
   doorParentFilter: Ravenwood_LGH
   msgDoorLocked: "\uBB38\uC774 \uAFC8\uCA4D\uB3C4 \uD558\uC9C0 \uC54A\uB294\uB2E4. \uC606 \uBC14\uB2E5\uC758 \uBC1C\uD310\uACFC \uC774\uC5B4\uC9C4 \uC7A5\uCE58\uAC00 \uC788\uB294 \uAC83 \uAC19\uB2E4"
   keepDoorOpenAfterComplete: 1
@@ -41,7 +44,11 @@ MonoBehaviour:
   msgResting: "\uC228\uC744 \uACE0\uB974\uB294 \uC911\u2026"
   msgPartnerLeft: "\uC0C1\uB300\uAC00 \uC190\uC744 \uB193\uC558\uB2E4"
   msgPlateRattle: "\uBC1C\uD310\uC774 \uB35C\uCEE5\uAC70\uB9AC\uB2E4 \uB9CC\uB2E4\u2026 \uBB34\uAC8C\uAC00 \uBD80\uC871\uD558\uB2E4"
+<<<<<<< HEAD
   msgComplete: "\uCCA0\uCEE5\u2014 \uBC1C\uD310\uC774 \uB0B4\uB824\uC549\uACE0 \uC5B4\uB518\uAC00\uC5D0\uC11C \uBB38\uC774 \uC5F4\uB9AC\uB294 \uC18C\uB9AC\uAC00 \uB4E4\uB838\uB2E4"
+=======
+  msgComplete: "\uCCA0\uCEE5\u2014 \uBC1C\uD310\uC774 \uB0B4\uB824\uC549\uACE0 \uB4DC\uB808\uC2A4\uB8F8 \uBB38\uC774 \uC5F4\uB838\uB2E4"
+>>>>>>> 59f30c0e01c910926ccee6b1a0e22ef4a1b30780
   msgLocked: "\uC11C\uB78D\uC7A5\uC774 \uBC1C\uD310 \uC704\uC5D0 \uB2E8\uB2E8\uD788 \uC790\uB9AC \uC7A1\uC558\uB2E4"
   successShake: 0.025
   strainShake: 0.012

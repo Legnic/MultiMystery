@@ -26,12 +26,15 @@ namespace CoopDemo
         readonly NetworkVariable<bool> crouching = new NetworkVariable<bool>(
             false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
 
+<<<<<<< HEAD
         // 감정표현(1~4키: 인사/브이/따봉/가리키기) — interactCount와 같은 패턴.
         // 아래 4비트 = 몸짓 번호(0~3), 위 4비트 = 같은 몸짓을 또 눌러도 값이 바뀌도록 하는 카운터.
         readonly NetworkVariable<byte> emoteSignal = new NetworkVariable<byte>(
             0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
         byte emoteCounter;
 
+=======
+>>>>>>> 59f30c0e01c910926ccee6b1a0e22ef4a1b30780
         public CharacterAvatarModel Model { get; private set; }
         public bool IsHostCharacter { get; private set; }
 
@@ -39,7 +42,10 @@ namespace CoopDemo
         LGH.FirstPersonController firstPerson;
         Transform cameraTransform;
         bool lastCrouchSent;
+<<<<<<< HEAD
         EmoteHandView emoteHand;   // "EmoteHand" 오브젝트(카메라 자식, Hand_Wave_Rigged) - 내 것은 그대로 1인칭, 상대 것은 얼굴 앞 소켓으로 옮겨 붙인다
+=======
+>>>>>>> 59f30c0e01c910926ccee6b1a0e22ef4a1b30780
 
         // ---- 재접속 위치 기억 (서버 컴퓨터에만 쌓인다) ----
         // 자리(PlayerSlot)별로 "마지막으로 있던 곳"을 기억해 두었다가, 같은 자리 사람이 다시 들어오면 거기로 돌려보낸다.
@@ -57,7 +63,10 @@ namespace CoopDemo
 
             interactCount.OnValueChanged += OnInteractCountChanged;
             crouching.OnValueChanged += OnCrouchChanged;
+<<<<<<< HEAD
             emoteSignal.OnValueChanged += OnEmoteSignalChanged;
+=======
+>>>>>>> 59f30c0e01c910926ccee6b1a0e22ef4a1b30780
             if (IsOwner)
             {
                 interactor = GetComponentInParent<LGH.PlayerInteractor>();
@@ -66,16 +75,25 @@ namespace CoopDemo
             }
             var cam = GetComponentInParent<NetworkObject>().GetComponentInChildren<Camera>(true);
             cameraTransform = cam != null ? cam.transform : null;
+<<<<<<< HEAD
             emoteHand = GetComponentInParent<NetworkObject>().GetComponentInChildren<EmoteHandView>(true);
 
             // 상대 화면에서는 촛불이 얼굴 앞(카메라 기준 위치)이 아니라 모델의 손에 들려 보이게 옮긴다.
             // 내 촛불은 그대로 1인칭 카메라 앞에 둔다 → "1인칭 촛불"과 "모델이 든 촛불"이 서로 다른 모습으로 따로 쓰인다.
             // 감정표현 손(EmoteHand)도 같은 방식: 내 화면은 1인칭 그대로, 상대 화면에서는 모델 얼굴 앞으로 옮겨 붙인다.
+=======
+
+            // 상대 화면에서는 촛불이 얼굴 앞(카메라 기준 위치)이 아니라 모델의 손에 들려 보이게 옮긴다.
+            // 내 촛불은 그대로 1인칭 카메라 앞에 둔다 → "1인칭 촛불"과 "모델이 든 촛불"이 서로 다른 모습으로 따로 쓰인다.
+>>>>>>> 59f30c0e01c910926ccee6b1a0e22ef4a1b30780
             if (!IsOwner && Model != null)
             {
                 var candle = GetComponentInParent<NetworkObject>().GetComponentInChildren<LGH.HeldCandle>(true);
                 if (candle != null) Model.AttachHandCandle(candle.transform);
+<<<<<<< HEAD
                 if (emoteHand != null) Model.AttachFaceItem(emoteHand.transform);
+=======
+>>>>>>> 59f30c0e01c910926ccee6b1a0e22ef4a1b30780
             }
 
             if (IsServer)
@@ -89,7 +107,10 @@ namespace CoopDemo
         {
             interactCount.OnValueChanged -= OnInteractCountChanged;
             crouching.OnValueChanged -= OnCrouchChanged;
+<<<<<<< HEAD
             emoteSignal.OnValueChanged -= OnEmoteSignalChanged;
+=======
+>>>>>>> 59f30c0e01c910926ccee6b1a0e22ef4a1b30780
             if (interactor != null) interactor.Interacted -= OnLocalInteract;
             interactor = null;
             // 방에 남은 사람(호스트)이 있는 동안 나간 사람의 마지막 위치를 기억한다
@@ -186,6 +207,7 @@ namespace CoopDemo
             if (Model != null) Model.SetCrouching(now);
         }
 
+<<<<<<< HEAD
         // 0=인사 1=브이 2=따봉 3=가리키기. EmoteWheelUI(마우스 가운데 버튼 도넛 메뉴)가 고른 번호를 넘겨준다.
         // 누른 사람 화면엔 바로(1인칭), 상대 화면엔 emoteSignal을 보고 재생한다.
         public void RequestEmote(int gesture)
@@ -202,6 +224,8 @@ namespace CoopDemo
             emoteHand.Play(now & 0x0F);
         }
 
+=======
+>>>>>>> 59f30c0e01c910926ccee6b1a0e22ef4a1b30780
         void Update()
         {
             if (Model == null) return;

@@ -39,6 +39,7 @@ namespace Gim005.EditorTools
         const float OuterInset = 0.33f;                                 // 바깥 덤불을 건물 벽 안쪽으로 들이는 거리
         const float GateT = 0.55f;                                      // 문양 덤불 두께
 
+<<<<<<< HEAD
         // 중앙 광장 버튼 모델 (VARCO)
         const string CenterPedestalPath = "Assets/VARCO 3D/KWJ/Prefabs/_NeedsCollider/Prop_PuzzleButtonPedestal.prefab";
         const string CenterButtonPath = "Assets/VARCO 3D/KWJ/Prefabs/_NeedsCollider/Prop_PuzzleButton.prefab";
@@ -49,6 +50,8 @@ namespace Gim005.EditorTools
         const float PanelFaceZ = 0.415f;                                // 앞면(버튼 붙는 면) 벽에서의 최소 깊이
         const float PanelFaceMaxZ = 0.427f;                             // 앞면이 살짝 기울어 가장 튀어나온 곳
 
+=======
+>>>>>>> 59f30c0e01c910926ccee6b1a0e22ef4a1b30780
         static Font font;
         static readonly Dictionary<string, Material> mats = new Dictionary<string, Material>();
 
@@ -250,6 +253,10 @@ namespace Gim005.EditorTools
                 {
                     if (c == 0 || c == cols) { wall[r] = true; continue; }
                     var a = new Gim005MazeLayout.Cell(c - 1, r); var b = new Gim005MazeLayout.Cell(c, r);
+<<<<<<< HEAD
+=======
+                    if (IsPeek(a, b)) { BuildPeekWall(hedges, hedgeMat, LineX(c), r); continue; }
+>>>>>>> 59f30c0e01c910926ccee6b1a0e22ef4a1b30780
                     if (!Gim005MazeLayout.TryGetEdge(a, b, out int gate)) { wall[r] = true; continue; }
                     if (gate >= 0) gateObjs[gate] = PlaceGate(gatesRoot, gatePrefab, gate, new Vector3(LineX(c), 0f, CenterZ(r)), 90f);
                 }
@@ -296,7 +303,11 @@ namespace Gim005.EditorTools
             entrance.SetParent(t, false);
             entrance.localPosition = new Vector3(0f, 0f, Half - 0.8f);
 
+<<<<<<< HEAD
             // ---- 중앙 버튼 (광장 남동쪽) ----
+=======
+            // ---- 중앙 버튼 (광장 남동쪽, F2 끝 엿보기 구멍에서 보이는 자리) ----
+>>>>>>> 59f30c0e01c910926ccee6b1a0e22ef4a1b30780
             BuildCenterButton(t, new Vector3(2.0f, 0f, -2.8f));
 
             // ---- 미로 영역 (입구 감지, 시간 초과 복귀, 종소리) ----
@@ -326,11 +337,38 @@ namespace Gim005.EditorTools
             return g;
         }
 
+<<<<<<< HEAD
+=======
+        static bool IsPeek(Gim005MazeLayout.Cell a, Gim005MazeLayout.Cell b)
+        {
+            var p = Gim005MazeLayout.PeekWall;
+            return (Same(p.a, a) && Same(p.b, b)) || (Same(p.a, b) && Same(p.b, a));
+        }
+
+        static bool Same(Gim005MazeLayout.Cell a, Gim005MazeLayout.Cell b) { return a.c == b.c && a.r == b.r; }
+
+        // F2 끝 엿보기 구멍: 눈높이에 좁은 틈 (지나갈 수는 없음). 틈은 칸의 남쪽 부분 (벤치를 피해서)
+        static void BuildPeekWall(Transform parent, Material m, float x, int r)
+        {
+            float zTop = LineZ(r) + HedgeT * 0.5f, zBot = LineZ(r + 1) - HedgeT * 0.5f;
+            const float holeLow = 1.15f, holeHigh = 1.75f, holeW = 0.45f;
+            float holeZ = CenterZ(r) - 0.62f;
+            float hz0 = holeZ + holeW * 0.5f, hz1 = holeZ - holeW * 0.5f;
+            var p = new GameObject("Hedge_Peek").transform;
+            p.SetParent(parent, false);
+            Box(p, "Low", new Vector3(x, holeLow * 0.5f, (zTop + zBot) * 0.5f), new Vector3(HedgeT, holeLow, zTop - zBot), m);
+            Box(p, "High", new Vector3(x, (holeHigh + HedgeH) * 0.5f, (zTop + zBot) * 0.5f), new Vector3(HedgeT, HedgeH - holeHigh, zTop - zBot), m);
+            Box(p, "SideN", new Vector3(x, (holeLow + holeHigh) * 0.5f, (zTop + hz0) * 0.5f), new Vector3(HedgeT, holeHigh - holeLow, zTop - hz0), m);
+            Box(p, "SideS", new Vector3(x, (holeLow + holeHigh) * 0.5f, (hz1 + zBot) * 0.5f), new Vector3(HedgeT, holeHigh - holeLow, hz1 - zBot), m);
+        }
+
+>>>>>>> 59f30c0e01c910926ccee6b1a0e22ef4a1b30780
         static void BuildCenterButton(Transform parent, Vector3 localPos)
         {
             var root = new GameObject("OBJ_CENTER_BUTTON").transform;
             root.SetParent(parent, false);
             root.localPosition = localPos;
+<<<<<<< HEAD
             Transform cap;
             var pedestalModel = AssetDatabase.LoadAssetAtPath<GameObject>(CenterPedestalPath);
             var buttonModel = AssetDatabase.LoadAssetAtPath<GameObject>(CenterButtonPath);
@@ -367,6 +405,17 @@ namespace Gim005.EditorTools
             src.playOnAwake = false; src.spatialBlend = 1f; src.maxDistance = 14f; src.rolloffMode = AudioRolloffMode.Linear;
             var b = root.gameObject.AddComponent<Gim005CenterButton>();
             SetRef(b, "cap", cap);
+=======
+            var stone = Mat("Stone", new Color(0.62f, 0.6f, 0.56f));
+            Prim(PrimitiveType.Cylinder, root, "Pedestal", new Vector3(0f, 0.5f, 0f), new Vector3(0.5f, 0.5f, 0.5f), stone);
+            Prim(PrimitiveType.Cylinder, root, "Top", new Vector3(0f, 1.02f, 0f), new Vector3(0.62f, 0.03f, 0.62f), stone);
+            var cap = Prim(PrimitiveType.Cylinder, root, "Cap", new Vector3(0f, 1.08f, 0f), new Vector3(0.26f, 0.04f, 0.26f), Mat("CenterCap", new Color(0.7f, 0.15f, 0.12f)));
+            Object.DestroyImmediate(cap.GetComponent<Collider>());
+            var src = root.gameObject.AddComponent<AudioSource>();
+            src.playOnAwake = false; src.spatialBlend = 1f; src.maxDistance = 14f; src.rolloffMode = AudioRolloffMode.Linear;
+            var b = root.gameObject.AddComponent<Gim005CenterButton>();
+            SetRef(b, "cap", cap.transform);
+>>>>>>> 59f30c0e01c910926ccee6b1a0e22ef4a1b30780
             SetRef(b, "source", src);
         }
 
@@ -404,6 +453,7 @@ namespace Gim005.EditorTools
             panelGo.transform.SetParent(t, false);
             var p = panelGo.transform;
 
+<<<<<<< HEAD
             // 패널 겉모습: VARCO Prop_ButtonPanel (2.5 × 1.84 × 0.5m, 뒷면이 벽 z=0, 앞면이 -z 쪽).
             // 모델 원본은 앞면이 +z라 180° 돌려 붙인다. 앞면(버튼 붙는 면) 깊이 ≈ 0.415~0.427m, 테두리는 0.46m까지 튀어나옴.
             // 쓸 수 있는 앞면 범위(패널 로컬): x -1.0~1.0, y 1.03~2.47. 오른쪽 위(플레이어 기준 왼쪽 위)에 타이머 화면 홈.
@@ -450,6 +500,31 @@ namespace Gim005.EditorTools
             float[] rowFaceZ = { 0.424f, 0.418f, 0.416f };   // 줄 높이에서의 앞면 깊이 (위로 갈수록 살짝 튀어나옴)
             const float dx = 0.40f;
             const float buttonScale = 0.85f;
+=======
+            var wood = Mat("Wood", new Color(0.36f, 0.24f, 0.14f));
+            var board = Mat("PanelBoard", new Color(0.22f, 0.25f, 0.2f));
+            Box(p, "Frame", new Vector3(0f, 1.75f, -0.035f), new Vector3(2.75f, 2.45f, 0.07f), wood);
+            Box(p, "Board", new Vector3(0f, 1.75f, -0.075f), new Vector3(2.55f, 2.25f, 0.02f), board);
+            Label(p, "정원 관리", new Vector3(0f, 2.78f, -0.09f), Quaternion.identity, 0.12f, new Color(0.9f, 0.85f, 0.7f));
+
+            // 남은 시간 (OBJ_TIMER_DISPLAY)
+            var timerRoot = new GameObject("OBJ_TIMER_DISPLAY").transform;
+            timerRoot.SetParent(p, false);
+            timerRoot.localPosition = new Vector3(-0.25f, 2.48f, -0.09f);
+            Box(timerRoot, "Back", new Vector3(0f, 0f, 0.005f), new Vector3(0.8f, 0.3f, 0.01f), Mat("TimerBack", new Color(0.05f, 0.05f, 0.05f)));
+            var timerText = Label(timerRoot, "3:00", new Vector3(0f, 0f, -0.005f), Quaternion.identity, 0.22f, Color.white);
+
+            // 상태 표시등 + 글자
+            var lamp = Prim(PrimitiveType.Sphere, p, "StatusLamp", new Vector3(0.45f, 2.48f, -0.1f), Vector3.one * 0.11f, Mat("Lamp", new Color(0.15f, 0.15f, 0.15f), true));
+            var statusText = Label(p, "대기 중", new Vector3(0.8f, 2.48f, -0.09f), Quaternion.identity, 0.08f, new Color(0.9f, 0.85f, 0.7f));
+
+            // 버튼 13개 (5-4-4 배열)
+            var buttons = new GameObject("Buttons").transform;
+            buttons.SetParent(p, false);
+            int[] perRow = { 5, 4, 4 };
+            float[] rowY = { 2.0f, 1.5f, 1.0f };
+            const float dx = 0.44f;
+>>>>>>> 59f30c0e01c910926ccee6b1a0e22ef4a1b30780
             int symbol = 0;
             for (int row = 0; row < perRow.Length; row++)
             {
@@ -457,13 +532,21 @@ namespace Gim005.EditorTools
                 {
                     var b = (GameObject)PrefabUtility.InstantiatePrefab(buttonPrefab, buttons);
                     b.name = "OBJ_SYMBOL_BUTTON_" + (symbol + 1).ToString("00");
+<<<<<<< HEAD
                     b.transform.localPosition = new Vector3((i - (perRow[row] - 1) * 0.5f) * dx, rowY[row], -((panelModel != null ? rowFaceZ[row] : PanelFaceZ) + 0.002f));
                     b.transform.localScale = Vector3.one * buttonScale;
+=======
+                    b.transform.localPosition = new Vector3((i - (perRow[row] - 1) * 0.5f) * dx, rowY[row], -0.085f);
+>>>>>>> 59f30c0e01c910926ccee6b1a0e22ef4a1b30780
                     SetInt(b.GetComponent<Gim005SymbolButton>(), "symbol", symbol);
                     symbol++;
                 }
             }
+<<<<<<< HEAD
             StripColliders(p, bc, buttons);
+=======
+            StripColliders(p, null, buttons);
+>>>>>>> 59f30c0e01c910926ccee6b1a0e22ef4a1b30780
 
             var src = panelGo.AddComponent<AudioSource>();
             src.playOnAwake = false; src.spatialBlend = 1f; src.minDistance = 2f; src.maxDistance = 12f; src.rolloffMode = AudioRolloffMode.Linear;
