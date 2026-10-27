@@ -250,7 +250,6 @@ namespace Gim005.EditorTools
                 {
                     if (c == 0 || c == cols) { wall[r] = true; continue; }
                     var a = new Gim005MazeLayout.Cell(c - 1, r); var b = new Gim005MazeLayout.Cell(c, r);
-                    if (IsPeek(a, b)) { BuildPeekWall(hedges, hedgeMat, LineX(c), r); continue; }
                     if (!Gim005MazeLayout.TryGetEdge(a, b, out int gate)) { wall[r] = true; continue; }
                     if (gate >= 0) gateObjs[gate] = PlaceGate(gatesRoot, gatePrefab, gate, new Vector3(LineX(c), 0f, CenterZ(r)), 90f);
                 }
@@ -297,7 +296,7 @@ namespace Gim005.EditorTools
             entrance.SetParent(t, false);
             entrance.localPosition = new Vector3(0f, 0f, Half - 0.8f);
 
-            // ---- 중앙 버튼 (광장 남동쪽, F2 끝 엿보기 구멍에서 보이는 자리) ----
+            // ---- 중앙 버튼 (광장 남동쪽) ----
             BuildCenterButton(t, new Vector3(2.0f, 0f, -2.8f));
 
             // ---- 미로 영역 (입구 감지, 시간 초과 복귀, 종소리) ----
@@ -325,29 +324,6 @@ namespace Gim005.EditorTools
             g.transform.localRotation = Quaternion.Euler(0f, yaw, 0f);
             SetInt(g.GetComponent<Gim005Gate>(), "gateIndex", gate);
             return g;
-        }
-
-        static bool IsPeek(Gim005MazeLayout.Cell a, Gim005MazeLayout.Cell b)
-        {
-            var p = Gim005MazeLayout.PeekWall;
-            return (Same(p.a, a) && Same(p.b, b)) || (Same(p.a, b) && Same(p.b, a));
-        }
-
-        static bool Same(Gim005MazeLayout.Cell a, Gim005MazeLayout.Cell b) { return a.c == b.c && a.r == b.r; }
-
-        // F2 끝 엿보기 구멍: 눈높이에 좁은 틈 (지나갈 수는 없음). 틈은 칸의 남쪽 부분 (벤치를 피해서)
-        static void BuildPeekWall(Transform parent, Material m, float x, int r)
-        {
-            float zTop = LineZ(r) + HedgeT * 0.5f, zBot = LineZ(r + 1) - HedgeT * 0.5f;
-            const float holeLow = 1.15f, holeHigh = 1.75f, holeW = 0.45f;
-            float holeZ = CenterZ(r) - 0.62f;
-            float hz0 = holeZ + holeW * 0.5f, hz1 = holeZ - holeW * 0.5f;
-            var p = new GameObject("Hedge_Peek").transform;
-            p.SetParent(parent, false);
-            Box(p, "Low", new Vector3(x, holeLow * 0.5f, (zTop + zBot) * 0.5f), new Vector3(HedgeT, holeLow, zTop - zBot), m);
-            Box(p, "High", new Vector3(x, (holeHigh + HedgeH) * 0.5f, (zTop + zBot) * 0.5f), new Vector3(HedgeT, HedgeH - holeHigh, zTop - zBot), m);
-            Box(p, "SideN", new Vector3(x, (holeLow + holeHigh) * 0.5f, (zTop + hz0) * 0.5f), new Vector3(HedgeT, holeHigh - holeLow, zTop - hz0), m);
-            Box(p, "SideS", new Vector3(x, (holeLow + holeHigh) * 0.5f, (hz1 + zBot) * 0.5f), new Vector3(HedgeT, holeHigh - holeLow, hz1 - zBot), m);
         }
 
         static void BuildCenterButton(Transform parent, Vector3 localPos)

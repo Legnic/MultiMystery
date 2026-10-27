@@ -59,7 +59,6 @@
   <ItemGroup>
     <Compile Include="Assets\Scripts\KSM\Avatar\Editor\AvatarBuilder.cs" />
     <Compile Include="Assets\Scripts\LHJ\Editor\MouthShapeMaker.cs" />
-    <Compile Include="Assets\Editor\PainterlyConversionTool.cs" />
     <Compile Include="Assets\Scripts\KJH\Common\Editor\NetworkSceneObjectValidator.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim007\Editor\Gim007Builder.cs" />
     <Compile Include="Assets\Scripts\KSM\Avatar\Editor\EmoteHandBuilder.cs" />
