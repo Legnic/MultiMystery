@@ -67,6 +67,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 7269839311631824268}
+  - {fileID: 3680385649533395488}
   m_Father: {fileID: 6053340245898369217}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!20 &3879916722108775643
@@ -2370,6 +2371,7 @@ GameObject:
   - component: {fileID: 2702854418952537749}
   - component: {fileID: 5309252809512302919}
   - component: {fileID: 2170318699457270612}
+  - component: {fileID: 9064283129769945660}
   m_Layer: 0
   m_Name: NetworkPlayer_LGH
   m_TagString: Untagged
@@ -2436,6 +2438,10 @@ MonoBehaviour:
   gravity: -9.81
   jumpHeight: 1.2
   cameraTransform: {fileID: 8719190929514683374}
+  sprintMultiplier: 1.6
+  crouchHeightMultiplier: 0.6
+  crouchSpeedMultiplier: 0.55
+  crouchTransitionSpeed: 8
 --- !u!114 &2875408577618157801
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2552,6 +2558,7 @@ MonoBehaviour:
   - {fileID: 2875408577618157801}
   - {fileID: 3879916722108775643}
   - {fileID: 4923574769756989157}
+  - {fileID: 9064283129769945660}
   body:
   - {fileID: 4046476777802697201}
   - {fileID: 3299340454980897773}
@@ -2759,6 +2766,20 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!114 &9064283129769945660
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8036117278228202970}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 83d448a822bdf5f4b986d0b55ee853fd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CoopDemo.EmoteWheelUI
+  radius: 110
+  deadZone: 30
 --- !u!1 &8037936713396548850
 GameObject:
   m_ObjectHideFlags: 0
@@ -3119,3 +3140,124 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!1001 &3790309338034161099
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 8719190929514683374}
+    m_Modifications:
+    - target: {fileID: -8679921383154817045, guid: da173f06d2b794b4885120a774a0ffbc, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.22
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: da173f06d2b794b4885120a774a0ffbc, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.22
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: da173f06d2b794b4885120a774a0ffbc, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.22
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: da173f06d2b794b4885120a774a0ffbc, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: da173f06d2b794b4885120a774a0ffbc, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -0.05
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: da173f06d2b794b4885120a774a0ffbc, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0.42
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: da173f06d2b794b4885120a774a0ffbc, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: -0.00000004371139
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: da173f06d2b794b4885120a774a0ffbc, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: da173f06d2b794b4885120a774a0ffbc, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: da173f06d2b794b4885120a774a0ffbc, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: da173f06d2b794b4885120a774a0ffbc, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: da173f06d2b794b4885120a774a0ffbc, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: da173f06d2b794b4885120a774a0ffbc, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: da173f06d2b794b4885120a774a0ffbc, type: 3}
+      propertyPath: m_Name
+      value: EmoteHand
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: da173f06d2b794b4885120a774a0ffbc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4592639071613926707}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: da173f06d2b794b4885120a774a0ffbc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7445461011410791921}
+  m_SourcePrefab: {fileID: 100100000, guid: da173f06d2b794b4885120a774a0ffbc, type: 3}
+--- !u!4 &3680385649533395488 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: da173f06d2b794b4885120a774a0ffbc, type: 3}
+  m_PrefabInstance: {fileID: 3790309338034161099}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &4060148528462330010 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: da173f06d2b794b4885120a774a0ffbc, type: 3}
+  m_PrefabInstance: {fileID: 3790309338034161099}
+  m_PrefabAsset: {fileID: 0}
+--- !u!95 &4592639071613926707
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4060148528462330010}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 79766ec5bf69998478844210f33be646, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &7445461011410791921
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4060148528462330010}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 16b505f73789e0d40b2ae1d55d0e59fe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CoopDemo.EmoteHandView
+  animator: {fileID: 4592639071613926707}
+  holdSeconds: 2

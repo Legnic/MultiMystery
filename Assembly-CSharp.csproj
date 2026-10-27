@@ -109,6 +109,7 @@
     <Compile Include="Assets\Scripts\KJH\Photo\PlayerMovement.cs" />
     <Compile Include="Assets\Scripts\KJH\Common\IRequiresAbility.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim005\Runtime\Gim005Controller.cs" />
+    <Compile Include="Assets\Scripts\KSM\Avatar\EmoteWheelUI.cs" />
     <Compile Include="Assets\Scripts\KJH\KeySafe\KeyPickup.cs" />
     <Compile Include="Assets\Scripts\KJH\KeySafe\SimpleDoorOpenSequence.cs" />
     <Compile Include="Assets\Scripts\KJH\Clue\InspectPhotoCapture.cs" />
@@ -224,6 +225,7 @@
     <Compile Include="Assets\Scripts\KJH\Gim004\Runtime\IGim004Net.cs" />
     <Compile Include="Assets\Scripts\KJH\Photo\PhotoInventory.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim005\Runtime\Gim005SymbolData.cs" />
+    <Compile Include="Assets\Scripts\KSM\Avatar\EmoteHandView.cs" />
     <Compile Include="Assets\Scripts\KJH\Common\PlayerAbility.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim002\Runtime\LocalGim002Net.cs" />
     <Compile Include="Assets\Scripts\KJH\Common\IInteractionCondition.cs" />

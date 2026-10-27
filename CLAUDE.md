@@ -1032,6 +1032,61 @@ Develop에 가져오지 않음.
 ## 사용 가능한 Unity 전용 스킬
 이 환경에는 `unity:` 접두사의 스킬들(unity-cli, ui, urp-postprocessing, physics-3d-collision 등)이 이미 연결되어 있습니다. 관련 작업을 할 때는 먼저 해당 스킬을 확인하세요.
 
+## 감정표현 손(EmoteHand) — 촛불 든 오른손 대신 쓰는 몸짓 (2026-10-27)
+LHJ님이 손가락 리깅이 들어간 `Hand_Wave_Rigged.fbx`를 올려서, "촛불을 쥐고 있어 못 움직이는 오른손 대신 감정표현(브이·따봉·인사·가리키기)을 할 수 있게 해달라"는 요청으로 구현함. 팀 결정: 애니메이션은 일단 제가 Unity에서 직접 키프레임(임시, 나중에 LHJ님 애니메이션으로 교체 예정), 상대 플레이어 화면에도 보여야 함(동기화 필요).
+
+- **기존 시스템을 그대로 재사용**: `CoopDemo.CharacterAvatarModel`에 이미 있던 `AttachHandCandle`/`AttachLeftHandItem`(촛불·왼손 아이템을 "내 화면은 1인칭 그대로, 상대 화면은 3D 아바타 손에 옮겨 붙이기") 패턴을 그대로 복제해 `AttachFaceItem(Transform)`을 추가함 — 머리(`head`) 뼈 기준 소켓. `CharacterAvatar.OnNetworkSpawn()`의 기존 "`!IsOwner`면 촛불을 모델 손에 옮겨 붙인다" 블록 옆에 한 줄 추가해 얼굴 앞에도 옮겨 붙임.
+- 새 컴포넌트 `Assets/Scripts/KSM/Avatar/EmoteHandView.cs`: `NetworkPlayer_LGH.prefab`의 `Main Camera` 밑에 있는 "EmoteHand"(Hand_Wave_Rigged 인스턴스 + Animator) 오브젝트에 붙어서 `Play(int gesture)`로 트리거를 걸고 일정 시간(2초) 후 자동으로 숨긴다. 평소엔 숨겨져 있다가(`Awake()`에서 자기 자신을 비활성화) 몸짓을 쓸 때만 나타남 — HeldCandle(항상 보임)과 달리 이쪽은 "쓸 때만" 보이는 게 다른 점.
+- `CharacterAvatar.cs`에 `NetworkVariable<byte> emoteSignal`(interactCount와 같은 패턴: 아래 4비트=몸짓 번호, 위 4비트=카운터— 같은 몸짓을 또 눌러도 값이 바뀌게) + 공개 메서드 `RequestEmote(int gesture)` 추가 — 호출하면 내 화면엔 바로 재생하고 `emoteSignal.Value`를 바꿔서 상대 화면에도 같은 몸짓이 재생되게 한다(`OnEmoteSignalChanged`).
+- **입력 방식(2026-10-27 후속, 숫자키 → 마우스 가운데 버튼 도넛 메뉴로 교체)**: 새 로컬 전용 컴포넌트 `Assets/Scripts/KSM/Avatar/EmoteWheelUI.cs` — 마우스 가운데 버튼을 누르고 있으면 화면 가운데에 도넛 모양 메뉴(인사/브이/따봉/가리키기 4조각, 텍스처는 코드로 그 자리에서 생성)가 뜨고, 마우스를 조각 쪽으로 움직였다가 떼면 그 몸짓이 `CharacterAvatar.RequestEmote()`로 재생된다(가운데 근처에서 떼면 취소). 누르는 동안은 `FirstPersonController.LookEnabled=false`로 시점 회전만 멈추고(이동은 그대로 됨) `Cursor.lockState`는 계속 Locked를 유지한 채 마우스 델타만 따로 누적해서 쓴다 — 커서를 풀면 `PlayerInteractor` 등 다른 "커서 풀림=일시정지" 판정과 겹쳐버리기 때문. `FirstPersonController`/`PlayerInteractor`/`Camera`/`AudioListener`와 똑같이 `NetworkPlayer.ownerOnly` 배열에 등록해서 상대 화면에서는 아예 꺼져 있다(`EmoteHandBuilder.BuildAll()`이 자동으로 등록).
+- **임시 애니메이션 제작**: `Assets/Scripts/KSM/Avatar/Editor/EmoteHandBuilder.cs`(`Tools/KSM/EmoteHand/Build All`, 재실행 가능, AvatarBuilder와 같은 패턴 — `SetCurve(path, typeof(Transform), "localRotation.x/y/z/w", ...)`로 쿼터니언 커브를 직접 굽는다)가 `Assets/Animations/KSM/EmoteHand/`에 클립 5개(Idle/Wave/Peace/ThumbsUp/Point) + Animator Controller를 만들고, 플레이어 프리팹의 Main Camera 밑에 "EmoteHand" 오브젝트(Hand_Wave_Rigged 인스턴스 자체에 Animator를 직접 붙임 — 중간에 빈 껍데기를 하나 더 두면 클립의 뼈 경로가 어긋나서 손가락이 하나도 안 움직이는 버그가 났었음, 꼭 Animator가 붙은 오브젝트 = FBX 루트 자체로 할 것)를 배치한다.
+  - 손가락을 구부리는 축은 이 프로젝트 전체(`CharacterAvatarModel.ApplyPose`의 팔꿈치·무릎 등)에서 쓰는 "관절 바로 위 뼈의 월드 right축으로 구부린다" 관례를 그대로 따름 — 브이(검지·중지 펴고 나머지 접음)·따봉(엄지만 펴고 나머지 접음)·가리키기(검지만 펴고 나머지 접음)는 이 방식으로 수치 검증까지 마침(Play 모드에서 본 뼈 각도를 직접 확인 — 접은 손가락은 또렷하게 각도가 바뀌고 편 손가락은 원래 각도 그대로임을 확인).
+  - **인사(Wave)만 추정치**: 손가락은 원래 펼쳐진 기본 자세 그대로 두고 손목(`Hand` 뼈)만 좌우로 흔드는데, 정확히 어느 축으로 돌려야 "좌우로 흔드는" 모양이 나오는지는 스크린샷 도구 없이 확신할 수 없어서 `EmoteHandBuilder.cs`의 `waveAxisIsUp` 상수로 추정해서 넣어둠 — **실제로 보고 옆이 아니라 위아래로 까딱이면 이 상수를 뒤집어서 재빌드하면 됨**.
+- **검증**: Play 모드 `StartHost()`로 확인 — `EmoteHandView`가 평소엔 비활성 상태이다가 `Play()` 호출 시 활성화+`holdSeconds` 후 자동 비활성화, Animator가 Idle→ThumbsUp 트리거 전환 정상 동작, 전환 후 해당 손가락 뼈들의 로컬 회전이 실제로 크게 바뀌고(엄지는 그대로) 유지되는 것까지 뼈 각도 직접 확인. `CharacterAvatarModel.AttachFaceItem()`도 예외 없이 소켓 생성+재부모화 확인. `emoteSignal`의 비트 패킹(몸짓 4비트+카운터 4비트)도 직접 값 대입으로 확인. `Tools/Network/Validate Scene NetworkObjects` 문제 없음, 콘솔 에러 0건.
+- **검증(도넛 메뉴)**: Play 모드에서 리플렉션으로 `Open()`(→`LookEnabled=false` 확인)→가상 커서 값을 4방향(상/우/하/좌)으로 직접 넣어 `IndexOf()`가 각각 인사/브이/따봉/가리키기로 정확히 매핑되는 것(OnGUI가 그리는 위치와 일치하도록 각도 계산 일부러 검산함) 확인→오른쪽(브이)에서 `Close(true)` 호출 시 실제로 `EmoteHandView`가 활성화되는 것, 가운데 근처(데드존 안)에서 떼면 `emoteSignal`이 전혀 안 바뀌는 것(취소 확인)→`Close()` 후 `LookEnabled`가 다시 true로 복구되는 것까지 확인. `NetworkPlayer.ownerOnly` 배열에 FirstPersonController/PlayerInteractor/Camera/AudioListener와 나란히 등록된 것도 확인. 콘솔 에러 0건.
+- **검증 한계**: 전부 호스트 1개 프로세스에서 메서드/리플렉션으로 확인한 것 — 실제 마우스 가운데 버튼을 누르고 떼는 입력 경로(`simulate_key`/포인터 시뮬레이션이 Game 뷰 포커스 문제로 불가, 기존에도 반복된 한계), 도넛 메뉴가 실제로 눈에 보기 좋게 그려지는지(크기·위치·반투명 정도), 그리고 가장 중요한 "실제로 내 화면엔 1인칭으로 보이고 상대 화면엔 상대 캐릭터 얼굴 앞에 보이는지"는 **다음 플레이테스트에서 꼭 확인 필요**(얼굴 앞 간격 `CharacterAvatarModel.faceItemOffset`(기본 0,-0.05,0.30), 도넛 반지름 `EmoteWheelUI.radius`(기본 110)도 그때 같이 눈으로 보고 다듬을 것). 인사(Wave) 동작의 손목 축 확인 요청은 여전히 유효함(위 항목 참고).
+
+## 감정표현 손 — 크기·위치·축 버그 수정 + 엿 날리기 추가 (2026-10-27, 후속)
+실제로 플레이해보니 "손바닥이 아래를 향한다", "시야를 가린다"는 피드백을 받아 재조사함. 이번엔 밝은 곳에
+복제본을 두고 스크린샷으로 직접 확인(기존 "스크린샷 도구가 안 될 때가 있다" 문제는 **씬이 어두워서**였고,
+밝은 테스트 환경에서는 `capture_scene_view`/`capture_game_view` 둘 다 정상 작동함 — 확인됨).
+
+**진짜 원인 — "시야를 가리는 문제"는 손 크기 버그였음**: `Hand_Wave_Rigged.fbx`를 scale=1로 그대로 쓰면
+실제 폭이 약 **1.2m**(사람 손의 6~7배)나 되는 거대한 손이었다 — 밝은 곳 단독 테스트에서는 카메라를 멀리
+두고 봐서 못 알아챘는데, 실제 게임 카메라(FOV 60, 손이 얼굴 바로 앞 0.4~0.6m 거리)에서는 화면 절반을
+가리는 수준이었다(스크린샷으로 직접 확인). **scale을 0.22로 낮춰 실제 손 크기(폭 약 18cm)로 맞춤.**
+위치도 `(0.10,-0.22,0.55)`(얼굴 정면)에서 `(-0.20,-0.05,0.42)`(왼쪽 위, 시선 중앙은 가리지 않는 자리)로 옮김.
+- **손목 흔들기(Wave) 축도 틀렸었음**: `EmoteHandBuilder.BuildAll()`이 클립을 구울 때 쓰는 임시 인스턴스
+  (`inst`)에 실제 게임에서 적용하는 180도 Y회전을 걸지 않고 있어서, `hand.forward`/`hand.right` 같은 월드축
+  계산이 실제 게임과 **다른 좌표계**에서 이뤄지고 있었다(손가락 구부리기는 어느 쪽이든 비슷해 보여서 못
+  알아챘지만, 손목 흔들기는 축이 완전히 달라져서 거의 안 움직이는 것처럼 보였음). `HolderRotation` 상수를
+  만들어 빌드 시점의 `inst`와 실제 플레이어 프리팹의 `EmoteHand` 둘 다 반드시 같은 회전을 쓰도록 고침.
+  축 자체도 `hand.up`(옆으로 고개 돌리듯 — 아님) 대신 `hand.forward`(손목을 좌우로 까딱이는 진짜 손 흔들기)로
+  교체 — 밝은 곳에서 ±80도 과장 테스트로 두 축의 차이를 직접 눈으로 비교해 확정함.
+- **따봉(ThumbsUp)**: 엄지를 가만히 두면 접힌 네 손가락 옆에 완전히 파묻혀 안 보였음(스크린샷으로 확인) —
+  엄지만 `hand.forward` 축으로 45도 더 돌려 옆으로 삐져나오게 고침(`PointThumbUp()`). 그래도 이 모델 자체가
+  엄지가 짧고 단순한 뭉툭한 모양이라 다른 네 몸짓만큼 또렷하게 "엄지척"으로 안 읽힐 수 있음(모델 한계, 코드
+  버그 아님) — 더 또렷하게 하려면 LHJ님 쪽에서 엄지 부분 모델링 보강이 필요할 수 있음.
+- **엿 날리기(MiddleFinger) 추가**: 요청대로 5번째 몸짓 추가 — 엄지·검지·약지·새끼 접고 중지만 폄. 스크린샷으로
+  확인한 5개 중 가장 또렷하게 읽힘.
+- 도넛 메뉴(`EmoteWheelUI.cs`)도 4조각→5조각(90도→72도 간격)으로 일반화.
+
+**검증**: Play 모드에서 실제 사용자 흐름 그대로(`TitleMenuUI.OnStartClicked()` → 호스트 시작 → `GameFlowSync`
+Stage를 Playing으로 강제 → 낮 시간대로 강제) 재현한 뒤, 5개 몸짓 전부 `Screenshots/emote_*.png`로 실제
+게임 화면을 캡처해 확인함 — 인사·브이·가리키기·엿은 또렷하게 읽힘, 따봉은 위 한계대로 다소 약함. 모두 왼쪽
+위에 적당한 크기로 떠서 중앙 시야(계단 쪽)는 가리지 않는 것 확인.
+**검증 한계**: 여전히 호스트 1개 프로세스 — 실제 상대방 화면(캐릭터 얼굴 앞 3인칭)에서 어떻게 보이는지,
+그리고 실제 마우스 가운데 버튼 입력 경로는 다음 2인 플레이테스트에서 확인 필요.
+
+**→ 같은 날 후속 — 손가락 몸짓 전부 제거, 인사만 유지**: 실제로 플레이해보니 코드로 관절을 돌려 구부린
+손가락들이 부자연스럽게 일그러진다는 피드백. 팀 결정: 브이/따봉/가리키기/엿은 팀원이 Blender로 직접
+애니메이션을 만들기로 하고, 그때까지는 손가락을 구부리지 않는 인사(손목만 흔듦)만 남김.
+`EmoteHandBuilder.cs`가 이제 `Emote_Idle`/`Emote_Wave` 클립 2개만 만들고(재실행 시 나머지 4개 클립 파일은
+자동 삭제), Animator Controller도 Wave 트리거 하나만 가짐. `EmoteHandView.cs`/`EmoteWheelUI.cs`의 몸짓
+목록도 배열 하나(`GestureHash`/`Labels`)로 줄임 — **나중에 Blender 클립이 오면 그 배열들에 다시 추가하고
+해당 .anim 파일을 같은 이름으로 `Assets/Animations/KSM/EmoteHand/`에 넣은 뒤 Build All을 다시 돌리면 됨**
+(관절을 코드로 다시 구부리지 말 것 — 이번에 되돌린 이유가 바로 그 방식의 결과물 품질 문제였음).
+
 ## 다음에 결정해야 할 것
 1. 캐릭터 조작 방식 vs 디오라마 고정 시점 (프로토타입 필요)
 2. 팀 공통 코딩 컨벤션, 공용 에셋/스크립트 배치 규칙

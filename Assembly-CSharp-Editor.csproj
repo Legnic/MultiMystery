@@ -62,6 +62,7 @@
     <Compile Include="Assets\Editor\PainterlyConversionTool.cs" />
     <Compile Include="Assets\Scripts\KJH\Common\Editor\NetworkSceneObjectValidator.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim007\Editor\Gim007Builder.cs" />
+    <Compile Include="Assets\Scripts\KSM\Avatar\Editor\EmoteHandBuilder.cs" />
     <Compile Include="Assets\Scripts\KJH\Dumbwaiter\Editor\DumbwaiterBuilder.cs" />
     <Compile Include="Assets\Scripts\KJH\Clue\Editor\ClueSetupMenu.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim005\Editor\Gim005Builder.cs" />
