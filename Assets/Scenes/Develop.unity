@@ -530044,6 +530044,18 @@ PrefabInstance:
       propertyPath: m_Name
       value: Supply_Material_RedRoot
       objectReference: {fileID: 0}
+    - target: {fileID: 2269708634523761001, guid: 75dd1f358c47f114fb1d4033f2174529, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0.0001
+      objectReference: {fileID: 0}
+    - target: {fileID: 2269708634523761001, guid: 75dd1f358c47f114fb1d4033f2174529, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -0.0147
+      objectReference: {fileID: 0}
+    - target: {fileID: 2269708634523761001, guid: 75dd1f358c47f114fb1d4033f2174529, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0.0002
+      objectReference: {fileID: 0}
     - target: {fileID: 3679569607239485983, guid: 75dd1f358c47f114fb1d4033f2174529, type: 3}
       propertyPath: m_LocalPosition.x
       value: 45.46
@@ -530088,8 +530100,35 @@ PrefabInstance:
       propertyPath: m_Enabled
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7195403955276959614, guid: 75dd1f358c47f114fb1d4033f2174529, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0.0001
+      objectReference: {fileID: 0}
+    - target: {fileID: 7195403955276959614, guid: 75dd1f358c47f114fb1d4033f2174529, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -0.0147
+      objectReference: {fileID: 0}
+    - target: {fileID: 7195403955276959614, guid: 75dd1f358c47f114fb1d4033f2174529, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0.0002
+      objectReference: {fileID: 0}
+    - target: {fileID: 8123289852864879470, guid: 75dd1f358c47f114fb1d4033f2174529, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0.0001
+      objectReference: {fileID: 0}
+    - target: {fileID: 8123289852864879470, guid: 75dd1f358c47f114fb1d4033f2174529, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -0.0747
+      objectReference: {fileID: 0}
+    - target: {fileID: 8123289852864879470, guid: 75dd1f358c47f114fb1d4033f2174529, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -0.0498
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
-    m_RemovedGameObjects: []
+    m_RemovedGameObjects:
+    - {fileID: 2141093376712529401, guid: 75dd1f358c47f114fb1d4033f2174529, type: 3}
+    - {fileID: 6994683034372006894, guid: 75dd1f358c47f114fb1d4033f2174529, type: 3}
+    - {fileID: 1069109883298038249, guid: 75dd1f358c47f114fb1d4033f2174529, type: 3}
     m_AddedGameObjects:
     - targetCorrespondingSourceObject: {fileID: 3679569607239485983, guid: 75dd1f358c47f114fb1d4033f2174529, type: 3}
       insertIndex: -1
