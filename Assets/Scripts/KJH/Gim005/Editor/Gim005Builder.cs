@@ -39,6 +39,12 @@ namespace Gim005.EditorTools
         const float OuterInset = 0.33f;                                 // 바깥 덤불을 건물 벽 안쪽으로 들이는 거리
         const float GateT = 0.55f;                                      // 문양 덤불 두께
 
+        // 2층 패널 모델 (VARCO)
+        const string PanelModelPath = "Assets/VARCO 3D/KWJ/Prefabs/_NeedsCollider/Prop_ButtonPanel.prefab";
+        const float PanelCenterY = 1.75f;                               // 패널 모델 가운데 높이 (바닥 기준)
+        const float PanelFaceZ = 0.415f;                                // 앞면(버튼 붙는 면) 벽에서의 최소 깊이
+        const float PanelFaceMaxZ = 0.427f;                             // 앞면이 살짝 기울어 가장 튀어나온 곳
+
         static Font font;
         static readonly Dictionary<string, Material> mats = new Dictionary<string, Material>();
 
@@ -391,29 +397,52 @@ namespace Gim005.EditorTools
             panelGo.transform.SetParent(t, false);
             var p = panelGo.transform;
 
-            var wood = Mat("Wood", new Color(0.36f, 0.24f, 0.14f));
-            var board = Mat("PanelBoard", new Color(0.22f, 0.25f, 0.2f));
-            Box(p, "Frame", new Vector3(0f, 1.75f, -0.035f), new Vector3(2.75f, 2.45f, 0.07f), wood);
-            Box(p, "Board", new Vector3(0f, 1.75f, -0.075f), new Vector3(2.55f, 2.25f, 0.02f), board);
-            Label(p, "정원 관리", new Vector3(0f, 2.78f, -0.09f), Quaternion.identity, 0.12f, new Color(0.9f, 0.85f, 0.7f));
+            // 패널 겉모습: VARCO Prop_ButtonPanel (2.5 × 1.84 × 0.5m, 뒷면이 벽 z=0, 앞면이 -z 쪽).
+            // 모델 원본은 앞면이 +z라 180° 돌려 붙인다. 앞면(버튼 붙는 면) 깊이 ≈ 0.415~0.427m, 테두리는 0.46m까지 튀어나옴.
+            // 쓸 수 있는 앞면 범위(패널 로컬): x -1.0~1.0, y 1.03~2.47. 오른쪽 위(플레이어 기준 왼쪽 위)에 타이머 화면 홈.
+            var panelModel = AssetDatabase.LoadAssetAtPath<GameObject>(PanelModelPath);
+            if (panelModel != null)
+            {
+                var vis = (GameObject)PrefabUtility.InstantiatePrefab(panelModel, p);
+                vis.name = "PanelVisual";
+                vis.transform.localPosition = new Vector3(0f, PanelCenterY, 0f);
+                vis.transform.localRotation = Quaternion.Euler(0f, 180f, 0f);
+            }
+            else
+            {
+                Debug.LogWarning("[GIM-005] " + PanelModelPath + " 이 없어 임시 판으로 만듭니다.");
+                Box(p, "Board", new Vector3(0f, PanelCenterY, -PanelFaceZ * 0.5f), new Vector3(2.5f, 1.84f, PanelFaceZ), Mat("PanelBoard", new Color(0.22f, 0.25f, 0.2f)));
+            }
+            // 몸통 콜라이더는 앞면까지만 (버튼 콜라이더를 가리지 않게)
+            var bodyCol = new GameObject("PanelCollider");
+            bodyCol.transform.SetParent(p, false);
+            var bc = bodyCol.AddComponent<BoxCollider>();
+            bc.center = new Vector3(0f, PanelCenterY, -PanelFaceZ * 0.5f);
+            bc.size = new Vector3(2.5f, 1.84f, PanelFaceZ);
 
-            // 남은 시간 (OBJ_TIMER_DISPLAY)
+            float frontZ = -(PanelFaceMaxZ + 0.008f);   // 글자: 앞면보다 살짝 앞
+            Label(p, "정원 관리", new Vector3(0.45f, 2.41f, frontZ), Quaternion.identity, 0.09f, new Color(0.9f, 0.85f, 0.7f));
+
+            // 남은 시간 (OBJ_TIMER_DISPLAY) — 모델의 타이머 화면 홈(가운데 x -0.57, y 2.38, 화면 깊이 0.435m) 안에
             var timerRoot = new GameObject("OBJ_TIMER_DISPLAY").transform;
             timerRoot.SetParent(p, false);
-            timerRoot.localPosition = new Vector3(-0.25f, 2.48f, -0.09f);
-            Box(timerRoot, "Back", new Vector3(0f, 0f, 0.005f), new Vector3(0.8f, 0.3f, 0.01f), Mat("TimerBack", new Color(0.05f, 0.05f, 0.05f)));
-            var timerText = Label(timerRoot, "3:00", new Vector3(0f, 0f, -0.005f), Quaternion.identity, 0.22f, Color.white);
+            timerRoot.localPosition = new Vector3(-0.57f, 2.38f, -0.44f);
+            if (panelModel == null)
+                Box(timerRoot, "Back", new Vector3(0f, 0f, 0.003f), new Vector3(0.66f, 0.12f, 0.006f), Mat("TimerBack", new Color(0.05f, 0.05f, 0.05f)));
+            var timerText = Label(timerRoot, "3:00", Vector3.zero, Quaternion.identity, 0.1f, Color.white);
 
-            // 상태 표시등 + 글자
-            var lamp = Prim(PrimitiveType.Sphere, p, "StatusLamp", new Vector3(0.45f, 2.48f, -0.1f), Vector3.one * 0.11f, Mat("Lamp", new Color(0.15f, 0.15f, 0.15f), true));
-            var statusText = Label(p, "대기 중", new Vector3(0.8f, 2.48f, -0.09f), Quaternion.identity, 0.08f, new Color(0.9f, 0.85f, 0.7f));
+            // 상태 표시등 + 글자 (타이머 반대쪽 위)
+            var lamp = Prim(PrimitiveType.Sphere, p, "StatusLamp", new Vector3(0.15f, 2.30f, -(PanelFaceMaxZ + 0.03f)), Vector3.one * 0.11f, Mat("Lamp", new Color(0.15f, 0.15f, 0.15f), true));
+            var statusText = Label(p, "대기 중", new Vector3(0.5f, 2.30f, frontZ), Quaternion.identity, 0.07f, new Color(0.9f, 0.85f, 0.7f));
 
-            // 버튼 13개 (5-4-4 배열)
+            // 버튼 13개 (5-4-4 배열). 앞면 폭(2.0m)에 5개가 들어가도록 0.85배, 소켓 뒷면이 앞면에 닿게.
             var buttons = new GameObject("Buttons").transform;
             buttons.SetParent(p, false);
             int[] perRow = { 5, 4, 4 };
-            float[] rowY = { 2.0f, 1.5f, 1.0f };
-            const float dx = 0.44f;
+            float[] rowY = { 1.99f, 1.61f, 1.23f };
+            float[] rowFaceZ = { 0.424f, 0.418f, 0.416f };   // 줄 높이에서의 앞면 깊이 (위로 갈수록 살짝 튀어나옴)
+            const float dx = 0.40f;
+            const float buttonScale = 0.85f;
             int symbol = 0;
             for (int row = 0; row < perRow.Length; row++)
             {
@@ -421,12 +450,13 @@ namespace Gim005.EditorTools
                 {
                     var b = (GameObject)PrefabUtility.InstantiatePrefab(buttonPrefab, buttons);
                     b.name = "OBJ_SYMBOL_BUTTON_" + (symbol + 1).ToString("00");
-                    b.transform.localPosition = new Vector3((i - (perRow[row] - 1) * 0.5f) * dx, rowY[row], -0.085f);
+                    b.transform.localPosition = new Vector3((i - (perRow[row] - 1) * 0.5f) * dx, rowY[row], -((panelModel != null ? rowFaceZ[row] : PanelFaceZ) + 0.002f));
+                    b.transform.localScale = Vector3.one * buttonScale;
                     SetInt(b.GetComponent<Gim005SymbolButton>(), "symbol", symbol);
                     symbol++;
                 }
             }
-            StripColliders(p, null, buttons);
+            StripColliders(p, bc, buttons);
 
             var src = panelGo.AddComponent<AudioSource>();
             src.playOnAwake = false; src.spatialBlend = 1f; src.minDistance = 2f; src.maxDistance = 12f; src.rolloffMode = AudioRolloffMode.Linear;
