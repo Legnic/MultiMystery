@@ -218,7 +218,6 @@
     <Compile Include="Assets\Scripts\KJH\AtticTreasure\AtticTreasureFrontDoor.cs" />
     <Compile Include="Assets\Scripts\KJH\Common\PlayerAbilities.cs" />
     <Compile Include="Assets\Scripts\KJH\Photo\PhotoItemData.cs" />
-    <Compile Include="Assets\Scripts\KJH\PotionCraft\MixerPowderFill.cs" />
     <Compile Include="Assets\Scripts\KJH\AtticTreasure\AtticTreasureHiddenAtStart.cs" />
     <Compile Include="Assets\Scripts\KSM\Voice\VoiceChatManager.cs" />
     <Compile Include="Assets\Scripts\KWJ\UI\MainMenuController.cs" />
@@ -253,6 +252,7 @@
     <Compile Include="Assets\Scripts\LGH\NetworkPlayer.cs" />
     <Compile Include="Assets\Scripts\KJH\KeySafe\KeyData.cs" />
     <Compile Include="Assets\Scripts\KJH\Dumbwaiter\Dumbwaiter.cs" />
+    <Compile Include="Assets\Scripts\KJH\Gim007\Core\Gim007Types.cs" />
     <Compile Include="Assets\Scripts\KJH\Map\PlayerSpawnPoint.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim002\Runtime\Gim002StageSlot.cs" />
     <Compile Include="Assets\Scripts\LGH\DayNightCycle.cs" />

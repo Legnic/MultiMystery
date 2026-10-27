@@ -7,11 +7,7 @@ namespace Gim007
     // "이 컴퓨터 플레이어가 가구를 잡고 있는 동안"을 담당하는 로컬 전용 스크립트 (프리팹에 하나, 플레이어 프리팹은 수정하지 않음).
     //  - 잡기가 확정되면(동기화 상태에 내 ID가 손잡이에 있으면) 이동·시점을 잠그고(IPlayerLock), 손잡이 뒤 자리에 세운 뒤 손잡이를 바라보게 한다.
     //    가구가 미끄러지면 같이 따라간다. 손을 놓으면 원래대로.
-<<<<<<< HEAD
     //  - 라운드마다 자기 손잡이의 키(W/A/S/D·방향키)만 화면 가운데 크게 보여 주고, 제한 시간 게이지와 상대 성공 여부를 표시한다.
-=======
-    //  - 라운드마다 자기 손잡이의 키(W/A/S/D)만 화면 가운데 크게 보여 주고, 제한 시간 게이지와 상대 성공 여부를 표시한다.
->>>>>>> 59f30c0e01c910926ccee6b1a0e22ef4a1b30780
     //  - 입력 판정은 이 컴퓨터 기준으로 한다: 키가 화면에 뜬 순간부터 roundSeconds 안에 맞는 키 → 성공 보고,
     //    다른 키(설정 시) 또는 시간 초과 → 실패 보고. 판정 담당은 두 보고를 모아 전진/숨고르기를 정한다.
     //  - 혼자 잡고 힘을 주면 "꿈쩍도 하지 않는다" + 힘쓰는 소리, 여러 번이면 힌트 문구 (명세서 4장).
@@ -108,13 +104,10 @@ namespace Gim007
                 else if (kb.aKey.wasPressedThisFrame) pressed = Gim007Key.A;
                 else if (kb.sKey.wasPressedThisFrame) pressed = Gim007Key.S;
                 else if (kb.dKey.wasPressedThisFrame) pressed = Gim007Key.D;
-<<<<<<< HEAD
                 else if (kb.upArrowKey.wasPressedThisFrame) pressed = Gim007Key.Up;
                 else if (kb.downArrowKey.wasPressedThisFrame) pressed = Gim007Key.Down;
                 else if (kb.leftArrowKey.wasPressedThisFrame) pressed = Gim007Key.Left;
                 else if (kb.rightArrowKey.wasPressedThisFrame) pressed = Gim007Key.Right;
-=======
->>>>>>> 59f30c0e01c910926ccee6b1a0e22ef4a1b30780
             }
 
             if (s.state == Gim007State.Round && !reported)
@@ -278,11 +271,7 @@ namespace Gim007
                                  : myResult == Gim007RoundResult.Fail ? new Color(1f, 0.45f, 0.4f) : Color.white;
                     var keyRect = new Rect(cx - 50f, top + 30f, 100f, 100f);
                     Fill(keyRect, new Color(1f, 1f, 1f, 0.1f));
-<<<<<<< HEAD
                     Label(keyRect, KeyLabel(s.Key(localHandle)), bigStyle, keyCol);
-=======
-                    Label(keyRect, s.Key(localHandle).ToString(), bigStyle, keyCol);
->>>>>>> 59f30c0e01c910926ccee6b1a0e22ef4a1b30780
                     float left = myResult == Gim007RoundResult.Pending ? 1f - (Time.time - roundStartTime) / rules.roundSeconds : 0f;
                     Gauge(new Rect(cx - 110f, top + 140f, 220f, 8f), Mathf.Clamp01(left), new Color(0.95f, 0.85f, 0.6f));
                     break;
@@ -311,7 +300,6 @@ namespace Gim007
             GUI.color = Color.white;
         }
 
-<<<<<<< HEAD
         // 화면에 보여 줄 글자: 방향키는 화살표로
         static string KeyLabel(Gim007Key k)
         {
@@ -325,8 +313,6 @@ namespace Gim007
             }
         }
 
-=======
->>>>>>> 59f30c0e01c910926ccee6b1a0e22ef4a1b30780
         void EnsureStyles()
         {
             if (bigStyle != null) return;

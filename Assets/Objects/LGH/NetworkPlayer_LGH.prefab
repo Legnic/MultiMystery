@@ -2369,17 +2369,9 @@ GameObject:
   - component: {fileID: 7066552292861132684}
   - component: {fileID: 1676321528733711584}
   - component: {fileID: 2702854418952537749}
-<<<<<<< HEAD
   - component: {fileID: 5309252809512302919}
   - component: {fileID: 2170318699457270612}
   - component: {fileID: 9064283129769945660}
-=======
-<<<<<<< Updated upstream
-=======
-  - component: {fileID: 5309252809512302919}
-  - component: {fileID: 2170318699457270612}
->>>>>>> Stashed changes
->>>>>>> 59f30c0e01c910926ccee6b1a0e22ef4a1b30780
   m_Layer: 0
   m_Name: NetworkPlayer_LGH
   m_TagString: Untagged
@@ -2724,11 +2716,6 @@ MonoBehaviour:
   volume: 0.9
   moveWhileLoading: 0.35
   range: 60
-<<<<<<< HEAD
-=======
-<<<<<<< Updated upstream
-=======
->>>>>>> 59f30c0e01c910926ccee6b1a0e22ef4a1b30780
 --- !u!136 &5309252809512302919
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -2779,7 +2766,6 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
-<<<<<<< HEAD
 --- !u!114 &9064283129769945660
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2794,9 +2780,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CoopDemo.EmoteWheelUI
   radius: 110
   deadZone: 30
-=======
->>>>>>> Stashed changes
->>>>>>> 59f30c0e01c910926ccee6b1a0e22ef4a1b30780
 --- !u!1 &8037936713396548850
 GameObject:
   m_ObjectHideFlags: 0

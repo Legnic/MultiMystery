@@ -127,11 +127,6 @@ git에 커밋되어 팀원 전원이 같은 내용을 공유합니다. 개인적
 - 씬 배치는 `Tools/KJH/GIM-002/Build All`(재실행 가능, GIM002 루트를 지우고 다시 만듦, 데이터 에셋은 없을 때만 생성 → 튜닝 값 보존). 기존 오브젝트에도 컴포넌트를 붙인다: 음악실 문 2개(`Gim002KeyTarget`, 열쇠 쓰기 전 잠김), `Key_Behind_E3`/`Key_Behind_2F`(`Gim002KeyItem` + BoxCollider).
 - 검증 한계: Play 모드에서 `StartHost()` 로컬 호스트로 GIM-001 해결 → 열쇠 2개 → 장면 1~3 → Complete까지 통과(오답·재접속 리셋 포함, 콘솔 에러 0). 단 `simulate_key`/`QueueStateEvent` 키 입력이 Game 뷰 포커스 문제로 들어가지 않아 **손잡이 2초 누르기와 놀이책 F/←/→ 입력은 직접 플레이로 확인 필요**, 두 클라이언트 동시 테스트도 미실행.
 
-<<<<<<< HEAD
-=======
-<<<<<<< Updated upstream
-=======
->>>>>>> 59f30c0e01c910926ccee6b1a0e22ef4a1b30780
 ## 덤불 정원 미로 GIM-005 (2026-10-22, KJH 씬)
 - 명세: `GIM-005_덤불정원미로.md`(김진호). 위치: 1층 정원 = `Courtyard`(x 36~52, z -16~0), 2층 정원 관리실 = `F2_MaidRoom`(북쪽 내벽 z=-9). 기존 맵 오브젝트는 수정하지 않고 별도 KJH 프리팹으로 제작.
 - 명세서의 `Gim003*` 이름은 `Gim005*`로 바꿔 구현(복사 오기로 판단). 스크립트 `Assets/Scripts/KJH/Gim005/`(네임스페이스 `Gim005`), 프리팹·데이터 `Assets/Prefabs/KJH/Gim005/`. 재생성은 `Tools/KJH/GIM-005/Build All`(프리팹은 같은 경로에 덮어씀, `Data/`의 Config·SymbolData는 없을 때만 생성 → 튜닝 값 보존).
@@ -139,11 +134,8 @@ git에 커밋되어 팀원 전원이 같은 내용을 공유합니다. 개인적
 - 네트워크: GIM-002와 같은 구조(`IGim005Net` / `LocalGim005Net` / `Gim005NetSync`). `Gim005Sync.prefab`은 `DefaultNetworkPrefabs.asset`에 등록됨. 다른 플레이어 접속 시 진행 중 시도는 Ready로 리셋(완료 여부 유지).
 - 완료 시 1/2층 철창 `Rail_StairFront`를 **이름으로 찾아** 모든 컴퓨터에서 비활성화한다(`Gim005Config.hideOnCompleteNames`, 부모 경로에 `Ravenwood_LGH` 포함 조건). 상태 기반이라 늦게 들어온 사람에게도 적용되고, 씬 참조를 다시 연결할 필요가 없다.
 - **Develop 적용 방법**: Develop 씬에 `GIM005_Maze.prefab`(위치 44, 0, -8), `GIM005_GardenRoom.prefab`(26.5, 3.9, -9.13), `Gim005Sync.prefab`(최상위)을 프리팹 인스턴스로 놓으면 끝. Develop의 Ravenwood_LGH도 같은 좌표(68, 0, -16)라 위치가 맞는다. 놓은 뒤 `Tools/Network/Validate Scene NetworkObjects`로 확인.
-<<<<<<< HEAD
 - 패널 실제 모델(2026-10-27): `OBJ_SYMBOL_PANEL`의 임시 Frame/Board를 VARCO `Prop_ButtonPanel`(자식 `PanelVisual`, 회전 y 180, 높이 1.75, 2.5×1.84×0.5m)로 교체. 앞면 깊이는 벽에서 0.415~0.427m(위쪽이 살짝 튀어나옴), 테두리는 0.46m. 타이머 글자는 모델의 화면 홈(패널 로컬 -0.57, 2.38, 화면 깊이 0.435)으로 옮기고 임시 검은 배경(Back)은 삭제. 앞면 폭이 2.0m라 버튼 13개를 0.85배·간격 0.40m·줄 높이 1.99/1.61/1.23으로 줄이고, 줄마다 앞면 깊이+2mm에 붙임. 제목·상태 글자·표시등은 오른쪽 위 빈 곳. 몸통 콜라이더 `PanelCollider`는 앞면까지만(버튼 콜라이더를 가리지 않게). Builder(`BuildRoom`)도 같은 값으로 갱신 — 모델이 없으면 임시 판으로 대체.
 - 중앙 버튼 실제 모델(2026-10-27): `OBJ_CENTER_BUTTON`의 임시 Pedestal/Top/Cap 원기둥을 VARCO `Prop_PuzzleButtonPedestal`(자식 `Pedestal`, 0.36×0.36×1.0m, 상판·기둥 일체)과 그 `ButtonMount`(높이 1.0008) 위의 `Prop_PuzzleButton`(자식 `Cap`, 지름 0.18·높이 0.1m)으로 교체. `Gim005CenterButton.cap` = 버튼 모델(완료 시 기존처럼 3cm 내려가 기둥이 받침대 속으로 들어감). 조준 콜라이더는 루트에 BoxCollider 2개(받침대·버튼). Builder(`BuildCenterButton`)도 같은 구성 — 모델이 없으면 임시 원기둥으로 대체.
-=======
->>>>>>> 59f30c0e01c910926ccee6b1a0e22ef4a1b30780
 - 임시 숫자 글자는 깊이 검사 셰이더 `Gim005_WorldText`를 쓴다(기본 TextMesh 글꼴 머티리얼은 URP에서 벽 너머로 비쳐 보임). 글꼴 텍스처는 실행 중에 만들어지므로 에디터(비실행)에서는 숫자가 안 보이는 게 정상.
 - 검증 한계: `StartHost()` 로컬 호스트로 입구 통과→타이머, 오답(-15초·3초 잠금), 진짜 길 개방, 시간 초과(흐려짐→시작점 복귀→재배정), 중앙 버튼→완료→철창 비활성화까지 확인(콘솔 GIM-005 에러 0). E키는 Game 뷰 포커스 문제로 `PlayerInteractor`가 조준한 대상의 `Interact()`를 직접 호출해 확인. **두 클라이언트 동시 테스트와 실제 걸어서 통과는 직접 플레이로 확인 필요.**
 
@@ -159,21 +151,14 @@ git에 커밋되어 팀원 전원이 같은 내용을 공유합니다. 개인적
 - 검증 한계: Play 모드 `StartHost()` 로컬 호스트에서 `Interact()` 직접 호출로 오답(D-F-A-E → 4개 원위치, 오답 1)·교체·빼기·정답(완료, 두 양문 잠금 해제+열림, 선반 잠금)·기록일지 열고 닫기까지 확인(콘솔 GIM-004 에러 0). **실제 E키 입력, 두 클라이언트 동시 플레이, 1층/2층 안내 문구·실패음 분리는 직접 플레이로 확인 필요.**
 
 ## 함께 미는 안방 가구 GIM-007 (2026-10-23, KJH 씬)
-<<<<<<< HEAD
 - 명세: `GIM-007_함께 미는 안방 가구.md`(김진호). 2층 안방 `F2_Master`(x 20~36, z 3~16, 바닥 y=3.9). 행동 동기화형: 두 사람이 서랍장 뒷면 손잡이 2개를 각각 잡고, 라운드마다 각자 화면에만 뜨는 W/A/S/D·방향키(↑↓←→) 8개 중 하나를(2026-10-27 방향키 추가, enum 끝에 추가해 기존 byte 값 유지) 제한 시간 안에 둘 다 맞히면 한 칸 전진. 안방 가운데(x 29)에서 동쪽으로 8칸×0.5m 밀어 드레스룸 문 앞 무게 발판(x 33, z 12.9)에 올리면 완료.
-=======
-- 명세: `GIM-007_함께 미는 안방 가구.md`(김진호). 2층 안방 `F2_Master`(x 20~36, z 3~16, 바닥 y=3.9). 행동 동기화형: 두 사람이 서랍장 뒷면 손잡이 2개를 각각 잡고, 라운드마다 각자 화면에만 뜨는 W/A/S/D를 제한 시간 안에 둘 다 맞히면 한 칸 전진. 안방 가운데(x 29)에서 동쪽으로 8칸×0.5m 밀어 드레스룸 문 앞 무게 발판(x 33, z 12.9)에 올리면 완료.
->>>>>>> 59f30c0e01c910926ccee6b1a0e22ef4a1b30780
 - 결정(2026-10-23): 비밀문 = 기존 드레스룸 양문 `Door_Master_Dressing`(+짝 `_B`)을 이름으로 찾아 완료 전 잠금, 완료 시 열고 **열린 채로 잠가 고정**(`keepDoorOpenAfterComplete`). 사람이 발판에 올라가면 덜컥거리기만 하고 문은 안 열림(우회 방지). 오입력도 실패(`rules.wrongKeyFails`). 임시 가구 = 서랍장. 수치는 명세서 제안값(8회/1.5초/숨고르기 2초) — 전부 `Gim007Config.asset`에서 조절.
 - 입력 지연 처리: 각 컴퓨터가 **자기 화면에 키가 뜬 순간부터** 제한 시간을 재서 성공/실패를 보고하고, 호스트는 제한 시간 + `latencyGraceSeconds`(0.35초)까지 기다린 뒤 안 온 쪽을 시간 초과로 처리. 손잡이 점유는 RPC 발신자 ID로 판정(먼저 도착한 쪽), 접속이 끊기면 호스트가 그 사람 손잡이를 놓는다(가구 위치 유지).
 - 스크립트 `Assets/Scripts/KJH/Gim007/`(네임스페이스 `Gim007`). 판정은 순수 C# `Core/Gim007Logic.cs`(asmdef `Gim007.Core`) + EditMode 테스트 24개. 네트워크는 GIM-004/005와 같은 구조(`IGim007Net`/`LocalGim007Net`/`Gim007NetSync`), `Gim007Sync.prefab`은 `DefaultNetworkPrefabs.asset`에 등록됨. `Gim007PushPlayer`(로컬 전용, 프리팹 루트에 1개)가 잡는 동안 플레이어를 손잡이 뒤에 세우고 시점 고정·키 UI(OnGUI)·E로 손 떼기를 담당 — LGH 플레이어 프리팹 수정 없음.
 - **이동 잠금 주의**: LGH `PistolLoader`가 매 프레임 `FirstPersonController.SpeedMultiplier`를 1로 되돌린다(`PistolLoader.cs:190`). 그래서 `IPlayerLock.SpeedMultiplier=0`만으로는 이동이 안 멈춘다 — GIM-007은 `LateUpdate`에서 플레이어를 손잡이 자리로 다시 옮겨 고정한다. 다른 기믹에서 이동 잠금이 안 먹으면 이 원인을 먼저 의심할 것.
 - 재생성: `Tools/KJH/GIM-007/Build All`(재실행 가능). **기능/겉모습 분리**: `Assets/Prefabs/KJH/Gim007/Visuals/`의 `Gim007_FurnitureVisual`(피벗 바닥 가운데, +Z = 미는 방향/발판 쪽, -Z = 잡는 뒷면), `Gim007_PlateVisual`(내려앉을 부분 이름 `PlateTop`), `Gim007_ScratchVisual`(바닥 긁힌 자국)은 "없을 때만" 만들어짐 → 모델 교체는 이 프리팹 안만 바꾸고 Build All 재실행(가구 콜라이더·손잡이 위치가 새 모델 크기에 맞춰 다시 잡힘). 임시 모델로 되돌리기는 `Rebuild Placeholder Visuals`. 경로는 프리팹의 `Furniture/PathStart`·`PathEnd` 위치, 소리는 각 컴포넌트 AudioClip 칸(비우면 `Gim007Sounds` 임시 소리).
-<<<<<<< HEAD
 - 실제 모델 적용(2026-10-27): `Gim007_FurnitureVisual` = VARCO `Furn_HeavyDresser_Single` 2개를 나란히 붙인 모양(`Dresser_L/R`, x ±0.385, 서랍·손잡이 면이 -Z = 미는 사람 쪽, 민무늬 뒷판이 발판 쪽). 전체 크기 1.61×1.20×0.66m. 기능 프리팹의 Body 콜라이더·Handle_0/1(x ±0.442)·StandPoint·LookPoint는 Builder와 같은 계산으로 다시 맞춤 → Build All을 다시 돌려도 같은 값이 나온다.
 - 발판 실제 모델(2026-10-27): `Gim007_PlateVisual` = VARCO `Prop_WeightPlate`. 한 덩어리 메시라 테두리/윗판을 `Art/Meshes/Gim007_WeightPlate_Frame`·`_Top`으로 나눠 `Frame`·`PlateTop`(내려앉는 부분)에 씀. 임시 발판 크기 그대로 2.1×1.1m, 높이 0.025m(비균일 스케일). 윗판이 얇아져 `pressDepth` 0.035→0.012(Builder에도 반영).
-=======
->>>>>>> 59f30c0e01c910926ccee6b1a0e22ef4a1b30780
 - 혼자 테스트: `GIM007_MasterBedroom`의 `Gim007Controller`에서 `Debug Fake Partner`를 켜면 네트워크 없이 Play할 때 가짜 동료가 반대쪽을 잡고 자동 입력한다(네트워크 게임 중에는 동작 안 함).
 - **Develop 적용 방법**: `GIM007_MasterBedroom.prefab`(31, 3.9, 12.9, 회전 y 90), `Gim007Sync.prefab`(최상위)을 프리팹 인스턴스로 두면 끝(Develop의 Ravenwood_LGH도 같은 좌표·같은 문 이름). 놓은 뒤 `Tools/Network/Validate Scene NetworkObjects`. Develop에서 다른 기믹이 `Door_Master_Dressing`을 잠그거나 열고 있으면 충돌하니 먼저 확인.
 - 검증 한계: Play 모드 `StartHost()` 로컬 호스트에서 확인함 — 핸들 조준 안내 문구, 혼자 잡기("꿈쩍도 하지 않는다", 손잡이 뒤 고정·시점 고정), 상대(클라이언트 ID 1을 판정 엔진에 직접 넣어 흉내) 잡기 → 라운드 성공·오입력 실패·로컬 시간 초과 실패, 도중 손 놓기(취소·칸 유지·"상대가 손을 놓았다"), 다시 잡고 완료(가구 발판 위, 발판 내려앉음, 자동 손 떼기, 양문 열림+고정, 완료 문구), 발판 위 사람 덜컥거림(문 잠김 유지), 이미 잡힌 손잡이 안내, 접속 끊김 해제, `Validate Scene NetworkObjects` 0건, 콘솔 GIM-007 에러 0. **실제 W/A/S/D·E 키 입력(Game 뷰 포커스 문제로 `simulate_key` 불가), 두 클라이언트 동시 플레이·지연 체감, 수치 튜닝은 직접 플레이로 확인 필요.**
@@ -188,10 +173,7 @@ git에 커밋되어 팀원 전원이 같은 내용을 공유합니다. 개인적
 - **LGH 쪽 문제 2건 (2026-10-23 발견, LGH 담당자 확인 필요 — 수정하지 않음)**:
   1. `ItemNetworkSync`(바닥 아이템 줍기/내려놓기/나간 사람 아이템 떨구기)가 LGH 씬의 씬 오브젝트 `DoorSync_LGH`에만 있고 **`DoorSync_LGH.prefab`에는 빠져 있음** → KJH·Develop 씬에서는 WorldItem(놋쇠 열쇠 등)을 아예 주울 수 없고, 인벤토리에서 내려놓기도 안 된다. 그래서 황금상·열쇠 줍기는 `AtticTreasureSync`가 직접 처리하게 만들었다. 내려놓기용 숨은 자리(`*_DropSpot`, WorldItem)는 넣어 뒀으니 ItemNetworkSync가 프리팹에 들어오면 내려놓기도 동작한다.
   2. `FinalDevice_Dial`(`Ravenwood_LGH/TempFurniture/Attic`)이 납작한 원판 모양인데 기본 원기둥의 **CapsuleCollider(0.9m)가 남아 있어서 별 상자 전체를 감싼다** → 실제 플레이에서 상자 안 물건은 물론 **별 자물쇠(LGH 기믹) 자체도 조준이 막힘**. 콜라이더를 원판 크기로 바꾸거나 없애야 한다.
-<<<<<<< HEAD
 - 망원경 실제 모델(2026-10-27): LGH `Telescope_LGH.prefab` 겉모습을 VARCO `Prop_AstroTelescope`(자식 `Model`, 비율 유지 1.3배 = 높이 1.3m, 경통이 기존처럼 로컬 +X·창문 쪽)로 교체. 옛 원시도형은 꺼진 `OldPlaceholder` 묶음에 보관, 루트 BoxCollider는 새 크기로 재조정. `Telescope.cs`는 자식을 참조하지 않아 동작 변경 없음.
-=======
->>>>>>> 59f30c0e01c910926ccee6b1a0e22ef4a1b30780
 - **Develop 적용 방법**: `AtticTreasure_Contents.prefab`(26.088, 9.115, 11.879, 회전 y 270 — 별 상자와 같은 위치·회전), `AtticTreasureSync.prefab`(최상위)을 프리팹 인스턴스로 두면 끝. 놓은 뒤 `Tools/Network/Validate Scene NetworkObjects`. `ItemDatabase_LGH` 변경(아이템 2개 추가)도 같이 머지돼야 한다.
 - 검증 한계: Play 모드 `StartHost()` 로컬 호스트에서 확인 — 상자 닫힘 시 집기 불가, 열면 안내 문구, 황금상 → 연출(임시) → 인벤토리, 열쇠 → 인벤토리, 열쇠 없이 현관문 "현관 열쇠이(가) 필요하다", 열쇠로 양문 잠금 해제·열림, 탈출 요청 지점 도달(KJH엔 GameFlowSync 없어 로그), Validate 0건, 콘솔 에러 0. 위 2번 콜라이더 문제 때문에 E 입력은 `Interact()` 직접 호출로 확인. **두 사람 동시 연출, Develop에서 실제 엔딩 전환은 직접 확인 필요.**
 
@@ -205,10 +187,6 @@ git에 커밋되어 팀원 전원이 같은 내용을 공유합니다. 개인적
 - 검증: Play 모드 `StartHost()`에서 시작 시 8짝 잠김 → `PotionCraftSync.ServerComplete()`로 서재·온실 4짝 잠금 해제+열림(방 안쪽으로), 주방·객실2는 잠금 유지 → GIM-002는 `Gim002Controller.State`를 Complete로 바꿔(전체 진행 생략) 주방·객실2 4짝 열림 확인. 콘솔 에러 0, 씬 변경 없음. 실제 GIM-002 3장면 완주와 두 클라이언트 동시 확인은 직접 플레이 필요.
 - 우회로 확인 결과(2026-10-23): 서재는 `Door_Library_Guest1`, 주방은 `Door_Kitchen_Dining`으로도 들어갈 수 있어 같은 기믹에 묶어 같이 잠금. 온실 정원 쪽 `Door_GardenConservatory`는 원래 잠겨 있음. 맵에 문이 추가되면 우회로를 다시 확인할 것.
 
-<<<<<<< HEAD
-=======
->>>>>>> Stashed changes
->>>>>>> 59f30c0e01c910926ccee6b1a0e22ef4a1b30780
 ## 네트워크 동기화 정책 — "전면 재구축" 대신 "규칙 + 검사" (2026-10-21)
 팀원들과 실제 멀티플레이 플레이테스트를 하면서 같은 유형의 버그가 반복 발견됐다: `DumbwaiterSync_KJH`, `PortraitPuzzleSync_KJH`, `DoorSync_LGH`(+빠진 `CandleNetworkSync`) 전부 **코드 로직 자체는 멀쩡했는데, Develop 씬에 프리팹이 아닌 맨몸 오브젝트로 배치**돼 있었다. `NetworkManager`의 `EnableSceneManagement=False`라서, 게스트가 접속하면 씬에 맨몸으로 둔 `NetworkObject`(또는 `DefaultNetworkPrefabs`에 등록 안 된 프리팹)를 전부 지우고 호스트가 보낸 정보로 "등록된 프리팹"만 다시 만들기 때문이다. 호스트 혼자 테스트하면 멀쩡해 보여서 게스트 접속 전까지 못 알아챈다.
 
@@ -230,11 +208,6 @@ git에 커밋되어 팀원 전원이 같은 내용을 공유합니다. 개인적
 - **`DayNightCycle`(낮밤 주기, `Assets/Scripts/LGH/DayNightCycle.cs`) — 실제로 동기화 안 되고 있었음, 수정 완료**: 기존엔 순수 `MonoBehaviour`라 각 클라이언트가 자기 타이머를 따로 돌렸음(호스트·게스트가 서로 다른 시각을 보게 됨). `NetworkBehaviour`로 바꾸고 `NetworkVariable<float> syncedT01`(host-write, everyone-read)을 추가 — 호스트(또는 네트워크 꺼진 싱글)만 `t01`을 실제로 흘려보내 `syncedT01`에 써주고, 게스트는 받은 값을 그대로 반영만 함(`DrivesTime = !IsSpawned || IsServer`). 기존 다른 동기화 매니저와 같은 패턴으로 프리팹화: `Assets/Objects/LGH/DayNightSync_LGH.prefab` 생성(`DefaultNetworkPrefabs`엔 Unity Netcode가 자동 등록), 씬의 기존 `DayNightCycle_LGH` 오브젝트를 그 프리팹에 연결(`SaveAsPrefabAssetAndConnect`)하고 중복으로 남아있던 비활성 `DayNightCycle` 오브젝트는 삭제. Play 모드에서 호스트로 직접 검증: `freezeTime`을 잠깐 풀어서 `t01`이 흐르는 동안 `syncedT01.Value`가 정확히 같이 움직이는 것 확인, 다시 `freezeTime=true`로 복원. `NetworkSceneObjectValidator` 0건, 콘솔 에러 0건.
 - **서랍(`InteractableDrawer`) — 점검해보니 이미 정상 동작 중, 수정 불필요(이전 보고 정정)**: 직전 턴에서 "상호작용 트리거가 없다"고 보고했던 건 제 점검 실수였음 — `Drawer0` 오브젝트 자체의 컴포넌트만 보고 판단해서 놓쳤는데, 실제로는 `PlayerInteractor.cs`가 레이캐스트에서 `InteractableDrawer`를 타입째로 찾아 `CandleNetworkSync.RequestDrawer()`로 넘기고, `CandleNetworkSync`가 `Awake()`에서 씬의 모든 `InteractableDrawer`(이 나이트스탠드 서랍 2개 포함)를 자동으로 찾아 인덱스를 매겨 완전히 동기화(RPC + 늦은 접속자 전체 상태 수신)하고 있었음. Play 모드에서 `CandleNetworkSync.Instance.RequestDrawer(drawer)`를 직접 호출해 실제로 열리고 닫히는 것까지 확인함.
 
-<<<<<<< HEAD
-=======
-<<<<<<< Updated upstream
-=======
->>>>>>> 59f30c0e01c910926ccee6b1a0e22ef4a1b30780
 ## 옵션(설정) 시스템 P0 구현 (2026-10-22)
 사용자가 상세 스펙(P0/P1/P2 우선순위, UI 구조, 진입 규칙)을 주고 P0 항목 구현을 요청함. 핵심 원칙: 옵션은 플레이어별 로컬 설정(상대 PC에 전파 금지), ESC 옵션 창은 `Time.timeScale`을 쓰지 않고 로컬 입력만 잠그며 네트워크 세션·음성·상대 플레이어는 그대로 유지.
 
@@ -966,7 +939,6 @@ FBX가 같이 들어와서 **정상적으로 로드됨**을 먼저 확인하고 
 - **한계**: 이번에도 스크린샷 도구 상태가 불안정해 실제 모양을 직접 보지 못함 — 치수·바닥 정렬은 수치로
   검증했지만, 실제로 방 안에서 봤을 때 비율이 자연스러운지는 다음 확인 필요.
 
-<<<<<<< HEAD
 ## GIM-007 → 다락 접근 연결 (2026-10-26, 아홉 번째 라운드)
 사용자가 기믹 설계를 알려줌: "둘이서 발판으로 가구를 밀면 다락방이 열리고, 다락방에서 별자리 기믹(별 자물쇠)을
 한 뒤 탈출한다." LGH 씬의 건물 개선사항·다락방 형태는 가져오되, 기믹 연결은 Develop 기준을 따르라는 요청.
@@ -1062,9 +1034,6 @@ Develop에 가져오지 않음.
   등 일부 URP 설정 파일이 매번 "수정됨"으로 뜨는 건 실제 내용 diff가 비어있는 줄바꿈 표기 차이뿐 — 매번 확인하고
   있고 실제 변경 아님.
 
-=======
->>>>>>> Stashed changes
->>>>>>> 59f30c0e01c910926ccee6b1a0e22ef4a1b30780
 ## 사용 가능한 Unity 전용 스킬
 이 환경에는 `unity:` 접두사의 스킬들(unity-cli, ui, urp-postprocessing, physics-3d-collision 등)이 이미 연결되어 있습니다. 관련 작업을 할 때는 먼저 해당 스킬을 확인하세요.
 

@@ -9,13 +9,8 @@ namespace Gim007
     //  도중에 누가 손을 놓으면 언제든 Idle로 (가구 위치는 유지)
     public enum Gim007State : byte { Idle, Ready, Round, Moving, Resting, Complete }
 
-<<<<<<< HEAD
     // 라운드마다 각자 화면에 표시되는 키 (W/A/S/D + 방향키 4개, 네트워크로 byte 값이 오가므로 순서를 바꾸지 말고 끝에만 추가)
     public enum Gim007Key : byte { W, A, S, D, Up, Down, Left, Right }
-=======
-    // 라운드마다 각자 화면에 표시되는 키
-    public enum Gim007Key : byte { W, A, S, D }
->>>>>>> 59f30c0e01c910926ccee6b1a0e22ef4a1b30780
 
     // 한 라운드에서 한 사람의 결과
     public enum Gim007RoundResult : byte { Pending, Success, Fail }
@@ -46,11 +41,7 @@ namespace Gim007
     public class Gim007Rules
     {
         public const int HandleCount = 2;
-<<<<<<< HEAD
         public const int KeyCount = 8;
-=======
-        public const int KeyCount = 4;
->>>>>>> 59f30c0e01c910926ccee6b1a0e22ef4a1b30780
 
         // 발판까지 필요한 성공 횟수 (명세서 제안 8회). 1회 이동 거리 = 경로 길이 / 이 값
         public int requiredSteps = 8;
@@ -64,11 +55,7 @@ namespace Gim007
         public float moveSeconds = 0.7f;
         // 판정 담당이 제한 시간 뒤에 더 기다려 주는 시간(초). 게스트 입력이 네트워크로 늦게 도착해도 억울하지 않게
         public float latencyGraceSeconds = 0.35f;
-<<<<<<< HEAD
         // true면 표시된 키와 다른 키(W/A/S/D·방향키)를 누르면 바로 실패 (2026-10-23 결정: 오입력도 실패)
-=======
-        // true면 표시된 키와 다른 W/A/S/D를 누르면 바로 실패 (2026-10-23 결정: 오입력도 실패)
->>>>>>> 59f30c0e01c910926ccee6b1a0e22ef4a1b30780
         public bool wrongKeyFails = true;
 
         // 규칙이 올바른지 검사. 문제가 없으면 null

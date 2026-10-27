@@ -201,10 +201,7 @@ namespace Gim007.EditorTools
             var wp = plate.AddComponent<Gim007WeightPlate>();
             var so = new SerializedObject(wp);
             so.FindProperty("areaSize").vector3Value = new Vector3(PlateW, 1f, PlateD);
-<<<<<<< HEAD
             so.FindProperty("pressDepth").floatValue = 0.012f;   // 발판 모델(Prop_WeightPlate) 높이 0.025m에 맞춘 깊이
-=======
->>>>>>> 59f30c0e01c910926ccee6b1a0e22ef4a1b30780
             so.ApplyModifiedPropertiesWithoutUndo();
 
             // ---- 바닥 긁힌 자국 (가구 → 발판 방향) ----

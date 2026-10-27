@@ -31,18 +31,8 @@ namespace PotionCraft
         {
             get
             {
-<<<<<<< HEAD
                 if (Item.KindOf(LocalHeld) == ItemKind.Powder) return "[E] " + NameOf(LocalHeld) + " 넣기 (" + count + " / " + SlotCount + ")   [R] 비우기";
                 return "혼합 통 (가루를 " + SlotCount + "개 넣는다)   [R] 비우기";
-=======
-<<<<<<< Updated upstream
-                if (Item.KindOf(LocalHeld) == ItemKind.Powder) return "[E] " + NameOf(LocalHeld) + " 넣기 (" + count + " / " + SlotCount + ")";
-                return "혼합 통 (가루를 순서대로 " + SlotCount + "개 넣는다)";
-=======
-                if (Item.KindOf(LocalHeld) == ItemKind.Powder) return "[E] " + NameOf(LocalHeld) + " 넣기 (" + count + " / " + SlotCount + ")   [R] 비우기";
-                return "혼합 통 (가루를 순서대로 " + SlotCount + "개 넣는다)   [R] 비우기";
->>>>>>> Stashed changes
->>>>>>> 59f30c0e01c910926ccee6b1a0e22ef4a1b30780
             }
         }
 

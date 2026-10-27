@@ -24,15 +24,12 @@ namespace CoopDemo
         [Tooltip("모델이 아니라 \"월드\"를 기준으로 촛불을 똑바로 세운다 (팔이 돌아가도 촛불은 기울지 않는다)")]
         public bool handCandleUpright = true;
 
-<<<<<<< HEAD
         [Header("얼굴 앞 감정표현 손 (EmoteHand, 상대에게 보이는 쪽)")]
         [Tooltip("머리 위치 기준, 모델 좌표(오른쪽, 위, 앞)로 얼마나 띄울지")]
         public Vector3 faceItemOffset = new Vector3(0.0f, -0.05f, 0.30f);
         [Tooltip("감정표현 손이 머리 기울기를 따라갈지(false) 월드 기준으로 세울지(true)")]
         public bool faceItemUpright = false;
 
-=======
->>>>>>> 59f30c0e01c910926ccee6b1a0e22ef4a1b30780
         [Header("왼손에 든 공용 물건 (인형·배경카드·화분 등, 상대에게 보이는 쪽)")]
         [Tooltip("왼손 위치 기준, 모델 좌표(오른쪽, 위, 앞)로 얼마나 띄울지")]
         public Vector3 handItemOffset = new Vector3(0.0f, 0.08f, 0.10f);
@@ -93,10 +90,7 @@ namespace CoopDemo
 
         Transform handCandleSocket;
         Transform handItemSocket;
-<<<<<<< HEAD
         Transform faceItemSocket;
-=======
->>>>>>> 59f30c0e01c910926ccee6b1a0e22ef4a1b30780
         bool wantCrouch;
         float crouchAmount;
         bool holdingLeftItem;
@@ -161,7 +155,6 @@ namespace CoopDemo
             handItemSocket.rotation = handItemUpright ? Quaternion.Euler(0f, transform.eulerAngles.y, 0f) : leftHand.rotation;
         }
 
-<<<<<<< HEAD
         // 촛불 잡느라 바쁜 오른손 대신 쓰는 감정표현 손(EmoteHand)을 상대 화면에서 얼굴 앞에 붙인다.
         // AttachHandCandle과 같은 패턴 - 같은 오브젝트를 그대로 옮겨 붙이므로 모양이 바뀔 때마다 다시 할 필요가 없다.
         public void AttachFaceItem(Transform item)
@@ -188,8 +181,6 @@ namespace CoopDemo
             faceItemSocket.rotation = faceItemUpright ? Quaternion.Euler(0f, transform.eulerAngles.y, 0f) : head.rotation;
         }
 
-=======
->>>>>>> 59f30c0e01c910926ccee6b1a0e22ef4a1b30780
         // ---- 바깥에서 부르는 것 ----
         public void SetSpeaking(bool value) { speaking = value; }
         public void SetHeadPitch(float degrees) { headPitch = Mathf.Clamp(degrees, -50f, 50f); }
@@ -289,10 +280,7 @@ namespace CoopDemo
             transform.localPosition = new Vector3(0f, -crouchDrop * crouchAmount, 0f);   // 웅크림: 모델 전체를 낮춘다(루트는 그대로)
             UpdateHandCandle();   // 뼈를 다 돌린 뒤에 손 위치를 읽는다
             UpdateHandItem();
-<<<<<<< HEAD
             UpdateFaceItem();
-=======
->>>>>>> 59f30c0e01c910926ccee6b1a0e22ef4a1b30780
             UpdateMouth(dt);
         }
 
