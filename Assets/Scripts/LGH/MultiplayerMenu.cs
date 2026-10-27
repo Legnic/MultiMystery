@@ -17,6 +17,18 @@ namespace LGH
     {
         public Camera menuCamera;
         public int maxPlayers = 2;
+
+        [Header("로비 화면 디자인 (비어 있으면 예전 IMGUI 로비를 그린다)")]
+        [Tooltip("디자이너가 준 로비 이미지 (1536x864, 하단 상태 문구는 지운 버전)")]
+        public Texture2D lobbyBackground;
+        [Tooltip("버튼에 마우스를 올렸을 때 보이는 하늘색 테두리 (9-slice)")]
+        public Texture2D lobbyHoverOutline;
+        [Tooltip("'열린 방 (개수)' 글자 폰트")]
+        public Font lobbyCountFont;
+        [Tooltip("나머지 글자(방 이름, 입력칸, 안내 문구) 폰트")]
+        public Font lobbyBodyFont;
+        [Tooltip("로비 '처음으로' 버튼이 부를 타이틀 복귀 처리")]
+        public CoopDemo.MultiplayerBackButton backButton;
         [Tooltip("Seconds between automatic room list refreshes while the menu is open (keep >= 2 to avoid rate limits)")]
         public float refreshInterval = 4f;
 
@@ -266,14 +278,16 @@ namespace LGH
             var kbd = Keyboard.current;
             if (kbd != null)
             {
-                if (imeOn != Typing) { kbd.SetIMEEnabled(Typing); imeOn = Typing; }
+                // 참가 코드 칸(3)은 영문·숫자만 받으므로 한글 조합(IME)을 켜지 않는다
+                bool wantIme = Typing && imeFocus != 3;
+                if (imeOn != wantIme) { kbd.SetIMEEnabled(wantIme); imeOn = wantIme; }
                 if (Typing && imeComposing.Length == 0 && Time.frameCount - imeCompFrame > 1)
                 {
                     if (kbd.backspaceKey.wasPressedThisFrame) EditIme(-1, ' ');
                     if (kbd.enterKey.wasPressedThisFrame || kbd.numpadEnterKey.wasPressedThisFrame || kbd.escapeKey.wasPressedThisFrame) imeFocus = 0;
                 }
             }
-            Input.imeCompositionMode = Typing ? IMECompositionMode.On : IMECompositionMode.Auto;
+            Input.imeCompositionMode = Typing && imeFocus != 3 ? IMECompositionMode.On : IMECompositionMode.Auto;
         }
 
         void OnTextInput(char c)
@@ -290,8 +304,15 @@ namespace LGH
         }
 
         // dir 1: add c at the end, -1: delete the last letter
+        // imeFocus 3 = 참가 코드 칸 (영문 대문자·숫자만, 최대 12자)
         void EditIme(int dir, char c)
         {
+            if (imeFocus == 3)
+            {
+                if (dir < 0) { if (joinCode.Length > 0) joinCode = joinCode.Substring(0, joinCode.Length - 1); }
+                else if (joinCode.Length < 12 && c < 128 && char.IsLetterOrDigit(c)) joinCode += char.ToUpperInvariant(c);
+                return;
+            }
             string cur = imeFocus == 1 ? nickname : roomName;
             int max = imeFocus == 1 ? 12 : 20;
             if (dir < 0) { if (cur.Length > 0) cur = cur.Substring(0, cur.Length - 1); }
@@ -303,6 +324,11 @@ namespace LGH
         void ImeField(int id, string value, params GUILayoutOption[] opts)
         {
             Rect r = GUILayoutUtility.GetRect(new GUIContent(value), field, opts);
+            ImeField(id, value, r, field);
+        }
+
+        void ImeField(int id, string value, Rect r, GUIStyle field)
+        {
             var e = Event.current;
             if (e.type == EventType.MouseDown && GUI.enabled)
             {
@@ -414,6 +440,9 @@ namespace LGH
             // 옵션 창이 떠 있는 동안은 이 패널을 그리지 않는다 (OptionsMenuController가 같은 화면 영역을 쓴다).
             if (CoopDemo.OptionsMenuController.IsOpen) return;
 
+            // 방 목록/만들기 화면: 디자이너 이미지 버전
+            if (!gInGame && lobbyBackground != null) { DrawDesignedLobby(); return; }
+
             float pw = 520f, ph = !gInGame ? Mathf.Min(680f, h - 40f) : (lobbyStage ? 420f : 320f);
             var r = new Rect((w - pw) / 2f, (h - ph) / 2f, pw, ph);
             GUI.Box(r, GUIContent.none, CoopDemo.MeetYouGuiSkin.Window);
@@ -484,6 +513,127 @@ namespace LGH
                 GUILayout.Label(gStatus, label);
             }
             GUILayout.EndArea();
+        }
+
+        // ---------- 디자인 로비 (KJH/Lobby/Lobby_Background.png) ----------
+        // 좌표는 전부 디자인 이미지(1536x864) 픽셀 기준. 이미지를 화면에 꽉 차게(넘치는 쪽은 잘림) 깔고,
+        // GUI.matrix로 같은 배율을 걸어서 이미지 속 칸 위치에 그대로 컨트롤을 얹는다.
+        const float LobbyW = 1536f, LobbyH = 864f;
+        static readonly Rect LbRoomName = Rect.MinMaxRect(424, 223, 790, 272);
+        static readonly Rect LbCreate = Rect.MinMaxRect(816, 222, 1105, 274);
+        static readonly Rect LbCount = Rect.MinMaxRect(422, 314, 940, 353);   // 왼쪽 끝 = 위 입력칸·아래 목록 칸 테두리 바깥선(x 422)
+        static readonly Rect LbRefresh = Rect.MinMaxRect(956, 314, 1105, 353);
+        static readonly Rect LbList = Rect.MinMaxRect(462, 388, 1072, 640);   // 이미지 속 구분선(4줄) 안쪽
+        const float LbRowH = 63f;
+        static readonly Rect LbCode = Rect.MinMaxRect(426, 670, 778, 719);
+        static readonly Rect LbJoin = Rect.MinMaxRect(805, 669, 1105, 720);
+        static readonly Rect LbStatus = Rect.MinMaxRect(400, 738, 1136, 806);   // 긴 오류 문구도 두 줄까지
+        static readonly Rect LbBack = Rect.MinMaxRect(1203, 760, 1480, 815);
+        static readonly Color LbCream = new Color(0.96f, 0.90f, 0.76f);
+
+        GUIStyle lbCount, lbText, lbField, lbRowName, lbRowInfo, lbHit, lbOutline, lbRowHover;
+        Texture2D lbRowTex, lbDimTex;
+
+        void LobbyStyles()
+        {
+            if (lbCount != null && lbOutline.normal.background == lobbyHoverOutline) return;
+            lbCount = new GUIStyle { font = lobbyCountFont, fontSize = 33, alignment = TextAnchor.MiddleLeft };
+            lbCount.normal.textColor = LbCream;
+            lbText = new GUIStyle { font = lobbyBodyFont, fontSize = 26, alignment = TextAnchor.MiddleCenter, wordWrap = true, clipping = TextClipping.Clip };
+            lbText.normal.textColor = LbCream;
+            lbField = new GUIStyle(lbText) { fontSize = 27, wordWrap = false, padding = new RectOffset(14, 14, 0, 0) };
+            lbField.focused.textColor = lbField.hover.textColor = lbField.active.textColor = LbCream;
+            lbRowName = new GUIStyle(lbText) { fontSize = 26, alignment = TextAnchor.MiddleLeft, wordWrap = false, padding = new RectOffset(16, 16, 0, 0) };
+            lbRowName.hover.textColor = lbRowName.active.textColor = Color.white;
+            lbRowInfo = new GUIStyle(lbText) { fontSize = 23, alignment = TextAnchor.MiddleRight, wordWrap = false, padding = new RectOffset(16, 16, 0, 0) };
+            lbHit = new GUIStyle();   // 보이지 않는 클릭 영역 (글자·모양은 배경 이미지에 그려져 있음)
+            lbOutline = new GUIStyle { border = new RectOffset(28, 28, 28, 28) };
+            lbOutline.normal.background = lobbyHoverOutline;
+            if (lbRowTex == null) lbRowTex = MakeTex(new Color(0.08f, 0.75f, 0.88f, 0.12f));
+            if (lbDimTex == null) lbDimTex = MakeTex(new Color(0f, 0f, 0f, 0.45f));
+        }
+
+        static Texture2D MakeTex(Color c)
+        {
+            var t = new Texture2D(1, 1) { hideFlags = HideFlags.HideAndDontSave };
+            t.SetPixel(0, 0, c); t.Apply();
+            return t;
+        }
+
+        // 투명 버튼 + 마우스 올림 하늘색 테두리. 못 누르는 상태면 살짝 어둡게 덮는다.
+        bool LobbyButton(Rect r, bool enabled)
+        {
+            bool prev = GUI.enabled;
+            GUI.enabled = enabled;
+            bool clicked = GUI.Button(r, GUIContent.none, lbHit);
+            GUI.enabled = prev;
+            if (Event.current.type == EventType.Repaint)
+            {
+                if (!enabled) GUI.DrawTexture(r, lbDimTex);
+                else if (r.Contains(Event.current.mousePosition) && lobbyHoverOutline != null)
+                    lbOutline.Draw(new Rect(r.x - 12, r.y - 12, r.width + 24, r.height + 24), false, false, false, false);
+            }
+            return clicked;
+        }
+
+        void DrawDesignedLobby()
+        {
+            LobbyStyles();
+            float s = Mathf.Max(Screen.width / LobbyW, Screen.height / LobbyH);
+            var offset = new Vector3((Screen.width - LobbyW * s) * 0.5f, (Screen.height - LobbyH * s) * 0.5f, 0f);
+            GUI.matrix = Matrix4x4.TRS(offset, Quaternion.identity, new Vector3(s, s, 1f));
+            GUI.DrawTexture(new Rect(0, 0, LobbyW, LobbyH), lobbyBackground);
+
+            bool canAct = gReady && !gBusy && gSessionNull;
+
+            // 방 이름 (랜덤 기본값, 클릭해서 수정 — 한글 입력 지원) + 방 만들기
+            GUI.enabled = canAct;
+            ImeField(2, roomName, LbRoomName, lbField);
+            GUI.enabled = true;
+            if (LobbyButton(LbCreate, canAct)) CreateRoom();
+
+            // 열린 방 개수 + 새로고침
+            GUI.Label(LbCount, "열린 방 (" + shown.Count + ")", lbCount);
+            if (LobbyButton(LbRefresh, canAct && !querying)) RefreshRooms();
+
+            // 방 목록: 이미지 속 4줄 칸에 맞춰 한 줄씩, 넘치면 스크롤
+            if (shown.Count == 0)
+            {
+                GUI.Label(LbList, gReady ? "아직 열린 방이 없어요" : "연결 중...", lbText);
+            }
+            else
+            {
+                float contentH = shown.Count * LbRowH;
+                bool scroll = contentH > LbList.height;
+                float rowW = LbList.width - (scroll ? 18f : 0f);
+                listScroll = GUI.BeginScrollView(LbList, listScroll, new Rect(0, 0, rowW, contentH), false, false);
+                for (int i = 0; i < shown.Count; i++)
+                {
+                    var sInfo = shown[i];
+                    int players = sInfo.MaxPlayers - sInfo.AvailableSlots;
+                    var row = new Rect(0, i * LbRowH, rowW, LbRowH);
+                    if (canAct && Event.current.type == EventType.Repaint && row.Contains(Event.current.mousePosition))
+                        GUI.DrawTexture(row, lbRowTex);
+                    GUI.Label(row, players + "/" + sInfo.MaxPlayers + "명", lbRowInfo);
+                    GUI.enabled = canAct;
+                    if (GUI.Button(row, sInfo.Name, lbRowName)) JoinRoomById(sInfo.Id, sInfo.Name);
+                    GUI.enabled = true;
+                }
+                GUI.EndScrollView();
+            }
+
+            // 참가 코드 입력 + 코드로 참가
+            GUI.enabled = canAct;
+            // 방 이름 칸과 같은 직접 그린 입력칸 — 기본 TextField는 깜빡이는 줄이 흰색이고, 빈 칸일 때 왼쪽 위에 그려진다
+            ImeField(3, joinCode, LbCode, lbField);
+            GUI.enabled = true;
+            if (LobbyButton(LbJoin, canAct)) JoinRoom();
+
+            // 상태 문구 (이미지에서는 지워 두고 여기서 그린다)
+            GUI.Label(LbStatus, gStatus, lbText);
+
+            // 처음으로 (타이틀 복귀 — 세션 정리 포함)
+            if (LobbyButton(LbBack, true) && backButton != null) backButton.OnBackClicked();
         }
 
         // 플레이 중(Playing) ESC로 연 일시정지 패널. 기존 동작 그대로.

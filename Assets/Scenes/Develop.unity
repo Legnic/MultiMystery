@@ -35900,6 +35900,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::LGH.MultiplayerMenu
   menuCamera: {fileID: 749266727}
   maxPlayers: 2
+  lobbyBackground: {fileID: 2800000, guid: 45ad499bd62846d438de01730cbcc41a, type: 3}
+  lobbyHoverOutline: {fileID: 2800000, guid: dece1cc8d77d3664b9103f102f8c13f9, type: 3}
+  lobbyCountFont: {fileID: 12800000, guid: a8c5dbc12a7bf9a44ad9c48adc4901c8, type: 3}
+  lobbyBodyFont: {fileID: 12800000, guid: bdace5b8bbbd3ad4ebcaf659b77288f8, type: 3}
+  backButton: {fileID: 1705877202}
   refreshInterval: 4
 --- !u!4 &115997535
 Transform:
@@ -492495,7 +492500,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CoopDemo.MultiplayerBackButton
   title: {fileID: 256959094}
-  buttonObject: {fileID: 1678482358}
+  buttonObject: {fileID: 0}
 --- !u!1 &1706011424
 GameObject:
   m_ObjectHideFlags: 0
