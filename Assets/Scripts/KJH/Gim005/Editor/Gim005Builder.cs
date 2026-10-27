@@ -39,6 +39,10 @@ namespace Gim005.EditorTools
         const float OuterInset = 0.33f;                                 // 바깥 덤불을 건물 벽 안쪽으로 들이는 거리
         const float GateT = 0.55f;                                      // 문양 덤불 두께
 
+        // 중앙 광장 버튼 모델 (VARCO)
+        const string CenterPedestalPath = "Assets/VARCO 3D/KWJ/Prefabs/_NeedsCollider/Prop_PuzzleButtonPedestal.prefab";
+        const string CenterButtonPath = "Assets/VARCO 3D/KWJ/Prefabs/_NeedsCollider/Prop_PuzzleButton.prefab";
+
         // 2층 패널 모델 (VARCO)
         const string PanelModelPath = "Assets/VARCO 3D/KWJ/Prefabs/_NeedsCollider/Prop_ButtonPanel.prefab";
         const float PanelCenterY = 1.75f;                               // 패널 모델 가운데 높이 (바닥 기준)
@@ -351,15 +355,42 @@ namespace Gim005.EditorTools
             var root = new GameObject("OBJ_CENTER_BUTTON").transform;
             root.SetParent(parent, false);
             root.localPosition = localPos;
-            var stone = Mat("Stone", new Color(0.62f, 0.6f, 0.56f));
-            Prim(PrimitiveType.Cylinder, root, "Pedestal", new Vector3(0f, 0.5f, 0f), new Vector3(0.5f, 0.5f, 0.5f), stone);
-            Prim(PrimitiveType.Cylinder, root, "Top", new Vector3(0f, 1.02f, 0f), new Vector3(0.62f, 0.03f, 0.62f), stone);
-            var cap = Prim(PrimitiveType.Cylinder, root, "Cap", new Vector3(0f, 1.08f, 0f), new Vector3(0.26f, 0.04f, 0.26f), Mat("CenterCap", new Color(0.7f, 0.15f, 0.12f)));
-            Object.DestroyImmediate(cap.GetComponent<Collider>());
+            Transform cap;
+            var pedestalModel = AssetDatabase.LoadAssetAtPath<GameObject>(CenterPedestalPath);
+            var buttonModel = AssetDatabase.LoadAssetAtPath<GameObject>(CenterButtonPath);
+            if (pedestalModel != null && buttonModel != null)
+            {
+                // VARCO 받침대(0.36×0.36×1.0m, 위 ButtonMount) + 그 위 버튼(지름 0.18m, 높이 0.1m, 바닥 피벗)
+                var ped = (GameObject)PrefabUtility.InstantiatePrefab(pedestalModel, root);
+                ped.name = "Pedestal";
+                var mount = ped.transform.Find("ButtonMount");
+                float topY = mount != null ? mount.localPosition.y : 1.0f;
+                var btn = (GameObject)PrefabUtility.InstantiatePrefab(buttonModel, root);
+                btn.name = "Cap";
+                btn.transform.localPosition = new Vector3(0f, topY, 0f);
+                cap = btn.transform;
+                // 조준용 콜라이더 (루트에 둬서 눌려 내려가도 판정 범위는 그대로)
+                var pc = root.gameObject.AddComponent<BoxCollider>();
+                pc.center = new Vector3(0f, topY * 0.5f, 0f);
+                pc.size = new Vector3(0.36f, topY, 0.36f);
+                var bc = root.gameObject.AddComponent<BoxCollider>();
+                bc.center = new Vector3(0f, topY + 0.05f, 0f);
+                bc.size = new Vector3(0.18f, 0.1f, 0.18f);
+            }
+            else
+            {
+                Debug.LogWarning("[GIM-005] 중앙 버튼 모델이 없어 임시 도형으로 만듭니다.");
+                var stone = Mat("Stone", new Color(0.62f, 0.6f, 0.56f));
+                Prim(PrimitiveType.Cylinder, root, "Pedestal", new Vector3(0f, 0.5f, 0f), new Vector3(0.5f, 0.5f, 0.5f), stone);
+                Prim(PrimitiveType.Cylinder, root, "Top", new Vector3(0f, 1.02f, 0f), new Vector3(0.62f, 0.03f, 0.62f), stone);
+                var capGo = Prim(PrimitiveType.Cylinder, root, "Cap", new Vector3(0f, 1.08f, 0f), new Vector3(0.26f, 0.04f, 0.26f), Mat("CenterCap", new Color(0.7f, 0.15f, 0.12f)));
+                Object.DestroyImmediate(capGo.GetComponent<Collider>());
+                cap = capGo.transform;
+            }
             var src = root.gameObject.AddComponent<AudioSource>();
             src.playOnAwake = false; src.spatialBlend = 1f; src.maxDistance = 14f; src.rolloffMode = AudioRolloffMode.Linear;
             var b = root.gameObject.AddComponent<Gim005CenterButton>();
-            SetRef(b, "cap", cap.transform);
+            SetRef(b, "cap", cap);
             SetRef(b, "source", src);
         }
 
