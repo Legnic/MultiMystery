@@ -303,7 +303,7 @@ namespace Gim007.Tests
             var l = Pushing(200);
             bool differ = false, same = false;
             var seen0 = new HashSet<Gim007Key>();
-            for (int i = 0; i < 60; i++)
+            for (int i = 0; i < 160; i++)
             {
                 var s = l.Snapshot();
                 seen0.Add(s.key0);
@@ -312,7 +312,7 @@ namespace Gim007.Tests
             }
             Assert.IsTrue(differ);
             Assert.IsTrue(same);
-            Assert.AreEqual(4, seen0.Count);
+            Assert.AreEqual(Gim007Rules.KeyCount, seen0.Count);   // W/A/S/D + 방향키 8개가 모두 나온다
         }
 
         [Test]
