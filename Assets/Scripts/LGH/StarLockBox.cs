@@ -65,7 +65,7 @@ namespace LGH
         public int Apply(int part)
         {
             if (IsOpen) return 0;
-            if (part >= 0 && part < 4) { digits[part] = (digits[part] + 1) % 10; Refresh(); return 3; }
+            if (part >= 0 && part < 4) { digits[part] = (digits[part] + 1) % 10; Refresh(); PlayDial(); return 3; }
             if (part != 4) return 0;
             var c = Code;
             for (int i = 0; i < 4; i++) if (digits[i] != c[i]) return 1;
@@ -77,14 +77,16 @@ namespace LGH
         // everyone else: copy the host's state
         public void SetState(int d0, int d1, int d2, int d3, bool open)
         {
+            bool turned = d0 != digits[0] || d1 != digits[1] || d2 != digits[2] || d3 != digits[3];
             digits[0] = d0; digits[1] = d1; digits[2] = d2; digits[3] = d3;
+            if (turned) PlayDial();
             if (open != IsOpen) { IsOpen = open; SetReveal(open); if (!open) lidT = 0f; }
             Refresh();
         }
 
         public void ApplyFeedback(int fb)
         {
-            if (fb == 1) { shakeUntil = Time.time + 0.35f; ShowNear("철컥... 열리지 않는다"); }
+            if (fb == 1) { shakeUntil = Time.time + 0.35f; ShowNear("철컥... 열리지 않는다"); if (LghSfx.Bank != null) LghSfx.At(LghSfx.Bank.wrong, transform.position, 0.8f, 10f); }
             else if (fb == 2) ShowNear("딸깍! 별 상자가 열렸다");
         }
 
@@ -100,8 +102,15 @@ namespace LGH
                 if (digitTexts[i] != null) digitTexts[i].text = digits[i].ToString();
         }
 
+        void PlayDial() { if (LghSfx.Bank != null) LghSfx.At(LghSfx.Bank.dialTurn, transform.position, 0.6f, 8f, Random.Range(0.95f, 1.08f)); }
+
         void SetReveal(bool on)
         {
+            if (on && Application.isPlaying && LghSfx.Bank != null)
+            {
+                LghSfx.At(LghSfx.Bank.unlock, transform.position, 0.8f, 10f);
+                LghSfx.At(LghSfx.Bank.treasureOpen, transform.position, 0.9f, 16f);
+            }
             var body = GetComponent<BoxCollider>();
             if (body != null) body.enabled = !on;   // open chest: let the player reach what is inside
             // the lock's touch spots stick out over the front edge and would catch the aim - switch them off too

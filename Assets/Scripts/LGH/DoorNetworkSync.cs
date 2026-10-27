@@ -72,12 +72,14 @@ namespace LGH
             string blocked = d.CheckBlocked(userPosition, inv);
             if (blocked != null)
             {
+                SoundRpc(index, 0);
                 MessageRpc(blocked, RpcTarget.Single(rpcParams.Receive.SenderClientId, RpcTargetUse.Temp));
                 return;
             }
             if (d.locked)   // not blocked while locked = this player carries the key
             {
                 if (d.consumeKey && inv != null) inv.RemoveItem(d.keyItem, 1);
+                SoundRpc(index, 1);
                 LockRpc(index, false);
                 MessageRpc(d.keyItem.NameOrFallback + "(으)로 문을 열었다", RpcTarget.Single(sender, RpcTargetUse.Temp));
             }
@@ -100,8 +102,17 @@ namespace LGH
         void LockRpc(int index, bool isLocked)
         {
             if (index < 0 || index >= doors.Length) return;
+            if (doors[index].locked && !isLocked) doors[index].PlayUnlock();
             doors[index].locked = isLocked;
             if (doors[index].partner != null) doors[index].partner.locked = isLocked;   // double doors share one lock
+        }
+
+        // 0 = rattled a locked door, 1 = turned a key in it
+        [Rpc(SendTo.ClientsAndHost)]
+        void SoundRpc(int index, int kind)
+        {
+            if (index < 0 || index >= doors.Length) return;
+            if (kind == 0) doors[index].PlayLocked(); else doors[index].PlayKey();
         }
 
         [Rpc(SendTo.SpecifiedInParams)]

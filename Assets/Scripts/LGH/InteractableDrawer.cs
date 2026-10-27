@@ -28,7 +28,10 @@ namespace LGH
         public void SetOpen(bool open, bool instant = false)
         {
             Init();
+            bool changed = open != IsOpen;
             IsOpen = open;
+            var b = LghSfx.Bank;
+            if (changed && !instant && b != null) LghSfx.At(open ? b.drawerOpen : b.drawerClose, transform.position, 0.7f, 10f);
             if (instant) { current = open ? openDistance : 0f; Apply(); }
         }
 

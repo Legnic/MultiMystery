@@ -86,7 +86,8 @@ namespace LGH
         public string Interact(Vector3 userPosition, PlayerInventory inventory = null)
         {
             string blocked = CheckBlocked(userPosition, inventory);
-            if (blocked != null) return blocked;
+            if (blocked != null) { PlayLocked(); return blocked; }
+            if (locked && CanUnlockWith(inventory)) PlayKey();
             string keyMsg = locked ? UseKey(inventory) : null;
             SetOpen(!IsOpen, userPosition);
             if (partner != null) partner.SetOpen(IsOpen, userPosition);
@@ -101,8 +102,10 @@ namespace LGH
         public void ApplyState(bool open, float angle, bool instant = false)
         {
             Init();
+            bool changed = open != IsOpen;
             IsOpen = open;
             targetAngle = open ? angle : 0f;
+            if (changed && !instant) PlayMove(open);
             if (instant)
             {
                 currentAngle = targetAngle;
@@ -125,13 +128,29 @@ namespace LGH
             return keyItem.NameOrFallback + "(으)로 문을 열었다";
         }
 
-        public void Unlock() { locked = false; if (partner != null) partner.locked = false; }
+        public void Unlock() { if (locked) PlayUnlock(); locked = false; if (partner != null) partner.locked = false; }
         public void Lock() { locked = true; if (partner != null) partner.locked = true; }
 
         public void ResetForNewRoom()
         {
             locked = initialLocked;
             ApplyState(false, 0f, true);
+        }
+
+        // ---- sounds (LCW clips via LghSoundBank). Called on every player, so everyone near the door hears it.
+        int soundFrame = -1;
+        Vector3 SoundPoint { get { Init(); var leaf = hinge.childCount > 0 ? hinge.GetChild(0) : hinge; return (hinge.position + leaf.position) * 0.5f + Vector3.up * 1.1f; } }
+        public void PlayLocked() { var b = LghSfx.Bank; if (b != null) LghSfx.At(b.doorLocked, SoundPoint, 0.8f, 12f); }
+        public void PlayKey() { var b = LghSfx.Bank; if (b != null) LghSfx.At(b.keyTurn, SoundPoint, 0.8f, 12f); }
+        public void PlayUnlock() { var b = LghSfx.Bank; if (b != null) LghSfx.At(b.unlock, SoundPoint, 0.8f, 12f); }
+        void PlayMove(bool open)
+        {
+            var b = LghSfx.Bank;
+            if (b == null || !Application.isPlaying) return;
+            if (partner != null && partner.soundFrame == Time.frameCount) return;   // double door: one sound
+            soundFrame = Time.frameCount;
+            if (open && name.StartsWith("Door_Front")) { LghSfx.At(b.frontDoorFinal, SoundPoint, 1f, 45f); return; }
+            LghSfx.At(open ? b.doorOpen : b.doorClose, SoundPoint, 0.75f, 14f);
         }
 
         void Update()

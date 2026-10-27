@@ -1,0 +1,52 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a4de10eb63b33b64999deb2ad398e51b, type: 3}
+  m_Name: LGH_SoundBank
+  m_EditorClassIdentifier: Assembly-CSharp::LGH.LghSoundBank
+  bgmLobby: {fileID: 8300000, guid: af54fdb126a4315468987705fb22b514, type: 3}
+  bgmGame: {fileID: 8300000, guid: 8603248c81e8a984193596414edc1b8d, type: 3}
+  bgmLobbyVolume: 0.45
+  bgmGameVolume: 0.35
+  doorOpen: {fileID: 8300000, guid: 0e039ddb888938c44999589183d61c42, type: 3}
+  doorClose: {fileID: 8300000, guid: 2fd233c60f11740449a22092123b5e6d, type: 3}
+  doorLocked: {fileID: 8300000, guid: f5eafd87ab60b994387803506f29e35a, type: 3}
+  keyTurn: {fileID: 8300000, guid: 66638a1a97c814d42a8169baed4dfb34, type: 3}
+  unlock: {fileID: 8300000, guid: 3639f8b025619434bb5efb29405263a4, type: 3}
+  drawerOpen: {fileID: 8300000, guid: 28f447e12f7afb843829551c0002d3e2, type: 3}
+  drawerClose: {fileID: 8300000, guid: da37838388dab6640a9b5844c5eb4ca4, type: 3}
+  dialTurn: {fileID: 8300000, guid: 82bf525e558e43d4b89a48589bc15bf9, type: 3}
+  wrong: {fileID: 8300000, guid: ded791ff4b393574690c6068920625fe, type: 3}
+  metalPickup: {fileID: 8300000, guid: 83e1f8d7fbd961b4cb1ddbca0bc4dce5, type: 3}
+  paperPickup: {fileID: 8300000, guid: c1e08bf1994b52b4d933e7dae1daf760, type: 3}
+  footstep: {fileID: 8300000, guid: c7c38d0a4bd57554a89a7e58123e5a9a, type: 3}
+  candleLoop: {fileID: 8300000, guid: 2af67975b37d25548b386621d0a4bcff, type: 3}
+  portraitTurn: {fileID: 8300000, guid: 9be8c83e540d7824aa23b82e2fed3982, type: 3}
+  portraitLock: {fileID: 8300000, guid: dcb0c892bcb42a04c8d0a894d9f446b6, type: 3}
+  portraitKeyReveal: {fileID: 8300000, guid: 388b638f4f1d70d40b754110b349bce3, type: 3}
+  dollPull: {fileID: 8300000, guid: 78fe03d1ad7bb914ea71f5349a5fa2c8, type: 3}
+  paperPull: {fileID: 8300000, guid: 6c5d23f21d73d834da847d00aa9061f0, type: 3}
+  herbPlace: {fileID: 8300000, guid: 4457a6667545e654089d253b14c92c43, type: 3}
+  bottleUp: {fileID: 8300000, guid: a4abeaea3cb8a73478341b8d5da49807, type: 3}
+  bottleDown: {fileID: 8300000, guid: 461d913c8c59d534e86218b2e6f35d26, type: 3}
+  powderPour: {fileID: 8300000, guid: 2a469eedaf772a3409aaababbf3519ca, type: 3}
+  grind: {fileID: 8300000, guid: 8ac2dface38fa244ca3999893390ee1d, type: 3}
+  potLift: {fileID: 8300000, guid: 2fa5abd33a0283249aadc4848b690b65, type: 3}
+  plateDown: {fileID: 8300000, guid: febb5a768bec3c84cbb46a83563ef175, type: 3}
+  plateUp: {fileID: 8300000, guid: 3bf1f683e252d4e4b93b93d1bad59463, type: 3}
+  mazeAmbient: {fileID: 8300000, guid: 57fcb7bce9dbebc4c88d3eab753f5c32, type: 3}
+  faint: {fileID: 8300000, guid: 42a9f3e5019a5b84faefb8f8b71034f6, type: 3}
+  bushRegrow: {fileID: 8300000, guid: eaaeaf4698618504f91fd0b1575381ba, type: 3}
+  mazeEndButton: {fileID: 8300000, guid: e48001c1c57aa0e4f83c6256e81afa21, type: 3}
+  minigamePress: {fileID: 8300000, guid: 485ad28aade613944bc0ce2aeeeac593, type: 3}
+  telescope: {fileID: 8300000, guid: e3103a8c4222eb144ba285cf0567b316, type: 3}
+  treasureOpen: {fileID: 8300000, guid: 02352d01a271d00448460a399dcafe3c, type: 3}
+  frontDoorFinal: {fileID: 8300000, guid: a43a5602a77b7e44abe2a2b6f48f0792, type: 3}

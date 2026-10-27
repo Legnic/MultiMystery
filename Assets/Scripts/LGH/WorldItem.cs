@@ -40,11 +40,25 @@ namespace LGH
         public void SetState(bool present, int count)
         {
             Cache();
+            if (IsPresent && !present) PickupSound.Queue(this);
             IsPresent = present;
             Amount = Mathf.Max(1, count);
             foreach (var r in renderers) if (r != null) r.enabled = present;
             foreach (var c in colliders) if (c != null) c.enabled = present;
             foreach (var l in lights) if (l != null) l.enabled = present;
+        }
+
+        // which LCW clip to use when this item is picked up
+        public AudioClip PickupClip
+        {
+            get
+            {
+                var b = LghSfx.Bank;
+                if (b == null || item == null) return null;
+                string id = ((item.itemId ?? "") + " " + item.name).ToLowerInvariant();
+                bool paper = item.Readable || id.Contains("note") || id.Contains("paper") || id.Contains("letter") || id.Contains("page") || id.Contains("diary") || id.Contains("photo") || id.Contains("map");
+                return paper ? b.paperPickup : b.metalPickup;
+            }
         }
 
         public void SetPose(Vector3 position, Quaternion rotation)

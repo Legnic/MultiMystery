@@ -49,10 +49,10 @@
     <Analyzer Include="C:\Program Files\Unity\Hub\Editor\6000.6.0f1\Editor\Data\Tools\BuildPipeline\Unity.SourceGenerators\Unity.UIToolkit.SourceGenerator.dll" />
     <Analyzer Include="C:\Program Files\Unity\Hub\Editor\6000.6.0f1\Editor\Data\Tools\BuildPipeline\Unity.Analyzers.Common\Unity.Analyzers.Common.dll" />
     <Analyzer Include="C:\Program Files\Unity\Hub\Editor\6000.6.0f1\Editor\Data\Tools\BuildPipeline\Unity.Analyzers.LongLiving\Unity.Analyzers.LongLiving.dll" />
-    <Analyzer Include="C:\Users\mbc\Desktop\MultiMystery\Library\PackageCache\com.unity.ai.inference@9a123aee5df7\Runtime\Core\SourceGenerator\SourceGenerators.dll" />
-    <Analyzer Include="C:\Users\mbc\Desktop\MultiMystery\Library\PackageCache\com.unity.pipeline@62c08c808737\Runtime\Analyzers\IlInterpreterAnalyzer.dll" />
-    <Analyzer Include="C:\Users\mbc\Desktop\MultiMystery\Library\PackageCache\com.unity.dt.app-ui@cd5609b130ce\Runtime\SourceGenerators\netstandard2.0\EnumToLowerCase.dll" />
-    <Analyzer Include="C:\Users\mbc\Desktop\MultiMystery\Library\PackageCache\com.unity.dt.app-ui@cd5609b130ce\Runtime\MVVM\SourceGenerators\netstandard2.0\MVVMSourceGenerators.dll" />
+    <Analyzer Include="C:\Users\mbc\Documents\github 2\MultiMystery\Library\PackageCache\com.unity.ai.inference@9a123aee5df7\Runtime\Core\SourceGenerator\SourceGenerators.dll" />
+    <Analyzer Include="C:\Users\mbc\Documents\github 2\MultiMystery\Library\PackageCache\com.unity.pipeline@62c08c808737\Runtime\Analyzers\IlInterpreterAnalyzer.dll" />
+    <Analyzer Include="C:\Users\mbc\Documents\github 2\MultiMystery\Library\PackageCache\com.unity.dt.app-ui@cd5609b130ce\Runtime\SourceGenerators\netstandard2.0\EnumToLowerCase.dll" />
+    <Analyzer Include="C:\Users\mbc\Documents\github 2\MultiMystery\Library\PackageCache\com.unity.dt.app-ui@cd5609b130ce\Runtime\MVVM\SourceGenerators\netstandard2.0\MVVMSourceGenerators.dll" />
     <Analyzer Include="C:\Program Files\Unity\Hub\Editor\6000.6.0f1\Editor\Data\BCLExtensions\TargetingPacks\netstandard2.1\analyzers\dotnet\roslyn4.0\cs\Microsoft.Extensions.Logging.Generators.dll" />
     <Analyzer Include="C:\Program Files\Unity\Hub\Editor\6000.6.0f1\Editor\Data\BCLExtensions\TargetingPacks\netstandard2.1\analyzers\dotnet\roslyn4.0\cs\System.Text.Json.SourceGeneration.dll" />
   </ItemGroup>
@@ -66,6 +66,7 @@
     <Compile Include="Assets\Scripts\LGH\InteractableDoor.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim007\Runtime\LocalGim007Net.cs" />
     <Compile Include="Assets\Scripts\KJH\PotionCraft\ReadableStation.cs" />
+    <Compile Include="Assets\Scripts\LGH\LghSoundBank.cs" />
     <Compile Include="Assets\Scripts\KJH\Clue\ParchmentRoller.cs" />
     <Compile Include="Assets\Scripts\KJH\Photo\InteractionController.cs" />
     <Compile Include="Assets\Scripts\LGH\ItemDatabase.cs" />
@@ -78,6 +79,7 @@
     <Compile Include="Assets\Scripts\KJH\PotionCraft\PotionTypes.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim004\Runtime\Gim004Controller.cs" />
     <Compile Include="Assets\Scripts\KJH\GimmickDoors\GimmickDoorLink.cs" />
+    <Compile Include="Assets\Scripts\LGH\LghSoundDirector.cs" />
     <Compile Include="Assets\Scripts\KJH\Puzzle\PortraitPuzzleScene.cs" />
     <Compile Include="Assets\Scripts\KJH\Dumbwaiter\DumbwaiterWindow.cs" />
     <Compile Include="Assets\Scripts\KJH\Dumbwaiter\DumbwaiterNetworkSync.cs" />
@@ -101,8 +103,8 @@
     <Compile Include="Assets\Scripts\KJH\KeySafe\LockedSafe.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim002\Runtime\Gim002Curtain.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim007\Runtime\Gim007WeightPlate.cs" />
-    <Compile Include="Assets\Scripts\KJH\AtticTreasure\AtticTreasureStatue.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim005\Runtime\Gim005Config.cs" />
+    <Compile Include="Assets\Scripts\KJH\AtticTreasure\AtticTreasureStatue.cs" />
     <Compile Include="Assets\Scripts\KJH\ObjectEcho\ObjectEchoTarget.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim005\Runtime\Gim005NetSync.cs" />
     <Compile Include="Assets\Scripts\LGH\UiScale.cs" />
@@ -133,6 +135,7 @@
     <Compile Include="Assets\Scripts\KJH\Gim005\Runtime\Gim005SymbolDisplay.cs" />
     <Compile Include="Assets\Scripts\KJH\Clue\ClueJournal.cs" />
     <Compile Include="Assets\Scripts\LGH\PaperNote.cs" />
+    <Compile Include="Assets\Scripts\LGH\LghSfx.cs" />
     <Compile Include="Assets\Scripts\KWJ\UI\MainMenuButtonHover.cs" />
     <Compile Include="Assets\Scripts\KJH\ObjectEcho\IHandReach.cs" />
     <Compile Include="Assets\Scripts\KJH\PotionCraft\PotionCatalog.cs" />
@@ -225,6 +228,7 @@
     <Compile Include="Assets\Scripts\KJH\Gim004\Runtime\IGim004Net.cs" />
     <Compile Include="Assets\Scripts\KJH\Photo\PhotoInventory.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim005\Runtime\Gim005SymbolData.cs" />
+    <Compile Include="Assets\Scripts\LGH\PickupSound.cs" />
     <Compile Include="Assets\Scripts\KSM\Avatar\EmoteHandView.cs" />
     <Compile Include="Assets\Scripts\KJH\Common\PlayerAbility.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim002\Runtime\LocalGim002Net.cs" />
@@ -279,6 +283,7 @@
     <None Include="Assets\TutorialInfo\StyleSheets\ReadmeEditor.uss" />
     <None Include="Assets\Images\KSM\MeetYou_UI_Resources_Individual\MeetYou_UI_Resources_Individual\README.txt" />
     <None Include="Assets\Objects\LGH\Backup\PlayerInventory_beforeInk.cs.txt" />
+    <None Include="Assets\Objects\LGH\Backup\LghSfx_src.txt" />
     <None Include="Assets\Objects\LGH\Backup\PaperNote_src.cs.txt" />
     <None Include="Assets\Objects\LGH\Backup\PistolLoader_beforeCarry.cs.txt" />
     <None Include="Assets\TextMesh Pro\Shaders\TMPro_Mobile.cginc" />
@@ -305,7 +310,9 @@
     <None Include="Assets\TextMesh Pro\Shaders\TMPro_Surface.cginc" />
     <None Include="Assets\Objects\LGH\Backup\PlayerInteractor_beforeWrap.cs.txt" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile SpaceWarp.shader" />
+    <None Include="Assets\Objects\LGH\Backup\LghSoundDirector_src.txt" />
     <None Include="Assets\TextMesh Pro\Resources\LineBreaking Following Characters.txt" />
+    <None Include="Assets\Objects\LGH\Backup\LghSoundBank_src.txt" />
     <None Include="Assets\Objects\LGH\Backup\PlayerInventory_beforeEquip.cs.txt" />
     <None Include="Assets\Objects\LGH\Backup\PlayerInventory.cs.txt" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF SSD SpaceWarp.shader" />
@@ -987,28 +994,12 @@
       <HintPath>Library\PackageCache\com.unity.pipeline@62c08c808737\Runtime\Plugins\CodeAnalysis\UnityPipeline.Microsoft.CodeAnalysis.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="UnityEditor.iOS.Extensions.Xcode">
-      <HintPath>C:\Program Files\Unity\Hub\Editor\6000.6.0f1\Editor\Data\PlaybackEngines\iOSSupport\UnityEditor.iOS.Extensions.Xcode.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="UnityEditor.iOS.Extensions.Common">
-      <HintPath>C:\Program Files\Unity\Hub\Editor\6000.6.0f1\Editor\Data\PlaybackEngines\iOSSupport\UnityEditor.iOS.Extensions.Common.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="UnityEditor.Apple.Extensions.Common">
-      <HintPath>C:\Program Files\Unity\Hub\Editor\6000.6.0f1\Editor\Data\PlaybackEngines\iOSSupport\UnityEditor.Apple.Extensions.Common.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="Unity.Android.Types">
       <HintPath>C:\Program Files\Unity\Hub\Editor\6000.6.0f1\Editor\Data\PlaybackEngines\AndroidPlayer\Unity.Android.Types.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.Android.Gradle">
       <HintPath>C:\Program Files\Unity\Hub\Editor\6000.6.0f1\Editor\Data\PlaybackEngines\AndroidPlayer\Unity.Android.Gradle.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="UnityEditor.iOS.Extensions.Xcode">
-      <HintPath>C:\Program Files\Unity\Hub\Editor\6000.6.0f1\Editor\Data\PlaybackEngines\MacStandaloneSupport\UnityEditor.iOS.Extensions.Xcode.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="netstandard">
@@ -1783,12 +1774,12 @@
       <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.Core.Editor.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Unity.AppUI.Navigation">
-      <HintPath>Library\ScriptAssemblies\Unity.AppUI.Navigation.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="Unity.Netcode.Editor">
       <HintPath>Library\ScriptAssemblies\Unity.Netcode.Editor.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.AppUI.Navigation">
+      <HintPath>Library\ScriptAssemblies\Unity.AppUI.Navigation.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEditor.UI.Analytics">

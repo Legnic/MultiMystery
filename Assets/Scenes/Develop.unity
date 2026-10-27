@@ -2500,7 +2500,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Gim002.Gim002PianoKey
   hasSymbol: 1
   symbol: 4
-  note: {fileID: 0}
+  note: {fileID: 8300000, guid: e02620f9d7ef383468d21e0adc18e79f, type: 3}
   toneFrequency: 392
   keyVisual: {fileID: 0}
   pressDepth: 0.012
@@ -49381,7 +49381,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Gim002.Gim002PianoKey
   hasSymbol: 1
   symbol: 0
-  note: {fileID: 0}
+  note: {fileID: 8300000, guid: 734f8ad213f9d2441995fa6d254eb2a4, type: 3}
   toneFrequency: 261.6
   keyVisual: {fileID: 0}
   pressDepth: 0.012
@@ -64533,10 +64533,18 @@ PrefabInstance:
       propertyPath: holdOffset.x
       value: -0.38
       objectReference: {fileID: 0}
+    - target: {fileID: 3137191971120731937, guid: a2499a0c59792eb488b0cc984794fc39, type: 3}
+      propertyPath: placeClip
+      value: 
+      objectReference: {fileID: 8300000, guid: e238dc195953adb4cbd201216bbbd972, type: 3}
     - target: {fileID: 3616963782683423505, guid: a2499a0c59792eb488b0cc984794fc39, type: 3}
       propertyPath: holdOffset.x
       value: -0.38
       objectReference: {fileID: 0}
+    - target: {fileID: 4987298263028987068, guid: a2499a0c59792eb488b0cc984794fc39, type: 3}
+      propertyPath: placeClip
+      value: 
+      objectReference: {fileID: 8300000, guid: e238dc195953adb4cbd201216bbbd972, type: 3}
     - target: {fileID: 5098518517895194123, guid: a2499a0c59792eb488b0cc984794fc39, type: 3}
       propertyPath: m_LocalRotation.w
       value: 0.7071068
@@ -64549,6 +64557,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.y
       value: -90
       objectReference: {fileID: 0}
+    - target: {fileID: 5355765967380485024, guid: a2499a0c59792eb488b0cc984794fc39, type: 3}
+      propertyPath: placeClip
+      value: 
+      objectReference: {fileID: 8300000, guid: e238dc195953adb4cbd201216bbbd972, type: 3}
     - target: {fileID: 5670378841134374441, guid: a2499a0c59792eb488b0cc984794fc39, type: 3}
       propertyPath: m_LocalPosition.x
       value: 61.5
@@ -64617,6 +64629,18 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.y
       value: -180
       objectReference: {fileID: 0}
+    - target: {fileID: 7287927324788682690, guid: a2499a0c59792eb488b0cc984794fc39, type: 3}
+      propertyPath: placeClip
+      value: 
+      objectReference: {fileID: 8300000, guid: e238dc195953adb4cbd201216bbbd972, type: 3}
+    - target: {fileID: 8467685640482660201, guid: a2499a0c59792eb488b0cc984794fc39, type: 3}
+      propertyPath: wrongClip
+      value: 
+      objectReference: {fileID: 8300000, guid: ded791ff4b393574690c6068920625fe, type: 3}
+    - target: {fileID: 8467685640482660201, guid: a2499a0c59792eb488b0cc984794fc39, type: 3}
+      propertyPath: completeClip
+      value: 
+      objectReference: {fileID: 8300000, guid: 0b2c73f2ed1a73a409138a4c532da8a2, type: 3}
     - target: {fileID: 9003173921875002997, guid: a2499a0c59792eb488b0cc984794fc39, type: 3}
       propertyPath: holdOffset.x
       value: -0.38
@@ -72074,6 +72098,26 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 137524255700681797, guid: ec110ff5f937268488eb0ae440e9f5cd, type: 3}
+      propertyPath: openSound
+      value: 
+      objectReference: {fileID: 8300000, guid: 50c9a652383c5d4469c02725a843325b, type: 3}
+    - target: {fileID: 562613888624240696, guid: ec110ff5f937268488eb0ae440e9f5cd, type: 3}
+      propertyPath: openSound
+      value: 
+      objectReference: {fileID: 8300000, guid: 50c9a652383c5d4469c02725a843325b, type: 3}
+    - target: {fileID: 1217569671987217305, guid: ec110ff5f937268488eb0ae440e9f5cd, type: 3}
+      propertyPath: openSound
+      value: 
+      objectReference: {fileID: 8300000, guid: 50c9a652383c5d4469c02725a843325b, type: 3}
+    - target: {fileID: 1558214938654773084, guid: ec110ff5f937268488eb0ae440e9f5cd, type: 3}
+      propertyPath: openSound
+      value: 
+      objectReference: {fileID: 8300000, guid: 50c9a652383c5d4469c02725a843325b, type: 3}
+    - target: {fileID: 1844535016670658294, guid: ec110ff5f937268488eb0ae440e9f5cd, type: 3}
+      propertyPath: openSound
+      value: 
+      objectReference: {fileID: 8300000, guid: 50c9a652383c5d4469c02725a843325b, type: 3}
     - target: {fileID: 2437707324058491415, guid: ec110ff5f937268488eb0ae440e9f5cd, type: 3}
       propertyPath: m_LocalScale.z
       value: 1.96
@@ -72090,6 +72134,18 @@ PrefabInstance:
       propertyPath: m_LocalPosition.x
       value: -0.012
       objectReference: {fileID: 0}
+    - target: {fileID: 4563674089657908856, guid: ec110ff5f937268488eb0ae440e9f5cd, type: 3}
+      propertyPath: openSound
+      value: 
+      objectReference: {fileID: 8300000, guid: 50c9a652383c5d4469c02725a843325b, type: 3}
+    - target: {fileID: 5468970137841503199, guid: ec110ff5f937268488eb0ae440e9f5cd, type: 3}
+      propertyPath: openSound
+      value: 
+      objectReference: {fileID: 8300000, guid: 50c9a652383c5d4469c02725a843325b, type: 3}
+    - target: {fileID: 6036276134342997659, guid: ec110ff5f937268488eb0ae440e9f5cd, type: 3}
+      propertyPath: wrongClip
+      value: 
+      objectReference: {fileID: 8300000, guid: ded791ff4b393574690c6068920625fe, type: 3}
     - target: {fileID: 6074902393257510240, guid: ec110ff5f937268488eb0ae440e9f5cd, type: 3}
       propertyPath: m_LocalPosition.x
       value: 44
@@ -72130,6 +72186,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7134598930668969929, guid: ec110ff5f937268488eb0ae440e9f5cd, type: 3}
+      propertyPath: openSound
+      value: 
+      objectReference: {fileID: 8300000, guid: 50c9a652383c5d4469c02725a843325b, type: 3}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -109750,7 +109810,7 @@ MonoBehaviour:
   door: {fileID: 369742776}
   lockedHint: "\uC7A0\uACA8 \uC788\uB2E4. \uC190\uC7A1\uC774 \uC704 \uBA85\uD310\uC5D0 \uB192\uC740\uC74C\uC790\uB9AC\uD45C\uAC00 \uC0C8\uACA8\uC838 \uC788\uB2E4"
   idlePrompt: "\uD0DC\uC5FD \uAD6C\uBA4D (\uD14C\uB450\uB9AC\uC5D0 \uB098\uBE44 \uBB38\uC591)"
-  useClip: {fileID: 0}
+  useClip: {fileID: 8300000, guid: c7b5fac5d9a6b7e4d9c7c15e3f54c6e8, type: 3}
 --- !u!1 &369903288
 GameObject:
   m_ObjectHideFlags: 0
@@ -110794,6 +110854,7 @@ Transform:
   - {fileID: 2055653865}
   - {fileID: 1346715067}
   - {fileID: 1800756922}
+  - {fileID: 2121049348}
   m_Father: {fileID: 417647086}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &374596385
@@ -110828,7 +110889,7 @@ MonoBehaviour:
   - {fileID: 287574449}
   - {fileID: 140059413}
   - {fileID: 286748637}
-  moveLoopSource: {fileID: 0}
+  moveLoopSource: {fileID: 2121049349}
   arriveClip: {fileID: 0}
 --- !u!1001 &374762538
 PrefabInstance:
@@ -112348,7 +112409,7 @@ MonoBehaviour:
   door: {fileID: 379412735}
   lockedHint: "\uC7A0\uACA8 \uC788\uB2E4. \uC190\uC7A1\uC774 \uC704 \uBA85\uD310\uC5D0 \uB192\uC740\uC74C\uC790\uB9AC\uD45C\uAC00 \uC0C8\uACA8\uC838 \uC788\uB2E4"
   idlePrompt: "\uD0DC\uC5FD \uAD6C\uBA4D (\uD14C\uB450\uB9AC\uC5D0 \uB098\uBE44 \uBB38\uC591)"
-  useClip: {fileID: 0}
+  useClip: {fileID: 8300000, guid: c7b5fac5d9a6b7e4d9c7c15e3f54c6e8, type: 3}
 --- !u!1 &379580462
 GameObject:
   m_ObjectHideFlags: 0
@@ -117470,7 +117531,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Gim002.Gim002PianoKey
   hasSymbol: 1
   symbol: 3
-  note: {fileID: 0}
+  note: {fileID: 8300000, guid: 50bff042b747c3f48a83ee03056dca10, type: 3}
   toneFrequency: 349.2
   keyVisual: {fileID: 0}
   pressDepth: 0.012
@@ -158989,7 +159050,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Gim002.Gim002PianoKey
   hasSymbol: 1
   symbol: 2
-  note: {fileID: 0}
+  note: {fileID: 8300000, guid: 0592efa38e83d2a428e12e4f92da7857, type: 3}
   toneFrequency: 329.6
   keyVisual: {fileID: 0}
   pressDepth: 0.012
@@ -245058,6 +245119,22 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3900463556963267093, guid: 37e6e03fa680a3242882f52fd86a627b, type: 3}
+      propertyPath: openSound
+      value: 
+      objectReference: {fileID: 8300000, guid: eb957c4f21de5914f8bcddb0565d94d1, type: 3}
+    - target: {fileID: 3900463556963267093, guid: 37e6e03fa680a3242882f52fd86a627b, type: 3}
+      propertyPath: clickSound
+      value: 
+      objectReference: {fileID: 8300000, guid: cf50d9101b6793042bf1184755020a70, type: 3}
+    - target: {fileID: 3900463556963267093, guid: 37e6e03fa680a3242882f52fd86a627b, type: 3}
+      propertyPath: wrongSound
+      value: 
+      objectReference: {fileID: 8300000, guid: ded791ff4b393574690c6068920625fe, type: 3}
+    - target: {fileID: 3900463556963267093, guid: 37e6e03fa680a3242882f52fd86a627b, type: 3}
+      propertyPath: completeSound
+      value: 
+      objectReference: {fileID: 8300000, guid: 10efe3d58bab9e54199ef82f1eb41545, type: 3}
     - target: {fileID: 5231422602961006718, guid: 37e6e03fa680a3242882f52fd86a627b, type: 3}
       propertyPath: m_Name
       value: GIM005_GardenRoom
@@ -333343,15 +333420,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Gim002.Gim002FeedbackSpeaker
   label: "1\uCE35"
   playStageWrong: 1
-  stageWrongClip: {fileID: 0}
+  stageWrongClip: {fileID: 8300000, guid: ded791ff4b393574690c6068920625fe, type: 3}
   playStageRight: 0
-  stageRightClip: {fileID: 0}
+  stageRightClip: {fileID: 8300000, guid: 3639f8b025619434bb5efb29405263a4, type: 3}
   playPianoWrong: 1
-  pianoWrongClip: {fileID: 0}
+  pianoWrongClip: {fileID: 8300000, guid: ded791ff4b393574690c6068920625fe, type: 3}
   playPerformStart: 1
-  performStartClip: {fileID: 0}
+  performStartClip: {fileID: 8300000, guid: 0a7342f53d2c73a48a44d1d25bd018e4, type: 3}
   playSceneClear: 1
-  sceneClearClip: {fileID: 0}
+  sceneClearClip: {fileID: 8300000, guid: 0a7342f53d2c73a48a44d1d25bd018e4, type: 3}
   playComplete: 1
   completeClip: {fileID: 0}
   echoPianoKeys: 0
@@ -366473,7 +366550,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Gim002.Gim002PianoKey
   hasSymbol: 1
   symbol: 1
-  note: {fileID: 0}
+  note: {fileID: 8300000, guid: 35d3635a8551f4c43857ca7ef1ee04c6, type: 3}
   toneFrequency: 293.7
   keyVisual: {fileID: 0}
   pressDepth: 0.012
@@ -426048,7 +426125,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Gim002.Gim002PianoKey
   hasSymbol: 1
   symbol: 4
-  note: {fileID: 0}
+  note: {fileID: 8300000, guid: e02620f9d7ef383468d21e0adc18e79f, type: 3}
   toneFrequency: 261.6
   keyVisual: {fileID: 0}
   pressDepth: 0.012
@@ -426066,7 +426143,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Gim002.Gim002PianoKey
   hasSymbol: 1
   symbol: 3
-  note: {fileID: 0}
+  note: {fileID: 8300000, guid: 50bff042b747c3f48a83ee03056dca10, type: 3}
   toneFrequency: 261.6
   keyVisual: {fileID: 0}
   pressDepth: 0.012
@@ -426084,7 +426161,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Gim002.Gim002PianoKey
   hasSymbol: 1
   symbol: 2
-  note: {fileID: 0}
+  note: {fileID: 8300000, guid: 0592efa38e83d2a428e12e4f92da7857, type: 3}
   toneFrequency: 261.6
   keyVisual: {fileID: 0}
   pressDepth: 0.012
@@ -426102,7 +426179,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Gim002.Gim002PianoKey
   hasSymbol: 1
   symbol: 1
-  note: {fileID: 0}
+  note: {fileID: 8300000, guid: 35d3635a8551f4c43857ca7ef1ee04c6, type: 3}
   toneFrequency: 261.6
   keyVisual: {fileID: 0}
   pressDepth: 0.012
@@ -426120,7 +426197,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Gim002.Gim002PianoKey
   hasSymbol: 1
   symbol: 0
-  note: {fileID: 0}
+  note: {fileID: 8300000, guid: 734f8ad213f9d2441995fa6d254eb2a4, type: 3}
   toneFrequency: 261.6
   keyVisual: {fileID: 0}
   pressDepth: 0.012
@@ -542173,6 +542250,10 @@ PrefabInstance:
       propertyPath: m_Center.z
       value: 0.151
       objectReference: {fileID: 0}
+    - target: {fileID: 1528381292167118005, guid: 424f089cf30cd5443bc1eaccc0d26710, type: 3}
+      propertyPath: placeClip
+      value: 
+      objectReference: {fileID: 8300000, guid: 7269d1c4435cefd4c9f011a79619ef51, type: 3}
     - target: {fileID: 1900741184262352447, guid: 424f089cf30cd5443bc1eaccc0d26710, type: 3}
       propertyPath: m_LocalScale.x
       value: 0.81
@@ -542193,6 +542274,10 @@ PrefabInstance:
       propertyPath: m_LocalPosition.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3407559458412906034, guid: 424f089cf30cd5443bc1eaccc0d26710, type: 3}
+      propertyPath: turnClip
+      value: 
+      objectReference: {fileID: 8300000, guid: 0a2f9440000f4cf4a9e333ed6501d15a, type: 3}
     - target: {fileID: 4330231195969297444, guid: 424f089cf30cd5443bc1eaccc0d26710, type: 3}
       propertyPath: m_LocalPosition.x
       value: 60.5
@@ -542233,10 +542318,34 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6679936389694180954, guid: 424f089cf30cd5443bc1eaccc0d26710, type: 3}
+      propertyPath: pianoWrongClip
+      value: 
+      objectReference: {fileID: 8300000, guid: ded791ff4b393574690c6068920625fe, type: 3}
+    - target: {fileID: 6679936389694180954, guid: 424f089cf30cd5443bc1eaccc0d26710, type: 3}
+      propertyPath: sceneClearClip
+      value: 
+      objectReference: {fileID: 8300000, guid: 0a7342f53d2c73a48a44d1d25bd018e4, type: 3}
+    - target: {fileID: 6679936389694180954, guid: 424f089cf30cd5443bc1eaccc0d26710, type: 3}
+      propertyPath: stageRightClip
+      value: 
+      objectReference: {fileID: 8300000, guid: 3639f8b025619434bb5efb29405263a4, type: 3}
+    - target: {fileID: 6679936389694180954, guid: 424f089cf30cd5443bc1eaccc0d26710, type: 3}
+      propertyPath: stageWrongClip
+      value: 
+      objectReference: {fileID: 8300000, guid: ded791ff4b393574690c6068920625fe, type: 3}
+    - target: {fileID: 6679936389694180954, guid: 424f089cf30cd5443bc1eaccc0d26710, type: 3}
+      propertyPath: performStartClip
+      value: 
+      objectReference: {fileID: 8300000, guid: 0a7342f53d2c73a48a44d1d25bd018e4, type: 3}
     - target: {fileID: 6702885074183085728, guid: 424f089cf30cd5443bc1eaccc0d26710, type: 3}
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 7844980006043190149, guid: 424f089cf30cd5443bc1eaccc0d26710, type: 3}
+      propertyPath: useClip
+      value: 
+      objectReference: {fileID: 8300000, guid: c7b5fac5d9a6b7e4d9c7c15e3f54c6e8, type: 3}
     - target: {fileID: 8130613721837247590, guid: 424f089cf30cd5443bc1eaccc0d26710, type: 3}
       propertyPath: symbolText
       value: 
@@ -542285,6 +542394,10 @@ PrefabInstance:
       propertyPath: 'symbolMaterials.Array.data[4]'
       value: 
       objectReference: {fileID: 2100000, guid: 9933c34855fbe8b49a2f88dd35c1cb62, type: 2}
+    - target: {fileID: 8237991660404665932, guid: 424f089cf30cd5443bc1eaccc0d26710, type: 3}
+      propertyPath: placeClip
+      value: 
+      objectReference: {fileID: 8300000, guid: 6c5d23f21d73d834da847d00aa9061f0, type: 3}
     - target: {fileID: 8421525938304451911, guid: 424f089cf30cd5443bc1eaccc0d26710, type: 3}
       propertyPath: m_LocalPosition.y
       value: -0.0088
@@ -570475,6 +570588,22 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5369293934552904805, guid: 4c5c853dfeb75d141997ed73e9d61280, type: 3}
+      propertyPath: failClip
+      value: 
+      objectReference: {fileID: 8300000, guid: fc2b330c94687e54db31d1a6ac7f94bf, type: 3}
+    - target: {fileID: 5369293934552904805, guid: 4c5c853dfeb75d141997ed73e9d61280, type: 3}
+      propertyPath: scrapeClip
+      value: 
+      objectReference: {fileID: 8300000, guid: 7ac032030d0875a4ba65db06d8ea5dbc, type: 3}
+    - target: {fileID: 7292724398452167705, guid: 4c5c853dfeb75d141997ed73e9d61280, type: 3}
+      propertyPath: clankClip
+      value: 
+      objectReference: {fileID: 8300000, guid: 4317bbd922ce1e140a94167d945fa3f9, type: 3}
+    - target: {fileID: 7292724398452167705, guid: 4c5c853dfeb75d141997ed73e9d61280, type: 3}
+      propertyPath: doorOpenClip
+      value: 
+      objectReference: {fileID: 8300000, guid: 0b2c73f2ed1a73a409138a4c532da8a2, type: 3}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -612701,6 +612830,135 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2121016686}
   m_Mesh: {fileID: 4300040, guid: 4d14826c32fb27e40ae3bd1c78505c05, type: 3}
+--- !u!1 &2121049347
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2121049348}
+  - component: {fileID: 2121049349}
+  m_Layer: 0
+  m_Name: LGH_PulleySound
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2121049348
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2121049347}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 4, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 374596384}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!82 &2121049349
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2121049347}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_Resource: {fileID: 8300000, guid: 6bba5ff02d6a970458d961411f2f1abd, type: 3}
+  m_PlayOnAwake: 0
+  m_Volume: 0.8
+  m_Pitch: 1
+  Loop: 1
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 0
+  MinDistance: 1.5
+  MaxDistance: 16
+  Pan2D: 0
+  rolloffMode: 1
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!1 &2121365114
 GameObject:
   m_ObjectHideFlags: 0

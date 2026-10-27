@@ -42,6 +42,7 @@ namespace LGH
             if (Current != null || Telescope.Viewing || StarLockBox.Inspecting != null) return;
             Current = this;
             openedFrame = Time.frameCount;
+            if (LghSfx.Bank != null) LghSfx.Local(LghSfx.Bank.paperPickup, 0.7f);
             lockedMove = interactor != null ? interactor.GetComponentInParent<FirstPersonController>() : null;
             if (lockedMove == null && interactor != null) lockedMove = interactor.GetComponentInChildren<FirstPersonController>();
             if (lockedMove != null) lockedMove.enabled = false;

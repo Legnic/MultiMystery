@@ -51,6 +51,7 @@ namespace LGH
             if (Current != null) return;
             Current = this;
             openedFrame = Time.frameCount;
+            if (LghSfx.Bank != null) LghSfx.Local(LghSfx.Bank.telescope, 0.8f);
             lockedMove = interactor != null ? interactor.GetComponent<FirstPersonController>() : null;
             if (lockedMove != null) lockedMove.enabled = false;
         }
