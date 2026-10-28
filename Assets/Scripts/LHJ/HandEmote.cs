@@ -13,6 +13,8 @@ public class HandEmote : MonoBehaviour
         public GameObject model;
         public RuntimeAnimatorController controller;
         public Key key;
+        public float turnY;        // 손마다 원래 만들어진 방향이 달라서 Y축으로 돌려 맞춘다 (도)
+        public float scale = 1f;   // 손마다 크기가 달라서 맞춘다
     }
 
     [SerializeField] Gesture[] gestures;
@@ -47,6 +49,8 @@ public class HandEmote : MonoBehaviour
         {
             var hand = Instantiate(gesture.model, slots[i], false);
             hand.name = gesture.name;
+            hand.transform.localRotation = Quaternion.Euler(0f, gesture.turnY, 0f);
+            hand.transform.localScale = Vector3.one * gesture.scale;
             SetLayer(hand.transform, slots[i].gameObject.layer);
             if (handMaterial != null)
             {
