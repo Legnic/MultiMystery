@@ -542,15 +542,15 @@ namespace Gim002.EditorTools
                 Vector3 size = t.InverseTransformVector(b.size);
                 col.size = Vector3.Max(new Vector3(Mathf.Abs(size.x), Mathf.Abs(size.y), Mathf.Abs(size.z)), Vector3.one * 0.12f);
             }
-            // LGH 공용 소지품 인벤토리로 줍는다 — WorldItem이 "보기+E로 줍기"를 전담한다 (RequireComponent로도 강제됨).
+            // 2026-10-28: 인벤토리 줍기(WorldItem) 대신 공용 들기 시스템으로 왼손에 든다 → 예전에 붙인 WorldItem은 지운다
             var world = t.GetComponent<LGH.WorldItem>();
-            if (world == null) world = Undo.AddComponent<LGH.WorldItem>(t.gameObject);
-            if (data != null && data.inventoryItem != null) SetRef(world, "item", data.inventoryItem);
+            if (world != null) Undo.DestroyObjectImmediate(world);
 
             var item = t.GetComponent<Gim002KeyItem>();
             if (item == null) item = Undo.AddComponent<Gim002KeyItem>(t.gameObject);
             SetRef(item, "keyData", data);
             SetEnum(item, "usedFor", (int)usedFor);
+            SetVector(item, "holdOffset", new Vector3(-0.22f, -0.2f, 0.45f));   // 왼손 (오른손은 촛불)
         }
 
         // =====================================================================

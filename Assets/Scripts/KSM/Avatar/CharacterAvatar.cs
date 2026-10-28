@@ -94,7 +94,7 @@ namespace CoopDemo
             interactor = null;
             // 방에 남은 사람(호스트)이 있는 동안 나간 사람의 마지막 위치를 기억한다
             if (IsServer && !IsOwner && NetworkManager != null && NetworkManager.IsListening) RememberSpot();
-            if (Model != null) { Destroy(Model.gameObject); Model = null; }
+            if (Model != null) { Model.ReleaseLeftHandItems(); Destroy(Model.gameObject); Model = null; }
         }
 
         int Slot { get { return PlayerSlot.Of(OwnerClientId); } }

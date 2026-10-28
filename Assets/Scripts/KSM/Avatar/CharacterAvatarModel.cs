@@ -148,6 +148,16 @@ namespace CoopDemo
             holdingLeftItem = false;
         }
 
+        // 이 모델이 사라지기 직전(상대가 나감 등) 왼손에 붙여 둔 물건을 떼어 낸다 — 안 그러면 모델과 같이 파괴되어
+        // 그 물건(GIM-002 인형·열쇠, 다락 황금상 등)이 남은 사람 화면에서 영영 사라진다. 제자리 복귀는 HoldableNetworkSync가 한다.
+        public void ReleaseLeftHandItems()
+        {
+            holdingLeftItem = false;
+            if (handItemSocket == null) return;
+            for (int i = handItemSocket.childCount - 1; i >= 0; i--)
+                handItemSocket.GetChild(i).SetParent(null, true);
+        }
+
         void UpdateHandItem()
         {
             if (handItemSocket == null || leftHand == null) return;

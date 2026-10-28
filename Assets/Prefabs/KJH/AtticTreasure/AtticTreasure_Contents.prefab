@@ -134,6 +134,7 @@ MonoBehaviour:
   doorParentFilter: Ravenwood_LGH
   keyItem: {fileID: 11400000, guid: 9b14eb26c4f84644ba4c4a32ac1a4707, type: 2}
   consumeKey: 0
+  lockedMessage: "\uC7A0\uACA8 \uC788\uB2E4. \uD604\uAD00 \uC5F4\uC1E0\uAC00 \uD544\uC694\uD558\uB2E4"
   triggerEscape: 1
   logToConsole: 1
   onFrontDoorOpened:
@@ -288,9 +289,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9cc5335e491dbea448b72dfc134f99bc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AtticTreasure.AtticTreasureKey
+  displayName: "\uBB3C\uAC74"
+  holdOffset: {x: -0.24, y: -0.22, z: 0.62}
+  holdEuler: {x: -35, y: -35, z: 0}
+  returnSeconds: 0.5
+  placeSeconds: 0.15
   box: {fileID: 0}
   boxName: StarLockBox_LGH
-  prompt: "[E] \uD604\uAD00 \uC5F4\uC1E0 \uC90D\uAE30"
+  prompt: "[E] \uD604\uAD00 \uC5F4\uC1E0 \uC9D1\uAE30"
 --- !u!1 &8856336053920277121
 GameObject:
   m_ObjectHideFlags: 0
@@ -358,6 +364,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6d38561531acd244a818572f802f37f1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AtticTreasure.AtticTreasureStatue
+  displayName: "\uBB3C\uAC74"
+  holdOffset: {x: -0.36, y: -0.42, z: 0.9}
+  holdEuler: {x: 0, y: 25, z: 0}
+  returnSeconds: 0.5
+  placeSeconds: 0.15
   box: {fileID: 0}
   boxName: StarLockBox_LGH
   prompt: "[E] \uD669\uAE08\uC0C1 \uC9D1\uAE30"
