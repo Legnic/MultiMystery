@@ -174,7 +174,14 @@ public class HoldableNetworkSync : NetworkBehaviour
     void Apply(int itemIndex, ulong clientId)
     {
         if (itemIndex < 0 || itemIndex >= items.Length || items[itemIndex] == null) return;
-        var playerObj = NetworkManager.Singleton.SpawnManager.GetPlayerNetworkObject(clientId);
+        // SpawnManager.GetPlayerNetworkObject(다른 사람)은 서버에서만 동작한다 — 게스트에서는 에러를 남기고 null을 돌려줘서
+        // 호스트가 든 물건이 게스트 화면에 영영 안 붙었다(2026-10-28 실제 접속 테스트로 확인). 모든 컴퓨터에 있는 플레이어 목록에서 찾는다.
+        NetworkObject playerObj = null;
+        for (int i = 0; i < LGH.NetworkPlayer.All.Count; i++)
+        {
+            var p = LGH.NetworkPlayer.All[i];
+            if (p != null && p.OwnerClientId == clientId) { playerObj = p.NetworkObject; break; }
+        }
         if (playerObj == null) return;
         var t = items[itemIndex].transform;
         var avatar = playerObj.GetComponentInChildren<CoopDemo.CharacterAvatar>(true);

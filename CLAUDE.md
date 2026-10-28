@@ -1034,6 +1034,11 @@ Develop에 가져오지 않음.
   등 일부 URP 설정 파일이 매번 "수정됨"으로 뜨는 건 실제 내용 diff가 비어있는 줄바꿈 표기 차이뿐 — 매번 확인하고
   있고 실제 변경 아님.
 
+## 게스트에서 호스트가 든 물건이 안 보이던 버그 (2026-10-28) — NGO 함정 기록
+- 원인: `NetworkManager.SpawnManager.GetPlayerNetworkObject(다른 사람 ID)`는 **서버에서만** 동작한다. 게스트에서는 에러 로그를 남기고 `null`을 돌려줘서, `HoldableNetworkSync.Apply`(왼손 물건 붙이기)와 `PotionCraftSync.BuildHeldVisual`(약품 재료 들기)이 호스트 플레이어를 못 찾고 조용히 끝났다. 호스트 혼자 테스트하거나 "호스트가 게스트 것을 볼 때"는 서버라서 멀쩡해 보였다.
+- 수정: 모든 컴퓨터에 있는 `LGH.NetworkPlayer.All`에서 `OwnerClientId`로 찾는다(두 파일 모두). **다른 플레이어의 오브젝트를 찾을 때는 앞으로도 `GetPlayerNetworkObject`를 쓰지 말 것.** 약품 재료도 이제 상대 화면에서 아바타 왼손에 붙는다.
+- 검증 방법(재사용 가능): 임시 게스트 봇이 든 테스트 빌드(`-guestbot` 인자로 스스로 `StartClient`, 호스트=에디터 `StartHost`, 127.0.0.1:7777)로 실제 두 번째 접속을 만들어 로그/스크린샷으로 확인했다. Relay 없이 직접 접속이 되므로 이 방식으로 "에디터 1개로는 못 보던" 게스트 쪽 동작을 볼 수 있다. 빌드는 `Builds/`(gitignore)에 만들고 끝나면 지울 것.
+
 ## LCW 사운드 연결 (2026-10-28)
 `Assets/Sounds/LCW`의 효과음/엠비언스 61개를 상황에 맞게 연결함(LGH/KJH 폴더 사운드는 쓰지 않음). 구조:
 - **`LcwSoundBank`**(`Assets/Resources/KSM/LcwSoundBank.asset`): 파일을 "상황 이름"(doorOpen, footstep, pianoDo …)으로 묶은 목록. 소리를 바꾸려면 이 에셋의 칸만 바꾸면 되고, 처음/재생성은 `Tools/KSM/Audio/Build LCW Sound Bank`(재실행 가능). 칸↔파일 짝은 `Assets/Scripts/KSM/Audio/Editor/LcwSoundBankBuilder.cs` 표 한 곳에만 있다. 긴 소리(엠비언스, 미로 배경음, 대기실 브금)는 자동으로 Streaming 로드.

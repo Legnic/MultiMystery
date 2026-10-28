@@ -37,6 +37,18 @@ namespace PotionCraft
         private readonly Dictionary<ulong, int> held = new Dictionary<ulong, int>();
         private readonly Dictionary<ulong, GameObject> heldVisuals = new Dictionary<ulong, GameObject>();
         private readonly Dictionary<ulong, int> heldVisualCode = new Dictionary<ulong, int>();
+        // 상대 화면에서 그 사람 아바타의 왼손 뼈에 붙여 둔 모양 → 지울 때 왼팔을 평소 자세로 되돌리기 위해 기억한다
+        private readonly Dictionary<ulong, CoopDemo.CharacterAvatarModel> heldVisualModel = new Dictionary<ulong, CoopDemo.CharacterAvatarModel>();
+
+        private void DestroyHeldVisual(ulong id, GameObject go)
+        {
+            if (heldVisualModel.TryGetValue(id, out var model))
+            {
+                heldVisualModel.Remove(id);
+                if (model != null) model.DetachLeftHandItem();
+            }
+            if (go != null) Destroy(go);
+        }
         private bool completed;
         private GUIStyle hudStyle;
 
@@ -255,7 +267,7 @@ namespace PotionCraft
             foreach (var kv in heldVisuals) if (!held.ContainsKey(kv.Key)) removed.Add(kv.Key);
             foreach (ulong id in removed)
             {
-                if (heldVisuals[id] != null) Destroy(heldVisuals[id]);
+                DestroyHeldVisual(id, heldVisuals[id]);
                 heldVisuals.Remove(id);
                 heldVisualCode.Remove(id);
             }
@@ -267,7 +279,7 @@ namespace PotionCraft
                 int shown;
                 heldVisualCode.TryGetValue(kv.Key, out shown);
                 if (go != null && shown == kv.Value) continue;
-                if (go != null) Destroy(go);
+                DestroyHeldVisual(kv.Key, go);
                 heldVisuals.Remove(kv.Key);
                 var made = BuildHeldVisual(kv.Key, kv.Value);
                 if (made != null) { heldVisuals[kv.Key] = made; heldVisualCode[kv.Key] = kv.Value; }
@@ -294,15 +306,34 @@ namespace PotionCraft
             else
             {
                 if (!IsSpawned) return null;
-                var po = NetworkManager.SpawnManager.GetPlayerNetworkObject(client);
-                if (po == null) return null; // 아직 스폰 전이면 다음 프레임에 다시 시도
-                parent = po.transform;
-                localPos = new Vector3(-0.25f, 1.15f, 0.5f);
+                // SpawnManager.GetPlayerNetworkObject(다른 사람)은 서버에서만 동작한다 — 게스트에서는 호스트의 플레이어를 못 찾아서
+                // 호스트가 든 재료가 게스트 화면에 영영 안 보였다. 모든 컴퓨터에 있는 플레이어 목록에서 찾는다.
+                LGH.NetworkPlayer other = null;
+                for (int i = 0; i < LGH.NetworkPlayer.All.Count; i++)
+                {
+                    var p = LGH.NetworkPlayer.All[i];
+                    if (p != null && p.OwnerClientId == client) { other = p; break; }
+                }
+                if (other == null) return null; // 아직 스폰 전이면 다음 프레임에 다시 시도
+                parent = other.transform;
+                localPos = new Vector3(-0.25f, 1.15f, 0.5f);   // 아바타 모델이 아직 없을 때만 쓰는 대체 위치
             }
 
             var go = Instantiate(prefab, parent);
             go.name = "Held_" + catalog.NameOf(code);
             go.transform.localPosition = localPos;
+            if (!mine)
+            {
+                // 상대 화면에서는 그 사람 아바타의 왼손 뼈에 붙인다(걷는 팔 흔들림을 따라가고 왼팔을 드는 자세로 굽힘). 프리팹 자신의 회전은 그대로 유지.
+                var avatar = parent.GetComponentInChildren<CoopDemo.CharacterAvatar>(true);
+                if (avatar != null && avatar.Model != null)
+                {
+                    Quaternion keep = prefab.transform.localRotation;
+                    avatar.Model.AttachLeftHandItem(go.transform);
+                    go.transform.localRotation = keep;
+                    heldVisualModel[client] = avatar.Model;
+                }
+            }
             // 회전은 그대로 둔다: 프리팹 자신의 로컬 회전이 "손에 들었을 때" 모습이 되도록 이미 맞춰져 있다
             // (Item_Material_* 같은 전용 래퍼는 identity, 원본 VARCO 모델을 직접 쓰는 경우는 보통 (270,0,0)).
             PotionVisuals.StripColliders(go);
