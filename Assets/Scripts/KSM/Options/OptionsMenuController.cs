@@ -10,7 +10,8 @@ namespace CoopDemo
     // - 네트워크 세션, 음성 채널, 상대 플레이어는 절대 건드리지 않는다 (로컬 전용).
     // - Time.timeScale은 쓰지 않는다. 인게임에서는 커서만 풀고 LGH.FirstPersonController를 IPlayerLock으로 잠깐 잠근다.
     // - 슬라이더는 움직이는 즉시 미리보기가 적용된다(PlayerOptions.Preview). [적용 및 저장]을 눌러야 재실행 후에도 유지된다.
-    public class OptionsMenuController : MonoBehaviour
+    // 디자이너 이미지 버전 화면은 OptionsMenuController.Designed.cs (Resources/OptionsDesignTheme이 있으면 그쪽을 그린다)
+    public partial class OptionsMenuController : MonoBehaviour
     {
         public static OptionsMenuController Instance { get; private set; }
         public static bool IsOpen { get; private set; }
@@ -68,7 +69,11 @@ namespace CoopDemo
             if (Instance == null) return;
             PlayerOptions.EnsureLoaded();
             Instance.staged = PlayerOptions.Current;
+            // [M]키로 바꾼 음소거 상태는 옵션 값에 반영되지 않으므로, 열 때 실제 마이크 상태로 맞춘다
+            if (VoiceChatManager.Instance != null && VoiceChatManager.Instance.IsReady)
+                Instance.staged.micMuted = VoiceChatManager.Instance.IsMicMuted;
             Instance.resolutionPending = false;
+            Instance.openDropdown = -1;
             IsOpen = true;
             Instance.LockLocalPlayer(true);
             Instance.SetBackgroundUiBlocked(true);
@@ -130,7 +135,10 @@ namespace CoopDemo
             var kb = Keyboard.current;
             // 인벤토리 등 상위 모달이 이번 프레임에 Esc를 이미 썼으면 옵션은 반응하지 않는다 (우선순위: 상위 모달 > 옵션 > 일반 인게임).
             if (kb != null && kb.escapeKey.wasPressedThisFrame && !LGH.PlayerInventory.EscapeConsumed)
-                Close(false);
+            {
+                if (openDropdown >= 0) openDropdown = -1;   // 펼친 장치 목록이 있으면 그것만 접는다
+                else Close(false);
+            }
 
             if (resolutionPending && Time.unscaledTime >= resolutionRevertAt) RevertResolution();
         }
@@ -168,6 +176,13 @@ namespace CoopDemo
         void OnGUI()
         {
             if (!IsOpen) return;
+            if (DesignTheme != null)
+            {
+                var m = GUI.matrix;
+                try { DrawDesigned(); }
+                finally { GUI.matrix = m; }
+                return;
+            }
             var prevSkin = MeetYouGuiSkin.Begin();
             try { DrawGui(); }
             finally { MeetYouGuiSkin.End(prevSkin); }
@@ -350,8 +365,7 @@ namespace CoopDemo
             GUILayout.Space(14);
             GUILayout.Label("해상도", label);
             EnsureResolutionOptions();
-            int current = resolutionOptions.FindIndex(o => o.w == staged.resolutionWidth && o.h == staged.resolutionHeight);
-            if (current < 0) current = resolutionOptions.Count - 1;
+            int current = CurrentResolutionIndex();
             GUILayout.BeginHorizontal();
             GUI.enabled = !resolutionPending && current > 0;
             if (GUILayout.Button("◀", button, GUILayout.Width(40), GUILayout.Height(30))) TryChangeResolution(resolutionOptions[current - 1]);
@@ -377,15 +391,24 @@ namespace CoopDemo
         void EnsureResolutionOptions()
         {
             if (resolutionOptions != null) return;
-            resolutionOptions = new List<(int, int)>();
-            foreach (var r in Screen.resolutions)
+            // 고정 4종 (16:9). 모니터가 지원하는 목록 전체 대신 이것만 보여준다.
+            resolutionOptions = new List<(int, int)> { (1280, 720), (1920, 1080), (2560, 1440), (3840, 2160) };
+        }
+
+        // 지금 해상도의 칸. 목록에 없는 해상도(예: 1366x768)면 넓이가 가장 가까운 칸을 보여준다.
+        int CurrentResolutionIndex()
+        {
+            int exact = resolutionOptions.FindIndex(o => o.w == staged.resolutionWidth && o.h == staged.resolutionHeight);
+            if (exact >= 0) return exact;
+            long area = (long)staged.resolutionWidth * staged.resolutionHeight;
+            int best = 0;
+            long bestDiff = long.MaxValue;
+            for (int i = 0; i < resolutionOptions.Count; i++)
             {
-                var pair = (r.width, r.height);
-                if (!resolutionOptions.Contains(pair)) resolutionOptions.Add(pair);
+                long diff = System.Math.Abs((long)resolutionOptions[i].w * resolutionOptions[i].h - area);
+                if (diff < bestDiff) { bestDiff = diff; best = i; }
             }
-            resolutionOptions.Sort((a, b) => (a.Item1 * a.Item2).CompareTo(b.Item1 * b.Item2));
-            var curPair = (staged.resolutionWidth, staged.resolutionHeight);
-            if (!resolutionOptions.Contains(curPair)) resolutionOptions.Add(curPair);
+            return best;
         }
 
         void TryChangeResolution((int w, int h) target)

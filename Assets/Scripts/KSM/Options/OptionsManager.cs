@@ -120,26 +120,37 @@ namespace CoopDemo
                 ApplyVoiceDevices(d);
         }
 
-        // 저장된 장치 ID로 Vivox의 활성 입력/출력 장치를 맞춘다. 장치가 안 보이면(뽑힘 등) 조용히 건너뛴다.
+        // 저장된 장치로 Vivox의 활성 입력/출력 장치를 맞춘다. 장치가 안 보이면(뽑힘 등) 조용히 건너뛴다.
+        // 옵션 창은 Windows 장치 이름을 저장하고(음성 연결 전에도 고를 수 있게), 예전 저장값은 Vivox DeviceID라서 둘 다 맞춰 본다.
+        // 비어 있으면 Vivox의 "시스템 기본 장치"를 쓴다.
         async void ApplyVoiceDevices(PlayerOptionsData d)
         {
             try
             {
-                if (!string.IsNullOrEmpty(d.micDeviceId))
-                {
-                    foreach (var dev in VivoxService.Instance.AvailableInputDevices)
-                        if (dev.DeviceID == d.micDeviceId) { await dev.SetActiveDeviceAsync(); break; }
-                }
-                if (!string.IsNullOrEmpty(d.speakerDeviceId))
-                {
-                    foreach (var dev in VivoxService.Instance.AvailableOutputDevices)
-                        if (dev.DeviceID == d.speakerDeviceId) { await dev.SetActiveDeviceAsync(); break; }
-                }
+                foreach (var dev in VivoxService.Instance.AvailableInputDevices)
+                    if (DeviceMatches(d.micDeviceId, dev.DeviceID, dev.DeviceName))
+                    {
+                        if (VivoxService.Instance.ActiveInputDevice?.DeviceID != dev.DeviceID) await dev.SetActiveDeviceAsync();
+                        break;
+                    }
+                foreach (var dev in VivoxService.Instance.AvailableOutputDevices)
+                    if (DeviceMatches(d.speakerDeviceId, dev.DeviceID, dev.DeviceName))
+                    {
+                        if (VivoxService.Instance.ActiveOutputDevice?.DeviceID != dev.DeviceID) await dev.SetActiveDeviceAsync();
+                        break;
+                    }
             }
             catch (System.Exception e)
             {
                 Debug.LogWarning("[OptionsManager] 마이크/스피커 장치 적용 실패: " + e.Message);
             }
+        }
+
+        static bool DeviceMatches(string saved, string deviceId, string deviceName)
+        {
+            if (string.IsNullOrEmpty(saved))
+                return deviceName != null && deviceName.StartsWith("Default System", System.StringComparison.OrdinalIgnoreCase);
+            return deviceId == saved || deviceName == saved;
         }
 
         // 0~1 슬라이더 값을 믹서 데시벨로 바꿔서 쓴다 (0 = -80dB(사실상 무음), 1 = 0dB).
