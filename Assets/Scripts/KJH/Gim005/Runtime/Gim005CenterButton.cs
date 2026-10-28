@@ -43,7 +43,7 @@ namespace Gim005
         {
             var c = Gim005Controller.Instance;
             if (c == null || c.Net == null || c.State.state != Gim005State.Running) return;
-            if (source != null) source.PlayOneShot(Gim002.Gim002Tones.Click());
+            // 버튼 누르는 소리(05미로끝버튼)와 철창 소리는 LcwSoundDirector가 "완료" 신호를 받아 두 플레이어 모두에게 낸다.
             c.Net.RequestCenter();
         }
     }

@@ -153,11 +153,16 @@ namespace LGH
             if (sync != null && sync.IsSpawned)
             {
                 string blocked = focused.CheckBlocked(transform.position, inventory);
-                if (blocked != null) ShowMessage(blocked);
+                if (blocked != null)
+                {
+                    ShowMessage(blocked);
+                    if (focused.locked) LcwSoundDirector.PlayDoorLocked(focused.transform.position);   // 잠긴 문 소리
+                }
                 else sync.RequestInteract(focused, transform.position);
             }
             else
             {
+                if (focused.locked && !focused.CanUnlockWith(inventory)) LcwSoundDirector.PlayDoorLocked(focused.transform.position);
                 string msg = focused.Interact(transform.position, inventory);
                 if (!string.IsNullOrEmpty(msg)) ShowMessage(msg);
             }

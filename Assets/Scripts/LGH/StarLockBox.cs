@@ -84,6 +84,7 @@ namespace LGH
 
         public void ApplyFeedback(int fb)
         {
+            if (fb != 0) LcwSoundDirector.PlayStarLockPress(transform.position);   // 숫자를 돌리거나 버튼을 누를 때마다 번호키 소리 (모든 컴퓨터에서 불린다)
             if (fb == 1) { shakeUntil = Time.time + 0.35f; ShowNear("철컥... 열리지 않는다"); }
             else if (fb == 2) ShowNear("딸깍! 별 상자가 열렸다");
         }

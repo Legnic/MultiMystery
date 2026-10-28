@@ -73,5 +73,5 @@ MonoBehaviour:
   powderPrefab: {fileID: 3284560908978889269, guid: a6cfc4eb8460094428c1d5d371e21f42, type: 3}
   fxMaterial: {fileID: 2100000, guid: 44a007b0e777d0744930e433a8eb0fca, type: 2}
   rejectClip: {fileID: 0}
-  explodeClip: {fileID: 0}
-  successClip: {fileID: 0}
+  explodeClip: {fileID: 8300000, guid: ded791ff4b393574690c6068920625fe, type: 3}
+  successClip: {fileID: 8300000, guid: e7f0ffd80a8b5f640ac88bb33e08e451, type: 3}
