@@ -20,17 +20,14 @@ public class HandEmote : MonoBehaviour
     [SerializeField] Material handMaterial;
     [SerializeField] float showSeconds = 3f;
 
-    GameObject[] shown;
+    [System.NonSerialized] GameObject[] shown;
     float hideAt;
-
-    void Awake()
-    {
-        shown = new GameObject[slots.Length];
-        Hide();
-    }
 
     void Update()
     {
+        // 플레이 중에 스크립트가 다시 컴파일돼도 깨지지 않게 여기서 준비한다
+        if (shown == null || shown.Length != slots.Length) shown = new GameObject[slots.Length];
+
         var keyboard = Keyboard.current;
         if (keyboard != null)
         {
@@ -40,7 +37,7 @@ public class HandEmote : MonoBehaviour
             }
         }
 
-        if (shown[0] != null && Time.time >= hideAt) Hide();
+        if (shown.Length > 0 && shown[0] != null && Time.time >= hideAt) Hide();
     }
 
     void Show(Gesture gesture)
@@ -66,6 +63,7 @@ public class HandEmote : MonoBehaviour
 
     void Hide()
     {
+        if (shown == null) return;
         for (int i = 0; i < shown.Length; i++)
         {
             if (shown[i] != null) Destroy(shown[i]);
