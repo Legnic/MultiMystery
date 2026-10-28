@@ -198,8 +198,8 @@ MonoBehaviour:
     controller: {fileID: 9100000, guid: 62c4c08a274da9b4bb3c6f65b832ff6a, type: 2}
     key: 50
     turnY: 140
-    scale: 0.9
-    offset: {x: -0.25, y: 0.45, z: 0.4}
+    scale: 0.8
+    offset: {x: 0, y: 0, z: 0}
   slots:
   - {fileID: 962892106}
   myViewSlot: {fileID: 0}
@@ -3458,8 +3458,8 @@ MonoBehaviour:
     controller: {fileID: 9100000, guid: 62c4c08a274da9b4bb3c6f65b832ff6a, type: 2}
     key: 45
     turnY: 140
-    scale: 0.9
-    offset: {x: -0.25, y: 0.45, z: 0.4}
+    scale: 0.8
+    offset: {x: 0, y: 0, z: 0}
   slots:
   - {fileID: 1095049877}
   - {fileID: 82599806}
