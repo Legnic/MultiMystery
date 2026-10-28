@@ -190,7 +190,7 @@ namespace CoopDemo
                 var icon = micOn ? t.micOn : t.micMuted;
                 GUI.DrawTexture(new Rect(DCtrlX0, cy - icon.height / 2f, icon.width, icon.height), icon);
             }
-            GUI.Label(new Rect(DCtrlX0 + t.micOn.width + 14f, cy - 20f, 260f, 40f), micOn ? "마이크 켜짐  [M]" : "마이크 꺼짐  [M]", dMicText);
+            GUI.Label(new Rect(DCtrlX0 + t.micOn.width + 14f, cy - 20f, 260f, 40f), micOn ? "마이크 켜짐" : "마이크 꺼짐", dMicText);
             bool next = DesignToggle(cy, micOn, ref micKnob);
             if (next != micOn) { staged.micMuted = !next; PlayerOptions.Preview(staged); }
 
