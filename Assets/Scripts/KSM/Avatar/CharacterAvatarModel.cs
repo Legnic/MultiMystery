@@ -34,7 +34,7 @@ namespace CoopDemo
         [Tooltip("왼손 위치 기준, 모델 좌표(오른쪽, 위, 앞)로 얼마나 띄울지")]
         public Vector3 handItemOffset = new Vector3(0.0f, 0.08f, 0.10f);
         [Tooltip("손에 든 물건이 손 자체 기울기를 따라갈지(false, 자연스럽게 들린 느낌) 월드 기준으로 세울지(true)")]
-        public bool handItemUpright = false;
+        public bool handItemUpright = true;   // 손 뼈 방향을 따르면 인형이 옆으로 눕는다 — 월드 기준으로 세워서 든다
         [Tooltip("왼손에 물건을 든 자세로 바뀌는 속도(초당)")]
         public float holdPoseBlendSpeed = 8f;
 

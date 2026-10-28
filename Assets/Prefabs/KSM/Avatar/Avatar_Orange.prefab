@@ -470,6 +470,20 @@ MonoBehaviour:
   leftForeArm: {fileID: 1005015257797537395}
   rightArm: {fileID: 2478141380553699633}
   rightForeArm: {fileID: 3860785286661024953}
+  rightHand: {fileID: 0}
+  leftHand: {fileID: 0}
+  handCandleOffset: {x: 0, y: 0.1, z: 0.1}
+  handCandleUpright: 1
+  faceItemOffset: {x: 0, y: -0.05, z: 0.3}
+  faceItemUpright: 0
+  handItemOffset: {x: 0, y: 0.08, z: 0.1}
+  handItemUpright: 1
+  holdPoseBlendSpeed: 8
+  crouchTuckAngle: 62
+  crouchKneeAngle: 105
+  crouchHipsAngle: 10
+  crouchSpineAngle: 14
+  crouchBlendSpeed: 8
   body: {fileID: 6213922211692470378}
   animator: {fileID: 5149113520379254630}
   strideLength: 0.5
@@ -480,6 +494,8 @@ MonoBehaviour:
   fullSpeed: 3.2
   holdArmAngle: -34
   holdForeArmAngle: -26
+  leftHoldArmAngle: -34
+  leftHoldForeArmAngle: -26
   airLegAngle: -28
   airKneeAngle: 46
   airArmAngle: -62

@@ -296,7 +296,7 @@ Light:
   serializedVersion: 13
   m_Type: 2
   m_Color: {r: 1, g: 0.62, b: 0.3, a: 1}
-  m_Intensity: 4.2
+  m_Intensity: 3.7799997
   m_Range: 9.5
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
@@ -1577,7 +1577,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::LGH.CandleFlicker
   candleLight: {fileID: 9180403862825612602}
   flame: {fileID: 448885654740752146}
-  baseIntensity: 4.2
+  baseIntensity: 3.7799997
   intensityJitter: 0.5
   baseRange: 9.5
   speed: 7
@@ -1598,6 +1598,9 @@ MonoBehaviour:
   flameRoot: {fileID: 4803151236862151022}
   flicker: {fileID: 7430490020287661918}
   dyingSeconds: 20
+  wallClearance: 0.12
+  minWallScale: 0.35
+  wallReturnSpeed: 6
 --- !u!1 &5702557045921648482
 GameObject:
   m_ObjectHideFlags: 0
