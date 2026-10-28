@@ -54,6 +54,8 @@ namespace CoopDemo
         {
             IsHostCharacter = OwnerClientId == NetworkManager.ServerClientId;
             SpawnModel(IsHostCharacter ? orangeModel : blueModel);
+            // 늦게 들어온 컴퓨터: 이미 웅크리고 있는 상대는 값이 "바뀌는" 순간이 없으니 현재 값을 직접 반영한다
+            if (Model != null) Model.SetCrouching(crouching.Value);
 
             interactCount.OnValueChanged += OnInteractCountChanged;
             crouching.OnValueChanged += OnCrouchChanged;
