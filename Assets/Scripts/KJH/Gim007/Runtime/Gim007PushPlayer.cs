@@ -115,7 +115,11 @@ namespace Gim007
                 if (pressed.HasValue)
                 {
                     bool? ok = Gim007Logic.JudgeKey(rules, s.Key(localHandle), pressed.Value);
-                    if (ok.HasValue) Report(c, s.round, ok.Value);
+                    if (ok.HasValue)
+                    {
+                        if (ok.Value) LcwSoundDirector.PlayMinigamePress();   // 키를 맞게 눌렀을 때 (틀리면 실패 사건이 와서 틀림 소리가 난다)
+                        Report(c, s.round, ok.Value);
+                    }
                 }
                 if (!reported && Time.time - roundStartTime > rules.roundSeconds) Report(c, s.round, false);   // 시간 초과
             }

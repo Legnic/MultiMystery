@@ -141,6 +141,11 @@ public class HoldableNetworkSync : NetworkBehaviour
 
     void OnHeldChanged(NetworkListEvent<HeldEntry> e) { Resync(); }
 
+    // 누군가(나 포함) 물건을 새로 집은 순간 모든 컴퓨터에서 한 번 불린다 — 집는 소리 같은 연출용. 접속 직후 이미 들려 있던 물건은 알리지 않는다.
+    public static event System.Action<HoldableItem, ulong> ItemTaken;
+    readonly Dictionary<int, ulong> knownHolder = new Dictionary<int, ulong>();
+    bool firstSyncDone;
+
     // 매번 전체를 다시 맞춘다 (목록이 2명짜리라 가벼움) — 이벤트 종류별로 분기하는 것보다 훨씬 덜 깨진다.
     void Resync()
     {
@@ -148,8 +153,18 @@ public class HoldableNetworkSync : NetworkBehaviour
         foreach (var e in held)
         {
             current.Add(e.itemIndex);
+            if (!knownHolder.TryGetValue(e.itemIndex, out ulong who) || who != e.clientId)
+            {
+                knownHolder[e.itemIndex] = e.clientId;
+                if (firstSyncDone && e.itemIndex >= 0 && e.itemIndex < items.Length && items[e.itemIndex] != null)
+                    ItemTaken?.Invoke(items[e.itemIndex], e.clientId);
+            }
             if (e.clientId != MyId) Apply(e.itemIndex, e.clientId);
         }
+        firstSyncDone = true;
+        List<int> gone = null;
+        foreach (var k in knownHolder.Keys) if (!current.Contains(k)) { gone ??= new List<int>(); gone.Add(k); }
+        if (gone != null) foreach (var k in gone) knownHolder.Remove(k);
         List<int> toRelease = null;
         foreach (var idx in attached)
             if (!current.Contains(idx)) { toRelease ??= new List<int>(); toRelease.Add(idx); }
