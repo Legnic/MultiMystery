@@ -1,0 +1,14 @@
+; Shared merge-driver registration for Unity scene/prefab/asset files.
+; Not loaded automatically — each teammate opts in once (see CLAUDE.md,
+; "병합 충돌 재발 방지" section) by running:
+;
+;   git config --local include.path ../.gitconfig-unitymerge
+;
+; That makes git read this file in addition to the normal repo .git/config.
+; Combined with .gitattributes (which maps *.unity/*.prefab/*.asset/*.mat/
+; *.anim/*.controller to the "unityyamlmerge" driver name below), this makes
+; `git merge` / `git pull` call Unity's own UnityYAMLMerge tool for those
+; files instead of leaving raw <<<<<<< conflict markers in binary-ish YAML.
+[merge "unityyamlmerge"]
+	name = Unity YAML Merge (scene/prefab/asset)
+	driver = bash Tools/git/unity-merge.sh %O %A %B %P

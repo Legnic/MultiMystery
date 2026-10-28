@@ -1092,6 +1092,21 @@ Stage를 Playing으로 강제 → 낮 시간대로 강제) 재현한 뒤, 5개 �
 해당 .anim 파일을 같은 이름으로 `Assets/Animations/KSM/EmoteHand/`에 넣은 뒤 Build All을 다시 돌리면 됨**
 (관절을 코드로 다시 구부리지 말 것 — 이번에 되돌린 이유가 바로 그 방식의 결과물 품질 문제였음).
 
+## 병합 충돌 재발 방지 — UnityYAMLMerge 설정 (2026-10-27)
+`LGH`·`KJH` 브랜치를 Develop에 머지하는 과정에서, 충돌을 실제로 해결하지 않고 **Git 충돌 마커(`<<<<<<<`/`=======`/`>>>>>>>`)가 그대로 박힌 채 커밋**된 적이 있었다(이미 원격에 푸시까지 된 뒤 발견). 영향받은 파일이 40개가 넘었음 — 컴파일이 깨지는 .cs 파일들, GUID가 마커째로 깨진 .meta 파일, `Develop.unity`를 포함한 씬·프리팹 YAML까지. 아마 머지 도구(VS/Rider/디폴트 Git)가 충돌을 띄웠는데 실제로 고르지 않고 그대로 스테이징·커밋한 것으로 보인다.
+
+**원인**: `.unity`/`.prefab`/`.asset`/`.mat` 같은 Unity 파일은 사실 YAML인데, 평범한 텍스트 머지 도구는 이걸 줄 단위로만 비교해서 조금만 겹쳐도 충돌 마커를 박아버린다. Unity 에디터 안에 있는 `UnityYAMLMerge`라는 전용 도구를 쓰면 오브젝트 단위로 이해해서 실제로 안 겹치는 변경은 알아서 합쳐준다 — 이번 복구도 이 도구로 했다(격리된 git worktree에서 두 머지를 처음부터 다시 수행, `bd19c97` 커밋으로 정정).
+
+**앞으로 이런 일이 재발하지 않도록, 팀원 각자 한 번만 설정하면 됨**:
+1. 최신 Develop을 받으면 저장소 루트에 `.gitattributes`·`.gitconfig-unitymerge`·`Tools/git/unity-merge.sh`가 이미 들어있다.
+2. 터미널(Git Bash)에서 저장소 루트 기준으로 딱 한 번만 실행:
+   ```
+   git config --local include.path ../.gitconfig-unitymerge
+   ```
+3. 끝. 이제 `git pull`/`git merge`가 씬·프리팹·머티리얼·애니메이션·애니메이터 컨트롤러 충돌을 만나면 자동으로 `UnityYAMLMerge`를 거친다. `Tools/git/unity-merge.sh`가 `C:/Program Files/Unity/Hub/Editor/<버전>/Editor/Data/Tools/UnityYAMLMerge.exe`를 자동으로 찾으므로, Unity Hub로 설치했다면 버전이 달라도 따로 손댈 것 없음.
+
+**그래도 충돌 마커가 보이면(.cs 파일 등 텍스트 코드)**: 이건 UnityYAMLMerge 대상이 아니라 원래대로 수동 확인이 필요하다 — 절대 아무 쪽이나 골라서 그대로 커밋하지 말고, 양쪽 diff(`git show :2:<파일>` = 내 쪽, `git show :3:<파일>` = 상대 쪽)를 읽고 의미를 이해한 뒤 합칠 것. 커밋하기 전에 `grep -rn "^<<<<<<< " .`로 충돌 마커가 하나도 안 남았는지 항상 확인.
+
 ## 다음에 결정해야 할 것
 1. 캐릭터 조작 방식 vs 디오라마 고정 시점 (프로토타입 필요)
 2. 팀 공통 코딩 컨벤션, 공용 에셋/스크립트 배치 규칙

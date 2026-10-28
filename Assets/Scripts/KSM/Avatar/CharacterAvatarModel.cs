@@ -34,13 +34,18 @@ namespace CoopDemo
         [Tooltip("왼손 위치 기준, 모델 좌표(오른쪽, 위, 앞)로 얼마나 띄울지")]
         public Vector3 handItemOffset = new Vector3(0.0f, 0.08f, 0.10f);
         [Tooltip("손에 든 물건이 손 자체 기울기를 따라갈지(false, 자연스럽게 들린 느낌) 월드 기준으로 세울지(true)")]
-        public bool handItemUpright = false;
+        public bool handItemUpright = true;   // 손 뼈 방향을 따르면 인형이 옆으로 눕는다 — 월드 기준으로 세워서 든다
         [Tooltip("왼손에 물건을 든 자세로 바뀌는 속도(초당)")]
         public float holdPoseBlendSpeed = 8f;
 
         [Header("웅크리기 (상대에게 보이는 쪽)")]
-        [Tooltip("웅크렸을 때 모델 전체를 얼마나 낮출지(m)")]
-        public float crouchDrop = 0.30f;
+        [Tooltip("웅크릴 때 허벅지를 앞으로 드는 각도(도). 클수록 더 깊이 쪼그린다")]
+        public float crouchTuckAngle = 62f;
+        [Tooltip("웅크릴 때 무릎을 굽히는 각도(도)")]
+        public float crouchKneeAngle = 105f;
+        [Tooltip("웅크릴 때 골반/등을 앞으로 숙이는 각도(도)")]
+        public float crouchHipsAngle = 10f;
+        public float crouchSpineAngle = 14f;
         [Tooltip("웅크림 상태 전환 속도(초당)")]
         public float crouchBlendSpeed = 8f;
 
@@ -93,6 +98,8 @@ namespace CoopDemo
         Transform faceItemSocket;
         bool wantCrouch;
         float crouchAmount;
+        float landCrouchNow;   // 이번 프레임의 착지 굽힘(0~1)
+        float footRest = float.NaN;   // 서 있는 기본 자세에서 발 뼈의 (모델 뿌리 기준) 높이 — 웅크려도 발이 이 높이에 머물게 모델을 내린다
         bool holdingLeftItem;
         float leftHoldAmount;
 
@@ -203,6 +210,7 @@ namespace CoopDemo
             if (body == null) body = GetComponentInChildren<SkinnedMeshRenderer>(true);
             AutoBind();
             CaptureRest();
+            CaptureFootRest();
             if (body != null && body.sharedMesh != null) mouthIndex = body.sharedMesh.GetBlendShapeIndex(mouthShapeName);
             if (animator != null) animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
             lastPos = transform.position;
@@ -253,6 +261,19 @@ namespace CoopDemo
             bones = list.ToArray();
         }
 
+        // 발 뼈의 가장 낮은 높이(모델 뿌리 기준). 기본 자세 그대로일 때 한 번만 잰다.
+        float LowestFootLocalY()
+        {
+            if (leftFoot == null && rightFoot == null) return float.NaN;
+            float y = float.MaxValue;
+            if (leftFoot != null) y = Mathf.Min(y, leftFoot.position.y);
+            if (rightFoot != null) y = Mathf.Min(y, rightFoot.position.y);
+            // 모델은 만들어진 뒤에 1.5배 같은 배율이 씌워지므로, 배율로 나눠서 "모델 자체 크기 기준" 값으로 저장/비교한다
+            return (y - transform.position.y) / Mathf.Max(0.0001f, transform.lossyScale.y);
+        }
+
+        void CaptureFootRest() { footRest = LowestFootLocalY(); }
+
         Quaternion BaseOf(Transform t)
         {
             foreach (var b in bones) if (b.t == t) return b.animated ? t.localRotation : b.rest;
@@ -286,12 +307,28 @@ namespace CoopDemo
             crouchAmount = Mathf.MoveTowards(crouchAmount, wantCrouch ? 1f : 0f, crouchBlendSpeed * dt);
             leftHoldAmount = Mathf.MoveTowards(leftHoldAmount, holdingLeftItem ? 1f : 0f, holdPoseBlendSpeed * dt);
             UpdateMotionState(dt);
+            transform.localPosition = Vector3.zero;
             ApplyPose();
-            transform.localPosition = new Vector3(0f, -crouchDrop * crouchAmount, 0f);   // 웅크림: 모델 전체를 낮춘다(루트는 그대로)
+            GroundFeet();
             UpdateHandCandle();   // 뼈를 다 돌린 뒤에 손 위치를 읽는다
             UpdateHandItem();
             UpdateFaceItem();
             UpdateMouth(dt);
+        }
+
+        // 다리를 굽히면 골반은 그대로인 채 발이 위로 끌려 올라와 공중에 뜬다. 그만큼만 모델을 내려서 발을 바닥에 붙인다.
+        // (고정 값으로 내리면 다리가 덜 굽혀졌을 때 발이 바닥 아래로 가라앉는다 — 굽힌 정도에서 바로 계산한다)
+        // 웅크림/착지 굽힘에만 적용한다. 점프 중에는 일부러 발을 들어 올리므로 건드리지 않는다.
+        void GroundFeet()
+        {
+            if (float.IsNaN(footRest)) return;
+            float weight = Mathf.Max(crouchAmount, landCrouchNow) * (1f - airWeight);
+            if (weight <= 0.0001f) return;
+            float lift = (LowestFootLocalY() - footRest) * transform.lossyScale.y;   // 발이 기본 높이보다 얼마나 올라왔나(월드 m)
+            if (lift <= 0f) return;
+            Transform p = transform.parent;
+            float parentScaleY = p != null ? Mathf.Max(0.0001f, p.lossyScale.y) : 1f;
+            transform.localPosition = new Vector3(0f, -lift * weight / parentScaleY, 0f);
         }
 
         void UpdateMotionState(float dt)
@@ -332,12 +369,17 @@ namespace CoopDemo
             float c = Mathf.Cos(phase);
             float ground = 1f - airWeight;
             float landCrouch = landTimer > 0f ? Mathf.Sin(landTimer / landCrouchSeconds * Mathf.PI) : 0f;
-            float crouch = Mathf.Max(landCrouch, crouchAmount);   // 착지 순간의 짧은 굽힘 + 지속적인 웅크림, 둘 다 같은 다리 굽힘 공식을 쓴다
+            landCrouchNow = landCrouch;
+            // 착지 순간의 짧은 굽힘(가볍게)과 지속적인 웅크림(깊게)은 각도만 다르고 같은 공식을 쓴다 — 둘 중 더 굽은 쪽을 따른다
+            float hipsFlex = Mathf.Max(6f * landCrouch, crouchHipsAngle * crouchAmount);
+            float spineFlex = Mathf.Max(8f * landCrouch, crouchSpineAngle * crouchAmount);
+            float thighFlex = Mathf.Max(26f * landCrouch, crouchTuckAngle * crouchAmount);
+            float kneeFlex = Mathf.Max(40f * landCrouch, crouchKneeAngle * crouchAmount);
             float breathe = Mathf.Sin(Time.time * 1.7f) * 1.1f * (1f - amp);
 
             // 몸통: 살짝 앞으로 기울고, 서 있을 땐 숨쉬듯 흔들린다
-            Pose(hips, (swingAxis, lean * 0.4f * amp * ground), (right, crouch * 6f));
-            Pose(spine, (swingAxis, lean * 0.6f * amp * ground + breathe), (right, crouch * 8f));
+            Pose(hips, (swingAxis, lean * 0.4f * amp * ground), (right, hipsFlex));
+            Pose(spine, (swingAxis, lean * 0.6f * amp * ground + breathe), (right, spineFlex));
             Pose(spine1, (swingAxis, lean * 0.3f * amp * ground));
             Pose(spine2);
             Pose(neck);
@@ -354,8 +396,8 @@ namespace CoopDemo
 
             // 다리: 걸을 때 번갈아 앞뒤로, 점프 중엔 웅크려 모은다
             float legAmp = legSwing * amp * ground;
-            float tuck = airLegAngle * airWeight - 26f * crouch;
-            float knee = airKneeAngle * airWeight + 40f * crouch;
+            float tuck = airLegAngle * airWeight - thighFlex;
+            float knee = airKneeAngle * airWeight + kneeFlex;
             float lUp = -s * legAmp;           // 앞으로 나갈 때 음수
             float rUp = s * legAmp;
             float lKnee = Mathf.Max(0f, c) * kneeBend * amp * ground + knee;

@@ -64,6 +64,8 @@ namespace LGH
         float standingHeight, crouchHeight;
         Vector3 standingCenter, crouchCenter;
         float standingCamY, crouchCamY;
+        float crouchT;                 // 0 = 서 있음 ... 1 = 완전히 웅크림
+        CapsuleCollider bodyBlocker;   // 플레이어끼리 서로 통과하지 못하게 하는 몸통 콜라이더 — 웅크리면 같이 작아져야 한다
 
         void Awake()
         {
@@ -81,14 +83,20 @@ namespace LGH
             crouchCenter = standingCenter - new Vector3(0f, drop * 0.5f, 0f);
             standingCamY = cameraTransform != null ? cameraTransform.localPosition.y : 0f;
             crouchCamY = standingCamY - drop;
+
+            // CharacterController와 같은 크기로 맞춰 둔 몸통 콜라이더만 따라 줄인다 (다른 용도의 콜라이더는 건드리지 않는다)
+            var cap = GetComponent<CapsuleCollider>();
+            if (cap != null && !cap.isTrigger && Mathf.Abs(cap.height - standingHeight) < 0.05f) bodyBlocker = cap;
         }
 
         // 일어서려는 자리 바로 위가 막혀 있지 않은지(낮은 천장 등) 확인한다
         bool CanStandUp()
         {
-            float drop = standingHeight - crouchHeight;
+            // 지금 캡슐 머리 위로 "서 있을 때 키까지 모자란 만큼" 쏴 본다 (전환 중에도 맞는다)
+            float need = standingHeight - controller.height;
+            if (need <= 0.001f) return true;
             Vector3 origin = transform.position + Vector3.up * (controller.height - controller.radius);
-            return !Physics.SphereCast(origin, controller.radius * 0.95f, Vector3.up, out _, drop + 0.05f,
+            return !Physics.SphereCast(origin, controller.radius * 0.95f, Vector3.up, out _, need + 0.05f,
                 ~0, QueryTriggerInteraction.Ignore);
         }
 
@@ -142,16 +150,22 @@ namespace LGH
             if (!wantCrouch && crouching && !CanStandUp()) wantCrouch = true;
             crouching = wantCrouch;
 
-            float heightDrop = standingHeight - crouchHeight;
-            float targetHeight = crouching ? crouchHeight : standingHeight;
-            Vector3 targetCenter = crouching ? crouchCenter : standingCenter;
-            float targetCamY = crouching ? crouchCamY : standingCamY;
-            controller.height = Mathf.MoveTowards(controller.height, targetHeight, crouchTransitionSpeed * heightDrop * Time.deltaTime + 0.001f);
-            controller.center = Vector3.MoveTowards(controller.center, targetCenter, crouchTransitionSpeed * heightDrop * Time.deltaTime + 0.001f);
-            if (cameraTransform != null)
+            // 높이·중심·카메라를 따로따로 움직이면 중심이 높이보다 두 배 빨리 움직여서 캡슐 바닥이 바닥 아래로 파고든다(웅크릴 때)/떠오른다(일어설 때).
+            // 하나의 비율(crouchT)로 셋을 같이 보간해서 캡슐 바닥이 항상 발 높이(0)에 붙어 있게 한다.
+            float prevT = crouchT;
+            crouchT = Mathf.MoveTowards(crouchT, crouching ? 1f : 0f, crouchTransitionSpeed * Time.deltaTime);
+            controller.height = Mathf.Lerp(standingHeight, crouchHeight, crouchT);
+            controller.center = Vector3.Lerp(standingCenter, crouchCenter, crouchT);
+            if (bodyBlocker != null)
             {
+                bodyBlocker.height = controller.height;
+                bodyBlocker.center = controller.center;
+            }
+            if (cameraTransform != null && crouchT != prevT)
+            {
+                // 다른 스크립트가 카메라 높이를 건드려도 덮어쓰지 않게, 이번 프레임에 변한 만큼만 더한다
                 var camLocal = cameraTransform.localPosition;
-                camLocal.y = Mathf.MoveTowards(camLocal.y, targetCamY, crouchTransitionSpeed * heightDrop * Time.deltaTime + 0.001f);
+                camLocal.y += (crouchCamY - standingCamY) * (crouchT - prevT);
                 cameraTransform.localPosition = camLocal;
             }
 

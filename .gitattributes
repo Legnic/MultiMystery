@@ -1,0 +1,18 @@
+# Unity scene/prefab/asset files are YAML, not plain text — a normal line-based
+# git merge leaves raw <<<<<<< conflict markers inside them on any real overlap,
+# which Unity then fails to parse (see CLAUDE.md "병합 충돌 재발 방지").
+# Route them through Unity's own UnityYAMLMerge tool instead, once each teammate
+# has opted in per CLAUDE.md (git config --local include.path ../.gitconfig-unitymerge).
+*.unity merge=unityyamlmerge
+*.prefab merge=unityyamlmerge
+*.asset merge=unityyamlmerge
+*.mat merge=unityyamlmerge
+*.anim merge=unityyamlmerge
+*.controller merge=unityyamlmerge
+
+# Still plain text — keep normal line-ending handling.
+*.cs text
+*.md text
+
+# Git Bash runs this directly (#!/bin/bash) — CRLF would break the shebang.
+*.sh text eol=lf
