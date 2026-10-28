@@ -31,6 +31,7 @@ MonoBehaviour:
   hudMic: {fileID: 2800000, guid: 6424894d03754ec488ac24036bc20c90, type: 3}
   hudMicMuted: {fileID: 2800000, guid: b00c188fe8fb46239f7107919c67ac80, type: 3}
   hudMicGlow: {fileID: 2800000, guid: 57096ac67ee046a6bd28cfc82a1fa20d, type: 3}
+  hudMicSpeaking: {fileID: 2800000, guid: 609113d7ea7c4e48890083669a91a061, type: 3}
   toggleTrack: {fileID: 2800000, guid: c12da98d6130e464d869b60296bdfcec, type: 3}
   toggleKnob: {fileID: 2800000, guid: 2bc37d3114428d3408e0b847c4673c55, type: 3}
   rowLine: {fileID: 2800000, guid: 6dd38b0dea16fad4ba46b379478a0c18, type: 3}

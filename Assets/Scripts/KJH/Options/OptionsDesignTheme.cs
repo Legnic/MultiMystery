@@ -35,8 +35,10 @@ namespace CoopDemo
         [Header("플레이 화면 마이크 (왼쪽 아래, 배경 투명)")]
         public Texture2D hudMic;         // 금색 마이크
         public Texture2D hudMicMuted;    // 빨간 사선이 그어진 마이크
-        [Tooltip("말하는 중 마이크 모양 테두리에 켜지는 빛 (흰색, 코드에서 초록으로 칠함). hudMic과 같은 크기")]
+        [Tooltip("(예전 방식: 말하는 중 테두리 빛 — 지금은 쓰지 않음)")]
         public Texture2D hudMicGlow;
+        [Tooltip("말하는 중일 때 바뀌는 초록 마이크. hudMic과 같은 크기(투명 여백 포함)")]
+        public Texture2D hudMicSpeaking;
 
         [Header("인게임 메뉴 (ESC)")]
         [Tooltip("ESC 메뉴 패널 (780x775, 바깥은 투명). 디자인 이미지 1536x864에서 (379, 44) 자리")]
