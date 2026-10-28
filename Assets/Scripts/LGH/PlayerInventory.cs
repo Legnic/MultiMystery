@@ -24,6 +24,11 @@ namespace LGH
     public class PlayerInventory : NetworkBehaviour
     {
         public static PlayerInventory Local { get; private set; }
+
+        // 2026-10-28: 소지품 창([I])을 더 이상 쓰지 않는다 — 열쇠·황금상 등은 이제 왼손에 들고 다닌다(공용 들기 시스템).
+        // 기능 자체는 지우지 않고 여기서 창을 여는 입력만 막는다. 다시 쓰려면 true로 바꾸면 된다.
+        // (양초 개수 등 소지품 데이터는 양초 시스템이 계속 쓰므로 그대로 동작한다)
+        public static bool BagUiEnabled = false;
         public static readonly List<PlayerInventory> All = new List<PlayerInventory>();
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
@@ -263,6 +268,12 @@ namespace LGH
             {
                 if (kb.escapeKey.wasPressedThisFrame) escFrame = Time.frameCount;
                 if (kb.fKey.wasPressedThisFrame || kb.escapeKey.wasPressedThisFrame || kb.iKey.wasPressedThisFrame) reading = null;
+                return;
+            }
+
+            if (!BagUiEnabled)
+            {
+                if (open) SetOpen(false);
                 return;
             }
 
