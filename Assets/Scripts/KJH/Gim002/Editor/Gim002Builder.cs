@@ -489,7 +489,7 @@ namespace Gim002.EditorTools
             SetBool(spk, "playStageRight", false);   // 무대 정답은 1층에 변화 없음 (2층이 말로 알려 줌)
 
             // 놀이책 (레코드장 위)
-            // 놀이책: 빈 루트(들기 대상) + 표지 도형 + 표지 글자. 루트 스케일을 1로 두어야 글자 크기가 찌그러지지 않는다.
+            // 놀이책: 빈 루트(E로 바로 읽기) + 표지 도형 + 표지 글자. 루트 스케일을 1로 두어야 글자 크기가 찌그러지지 않는다.
             var book = new GameObject("OBJ_PLAYBOOK");
             book.transform.SetParent(area, false);
             book.transform.position = BookPos;
@@ -500,9 +500,7 @@ namespace Gim002.EditorTools
             bookCol.size = new Vector3(0.24f, 0.06f, 0.32f);
             Label(book.transform, "인형극\n놀이책", new Vector3(0f, 0.052f, 0f), Quaternion.LookRotation(Vector3.down, Vector3.left), 0.014f, new Color(1f, 0.9f, 0.6f));
             var pb = book.AddComponent<Gim002PlayBook>();
-            SetString(pb, "displayName", "인형극 놀이책");
-            SetVector(pb, "holdOffset", new Vector3(-0.25f, -0.3f, 0.55f));
-            SetVector(pb, "holdEuler", new Vector3(-60f, 0f, 0f));
+            SetString(pb, "displayName", "인형극 놀이책");   // 들지 않고 E로 바로 읽는다 (2026-10-28)
         }
 
         // =====================================================================
