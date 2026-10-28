@@ -38,7 +38,6 @@ namespace PotionCraft
         private readonly Dictionary<ulong, GameObject> heldVisuals = new Dictionary<ulong, GameObject>();
         private readonly Dictionary<ulong, int> heldVisualCode = new Dictionary<ulong, int>();
         private bool completed;
-        private GUIStyle hudStyle;
 
         private static bool Online { get { return NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening; } }
         private ulong LocalId { get { return IsSpawned ? NetworkManager.LocalClientId : 0UL; } }
@@ -314,18 +313,9 @@ namespace PotionCraft
         {
             int code = LocalHeld;
             if (code == 0 || catalog == null) return;
-            if (hudStyle == null) hudStyle = new GUIStyle(GUI.skin.label) { fontSize = 15, alignment = TextAnchor.MiddleLeft };
-            var v = LGH.UiScale.Apply();
-            // 오른쪽 아래, 획득 문구(-84) 위
-            var r = new Rect(v.x - 16f - 260f, v.y - 122f, 260f, 32f);
-            var old = GUI.color;
-            GUI.color = new Color(0f, 0f, 0f, 0.55f);
-            GUI.DrawTexture(r, Texture2D.whiteTexture);
-            GUI.color = catalog.ColorOf(code);
-            GUI.DrawTexture(new Rect(r.x + 6f, r.y + 7f, 18f, 18f), Texture2D.whiteTexture);
-            GUI.color = Color.white;
-            GUI.Label(new Rect(r.x + 32f, r.y, r.width - 36f, r.height), "손: " + catalog.NameOf(code), hudStyle);
-            GUI.color = old;
+            if (Cursor.lockState != CursorLockMode.Locked) return;
+            // 오른쪽 아래 손에 든 물건 이름 — 공용 들기 시스템과 같은 모양 (2026-10-28 통일: 이름만, "손:"·색 표시 없음)
+            HeldItemHud.Draw(catalog.NameOf(code));
         }
     }
 }
