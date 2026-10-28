@@ -489,7 +489,7 @@ namespace Gim002.EditorTools
             SetBool(spk, "playStageRight", false);   // 무대 정답은 1층에 변화 없음 (2층이 말로 알려 줌)
 
             // 놀이책 (레코드장 위)
-            // 놀이책: 빈 루트(들기 대상) + 표지 도형 + 표지 글자. 루트 스케일을 1로 두어야 글자 크기가 찌그러지지 않는다.
+            // 놀이책: 빈 루트(E로 바로 읽기) + 표지 도형 + 표지 글자. 루트 스케일을 1로 두어야 글자 크기가 찌그러지지 않는다.
             var book = new GameObject("OBJ_PLAYBOOK");
             book.transform.SetParent(area, false);
             book.transform.position = BookPos;
@@ -500,9 +500,7 @@ namespace Gim002.EditorTools
             bookCol.size = new Vector3(0.24f, 0.06f, 0.32f);
             Label(book.transform, "인형극\n놀이책", new Vector3(0f, 0.052f, 0f), Quaternion.LookRotation(Vector3.down, Vector3.left), 0.014f, new Color(1f, 0.9f, 0.6f));
             var pb = book.AddComponent<Gim002PlayBook>();
-            SetString(pb, "displayName", "인형극 놀이책");
-            SetVector(pb, "holdOffset", new Vector3(-0.25f, -0.3f, 0.55f));
-            SetVector(pb, "holdEuler", new Vector3(-60f, 0f, 0f));
+            SetString(pb, "displayName", "인형극 놀이책");   // 들지 않고 E로 바로 읽는다 (2026-10-28)
         }
 
         // =====================================================================
@@ -542,15 +540,15 @@ namespace Gim002.EditorTools
                 Vector3 size = t.InverseTransformVector(b.size);
                 col.size = Vector3.Max(new Vector3(Mathf.Abs(size.x), Mathf.Abs(size.y), Mathf.Abs(size.z)), Vector3.one * 0.12f);
             }
-            // LGH 공용 소지품 인벤토리로 줍는다 — WorldItem이 "보기+E로 줍기"를 전담한다 (RequireComponent로도 강제됨).
+            // 2026-10-28: 인벤토리 줍기(WorldItem) 대신 공용 들기 시스템으로 왼손에 든다 → 예전에 붙인 WorldItem은 지운다
             var world = t.GetComponent<LGH.WorldItem>();
-            if (world == null) world = Undo.AddComponent<LGH.WorldItem>(t.gameObject);
-            if (data != null && data.inventoryItem != null) SetRef(world, "item", data.inventoryItem);
+            if (world != null) Undo.DestroyObjectImmediate(world);
 
             var item = t.GetComponent<Gim002KeyItem>();
             if (item == null) item = Undo.AddComponent<Gim002KeyItem>(t.gameObject);
             SetRef(item, "keyData", data);
             SetEnum(item, "usedFor", (int)usedFor);
+            SetVector(item, "holdOffset", new Vector3(-0.22f, -0.2f, 0.45f));   // 왼손 (오른손은 촛불)
         }
 
         // =====================================================================

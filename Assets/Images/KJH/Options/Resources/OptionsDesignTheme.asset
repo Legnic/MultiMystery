@@ -1,0 +1,41 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ede680128bad8e44aaedcc238d707e8e, type: 3}
+  m_Name: OptionsDesignTheme
+  m_EditorClassIdentifier: Assembly-CSharp::CoopDemo.OptionsDesignTheme
+  audioBackground: {fileID: 2800000, guid: a2c20f31638a16c489ae420b5bf7a882, type: 3}
+  plainBackground: {fileID: 2800000, guid: 544716e7f4c52b74a8d6cf4b8c8e9b17, type: 3}
+  graphicsBackground: {fileID: 2800000, guid: efae0500c2854daf9f44952530f9f70a, type: 3}
+  controlsBackground: {fileID: 2800000, guid: a9d2bfdc08a74751876b80209b8218b8, type: 3}
+  tabNormal:
+  - {fileID: 2800000, guid: 110ec890eb529d943a4c559a53e693a0, type: 3}
+  - {fileID: 2800000, guid: ec14543eb3b631d41a7003786a8aaae4, type: 3}
+  - {fileID: 2800000, guid: cad6c1770713fe94a96486fd2b35578d, type: 3}
+  tabSelected:
+  - {fileID: 2800000, guid: 7fadd410374b64742b0c2f6201fae6bb, type: 3}
+  - {fileID: 2800000, guid: bce2e2b019a39b14aa41f3446e6cefb9, type: 3}
+  - {fileID: 2800000, guid: dbbc3e40991b6684c8f47d9fa0fc9ecc, type: 3}
+  hoverOutline: {fileID: 2800000, guid: dece1cc8d77d3664b9103f102f8c13f9, type: 3}
+  sliderThumb: {fileID: 2800000, guid: 25826d349e94a2c42bdbafac2aed4011, type: 3}
+  micOn: {fileID: 2800000, guid: 1e78da68d9ee33a46add73b3262f3ca2, type: 3}
+  micMuted: {fileID: 2800000, guid: 19be4c36caa04e8428e1a4631dd14f20, type: 3}
+  hudMic: {fileID: 2800000, guid: 6424894d03754ec488ac24036bc20c90, type: 3}
+  hudMicMuted: {fileID: 2800000, guid: b00c188fe8fb46239f7107919c67ac80, type: 3}
+  hudMicGlow: {fileID: 2800000, guid: 57096ac67ee046a6bd28cfc82a1fa20d, type: 3}
+  hudMicSpeaking: {fileID: 2800000, guid: 609113d7ea7c4e48890083669a91a061, type: 3}
+  toggleTrack: {fileID: 2800000, guid: c12da98d6130e464d869b60296bdfcec, type: 3}
+  toggleKnob: {fileID: 2800000, guid: 2bc37d3114428d3408e0b847c4673c55, type: 3}
+  rowLine: {fileID: 2800000, guid: 6dd38b0dea16fad4ba46b379478a0c18, type: 3}
+  menuPanel: {fileID: 2800000, guid: 9962a4111cb539e4f834abbe38814db4, type: 3}
+  waitingRoomBackground: {fileID: 2800000, guid: 48d48df462644b7c9755f742d1e0d540, type: 3}
+  numberFont: {fileID: 12800000, guid: a8c5dbc12a7bf9a44ad9c48adc4901c8, type: 3}
+  bodyFont: {fileID: 12800000, guid: bdace5b8bbbd3ad4ebcaf659b77288f8, type: 3}

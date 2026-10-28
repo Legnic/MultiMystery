@@ -32,19 +32,8 @@ namespace Gim002
 
         static Gim002Controller C { get { return Gim002Controller.Instance; } }
 
-        // 이 사용처에 맞는 열쇠의 인벤토리 아이템. requiredKey(Gim002KeyData) 하나에만 연결해 두면
-        // Gim002KeyItem(WorldItem)도 같은 참조를 쓰므로 어디서도 따로 맞출 필요가 없다.
-        ItemData RequiredItem { get { return requiredKey != null ? requiredKey.inventoryItem : null; } }
-
-        bool HasRequiredKey
-        {
-            get
-            {
-                var item = RequiredItem;
-                // 주의: KJH.KeySafe에도 네임스페이스 없는 PlayerInventory가 있어서 이름이 겹친다. 반드시 LGH.로 명시한다.
-                return item != null && LGH.PlayerInventory.Local != null && LGH.PlayerInventory.Local.HasItem(item);
-            }
-        }
+        // 이 컴퓨터 플레이어가 왼손에 든 열쇠 (2026-10-28: 인벤토리 → 왼손에 드는 방식으로 되돌림)
+        static Gim002KeyItem HeldKey { get { return PlayerHand.LocalHeld as Gim002KeyItem; } }
 
         bool Done
         {
@@ -117,8 +106,8 @@ namespace Gim002
             get
             {
                 if (C == null || Done) return false;
-                if (kind == TargetKind.MusicDoor) return HasRequiredKey;   // 안 가지고 있으면 LGH 문 처리에 양보
-                return C.State.state >= Gim002State.Preparing || HasRequiredKey;
+                if (kind == TargetKind.MusicDoor) return HeldKey != null;   // 빈손이면 LGH 문 처리(잠김 문구)에 양보
+                return C.State.state >= Gim002State.Preparing || HeldKey != null;
             }
         }
 
@@ -126,20 +115,21 @@ namespace Gim002
         {
             get
             {
-                if (!HasRequiredKey) return idlePrompt;
-                var item = RequiredItem;
-                return "[E] " + (item != null ? item.NameOrFallback : requiredKey.displayName) + " 사용";
+                var key = HeldKey;
+                if (key == null) return idlePrompt;
+                return "[E] " + key.DisplayName + " 사용";
             }
         }
 
         public void Interact(GameObject interactor)
         {
-            if (C == null || Done || !HasRequiredKey) return;
+            var key = HeldKey;
+            if (key == null || C == null || Done) return;
+            if (key.KeyData != requiredKey) { PlayerHand.Say(C.Config.msgWrongKey); return; }
 
-            // 인벤토리에서 열쇠 1개 소비 + 판정 담당에게 알림
+            // 문양이 맞음 → 손의 열쇠가 사라짐 + 판정 담당에게 알림 (다른 컴퓨터의 열쇠는 Gim002KeyItem이 상태를 보고 숨긴다)
             AudioSource.PlayClipAtPoint(useClip != null ? useClip : Gim002Tones.Wind(), transform.position, 0.8f);
-            var sync = ItemNetworkSync.Instance;
-            if (sync != null) sync.RequestConsume(LGH.PlayerInventory.Local, RequiredItem);
+            key.Consume();
             if (kind == TargetKind.MusicDoor)
             {
                 waitingToOpen = true;

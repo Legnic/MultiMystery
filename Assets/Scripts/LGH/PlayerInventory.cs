@@ -24,6 +24,11 @@ namespace LGH
     public class PlayerInventory : NetworkBehaviour
     {
         public static PlayerInventory Local { get; private set; }
+
+        // 2026-10-28: 소지품 창([I])을 더 이상 쓰지 않는다 — 열쇠·황금상 등은 이제 왼손에 들고 다닌다(공용 들기 시스템).
+        // 기능 자체는 지우지 않고 여기서 창을 여는 입력만 막는다. 다시 쓰려면 true로 바꾸면 된다.
+        // (양초 개수 등 소지품 데이터는 양초 시스템이 계속 쓰므로 그대로 동작한다)
+        public static bool BagUiEnabled = false;
         public static readonly List<PlayerInventory> All = new List<PlayerInventory>();
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
@@ -266,6 +271,12 @@ namespace LGH
                 return;
             }
 
+            if (!BagUiEnabled)
+            {
+                if (open) SetOpen(false);
+                return;
+            }
+
             if (kb.iKey.wasPressedThisFrame)
             {
                 if (open) SetOpen(false);
@@ -433,20 +444,8 @@ namespace LGH
 
             if (reading != null && !paused) { DrawReading(w, h); return; }
 
-            // corner hint + pickup toast
-            int n = Candles;
-            bool flash = Time.time < flashUntil;
-            if (!open && !paused)
-            {
-                int things = 0;
-                for (int i = 0; i < StackCount; i++) things += StackAt(i).count;
-                var hr = new Rect(16f, h - 46f, 270f, 32f);
-                Fill(hr, new Color(0f, 0f, 0f, flash ? 0.7f : 0.45f));
-                if (candleIcon != null) GUI.DrawTexture(new Rect(hr.x + 4f, hr.y + 2f, 28f, 28f), candleIcon);
-                var s = new GUIStyle(descStyle) { fontSize = 15, alignment = TextAnchor.MiddleLeft };
-                if (flash) s.normal.textColor = new Color(1f, 0.85f, 0.5f);
-                GUI.Label(new Rect(hr.x + 36f, hr.y, hr.width - 40f, hr.height), "×" + n + (things > 0 ? "   물건 " + things : "") + "    [I] 소지품", s);
-            }
+            int n = Candles;   // 소지품 창의 양초 칸에서 쓴다
+            // pickup toast (2026-10-28: 왼쪽 아래 양초 개수·[I] 소지품 표시는 제거 — 화면엔 마이크 아이콘만 남긴다. [I]로 여는 소지품 창은 그대로)
             if (Time.time < toastUntil && !string.IsNullOrEmpty(toast) && !paused)
             {
                 // 획득 문구는 오른쪽 아래 (왼쪽 아래는 음성 채팅 HUD와 겹친다)

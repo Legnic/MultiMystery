@@ -122,12 +122,21 @@ public class HoldableNetworkSync : NetworkBehaviour
     public override void OnNetworkSpawn()
     {
         held.OnListChanged += OnHeldChanged;
+        if (IsServer) NetworkManager.OnClientDisconnectCallback += OnClientDisconnected;
         Resync();
     }
 
     public override void OnNetworkDespawn()
     {
         held.OnListChanged -= OnHeldChanged;
+        if (IsServer && NetworkManager != null) NetworkManager.OnClientDisconnectCallback -= OnClientDisconnected;
+    }
+
+    // 들고 있던 사람이 나가면 그 사람 항목을 지운다 → 남은 사람 화면에서 물건이 원래 자리로 돌아간다 (Release → ForceReturnHome)
+    void OnClientDisconnected(ulong clientId)
+    {
+        for (int i = held.Count - 1; i >= 0; i--)
+            if (held[i].clientId == clientId) held.RemoveAt(i);
     }
 
     void OnHeldChanged(NetworkListEvent<HeldEntry> e) { Resync(); }
