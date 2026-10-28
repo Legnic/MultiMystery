@@ -15,7 +15,7 @@ MonoBehaviour:
   rules:
     symbolCount: 13
     gateCount: 8
-    timeLimit: 90
+    timeLimit: 120
     wrongPolicy: 0
     wrongTimePenalty: 15
     panelLockSeconds: 3
