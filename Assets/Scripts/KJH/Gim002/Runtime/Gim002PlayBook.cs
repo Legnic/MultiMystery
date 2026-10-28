@@ -18,6 +18,8 @@ namespace Gim002
         [SerializeField] int titleFontSize = 22;
         [Tooltip("본문 글자 크기 (높이 640 화면 기준). 문장이 길어 넘치면 자동으로 더 작아진다")]
         [SerializeField] int bodyFontSize = 17;
+        [Tooltip("펼친 책 그림 (비우면 Resources/KJH_OpenBook). 글은 오른쪽 쪽에 쓴다")]
+        [SerializeField] Texture2D bookTexture;
 
         bool reading;
         int openedFrame = -1;
@@ -26,7 +28,6 @@ namespace Gim002
         // NonSerialized: 에디터가 스크립트를 다시 불러올 때 GUIStyle을 "빈 스타일"로 채워 넣어서,
         // null 검사로는 "이미 만들었다"고 착각해 정렬·글자 크기 설정이 통째로 빠지는 문제가 있었다.
         [System.NonSerialized] GUIStyle titleStyle, bodyStyle, hintStyle;
-        static Texture2D paper;
 
         static Gim002Config Cfg { get { return Gim002Controller.Instance != null ? Gim002Controller.Instance.Config : null; } }
         int PageCount { get { return Cfg != null ? 1 + Cfg.scenes.Count : 1; } }
@@ -87,23 +88,23 @@ namespace Gim002
             Vector2 v = LGH.UiScale.Apply();
             float w = v.x, h = v.y;
 
-            // 책 펼친 화면 (화면 가로 80%, 세로 78%)
-            var rect = new Rect(w * 0.1f, h * 0.08f, w * 0.8f, h * 0.78f);
-            GUI.color = new Color(1f, 0.97f, 0.88f, 1f);   // 불투명: 뒤 화면이 비쳐 글자를 가리지 않게
-            GUI.DrawTexture(rect, paper);
+            // 펼친 책 그림 (그림 비율 유지, 화면 가로 90%·세로 86% 안에 맞춤). 글은 전부 오른쪽 쪽에 쓴다.
+            var book = OpenBookArt.Fit(w, h);
             GUI.color = Color.white;
+            GUI.DrawTexture(book, OpenBookArt.Get(bookTexture), ScaleMode.StretchToFill);
+            var rect = OpenBookArt.RightPage(book);
 
             string title, body;
             PageText(page, out title, out body);
-            const float pad = 28f, titleH = 34f, hintH = 24f;
-            GUI.Label(new Rect(rect.x, rect.y + 14f, rect.width, titleH), title, titleStyle);
+            const float titleH = 34f, hintH = 22f;
+            GUI.Label(new Rect(rect.x, rect.y, rect.width, titleH), title, titleStyle);
 
             // 본문 영역: 제목 아래 ~ 쪽 번호 위. 문장이 길어도 이 안에 다 들어오도록 글씨 크기를 줄여 맞춘다.
-            var bodyRect = new Rect(rect.x + pad, rect.y + 14f + titleH + 10f, rect.width - pad * 2f, rect.height - (14f + titleH + 10f) - (hintH + 18f));
+            var bodyRect = new Rect(rect.x, rect.y + titleH + 8f, rect.width, rect.height - (titleH + 8f) - (hintH + 8f));
             FitBody(body, bodyRect);
             GUI.Label(bodyRect, body, bodyStyle);
 
-            GUI.Label(new Rect(rect.x, rect.yMax - hintH - 10f, rect.width, hintH),
+            GUI.Label(new Rect(rect.x, rect.yMax - hintH, rect.width, hintH),
                 (page > 0 ? "A ◀ ←   " : "") + (page + 1) + " / " + PageCount + (page < PageCount - 1 ? "   → ▶ D" : "") + "     [E] 덮기", hintStyle);
             GUI.matrix = Matrix4x4.identity;
         }
@@ -134,7 +135,6 @@ namespace Gim002
 
         void MakeStyles()
         {
-            if (paper == null) { paper = new Texture2D(1, 1); paper.SetPixel(0, 0, Color.white); paper.Apply(); }
             if (titleStyle != null) return;
             // 글자 크기는 높이 640 가상 화면 기준 (실제 화면에서는 UiScale 배율만큼 커진다)
             titleStyle = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter, fontSize = titleFontSize, fontStyle = FontStyle.Bold };
@@ -143,6 +143,10 @@ namespace Gim002
             bodyStyle.normal.textColor = new Color(0.2f, 0.15f, 0.1f);
             hintStyle = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter, fontSize = 13 };
             hintStyle.normal.textColor = new Color(0.45f, 0.4f, 0.35f);
+            // 화면 가운데(잠긴 커서 자리)가 본문 위라 hover 색(기본 흰색)으로 그려져 글자가 안 보이던 문제 → hover도 같은 색
+            titleStyle.hover.textColor = titleStyle.normal.textColor;
+            bodyStyle.hover.textColor = bodyStyle.normal.textColor;
+            hintStyle.hover.textColor = hintStyle.normal.textColor;
         }
     }
 }

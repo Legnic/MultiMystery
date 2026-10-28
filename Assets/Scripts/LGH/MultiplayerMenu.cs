@@ -47,6 +47,8 @@ namespace LGH
         bool imeOn;
         // true while the player is typing in one of these boxes (game keys must ignore the keyboard then)
         public static bool Typing { get; private set; }
+        // 개발자 패널처럼 커서를 풀지만 일시정지 메뉴를 띄우면 안 되는 화면이 열려 있을 때 true (2026-10-28)
+        public static bool OverlayOpen;
         string status = "온라인 서비스에 연결 중...";
         bool ready, busy, paused, querying;
         float nextRefresh;
@@ -120,7 +122,7 @@ namespace LGH
             if (menuCamera != null && menuCamera.gameObject.activeSelf == InGame)
                 menuCamera.gameObject.SetActive(!InGame);
             // FirstPersonController unlocks the cursor on Esc; treat that as the pause menu
-            paused = InGame && Cursor.lockState != CursorLockMode.Locked && !PlayerInventory.UiOpen;
+            paused = InGame && Cursor.lockState != CursorLockMode.Locked && !PlayerInventory.UiOpen && !OverlayOpen;
             UpdateIme();
 
             if (InLobbyMenu && !busy && Time.unscaledTime >= nextRefresh) RefreshRooms();

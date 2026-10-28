@@ -55,9 +55,14 @@ namespace AtticTreasure
             return best;
         }
 
+        // 상대 캐릭터 손에 붙어 있는가 (HoldableNetworkSync가 상대 아바타 왼손 소켓 밑으로 옮겨 둔 상태)
+        bool AttachedToOtherHand { get { return transform.parent != null && transform.GetComponentInParent<CoopDemo.CharacterAvatarModel>() != null; } }
+
         void Update()
         {
-            bool show = !Hidden;
+            // 보이는 경우: 상자 안에 있음 / 내 손에 있음 / 상대 손에 붙어 있음.
+            // 그 밖(상대가 들었는데 상대 손에 보여 줄 수단이 없는 경우 등)은 상자 자리에 남아 보이지 않게 숨긴다 (2026-10-28 수정)
+            bool show = !Hidden && (InBox || Location == Where.Held || AttachedToOtherHand);
             if (shownState != show)
             {
                 shownState = show;

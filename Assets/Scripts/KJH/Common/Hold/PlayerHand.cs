@@ -99,6 +99,13 @@ public class PlayerHand : MonoBehaviour
         Held.transform.SetPositionAndRotation(cam.TransformPoint(Held.HoldOffset), cam.rotation * Quaternion.Euler(Held.HoldEuler));
     }
 
+    // 손에 든 물건 이름을 오른쪽 아래에 (메뉴가 떠 있을 때는 숨김)
+    void OnGUI()
+    {
+        if (Held == null || Cursor.lockState != CursorLockMode.Locked) return;
+        HeldItemHud.Draw(Held.HudName);
+    }
+
     // 이 컴퓨터 플레이어의 시점 카메라 (LGH PlayerInteractor가 쓰는 것과 같은 카메라)
     public static Transform ViewCamera()
     {

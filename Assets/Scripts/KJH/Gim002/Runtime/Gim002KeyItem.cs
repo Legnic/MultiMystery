@@ -25,6 +25,9 @@ namespace Gim002
             get { return keyData != null ? keyData.displayName + " (" + keyData.emblem + " 문양)" : displayName; }
         }
 
+        // 오른쪽 아래 표시는 이름만 (문양 설명 제외)
+        public override string HudName { get { return keyData != null ? keyData.displayName : displayName; } }
+
         static Gim002Controller C { get { return Gim002Controller.Instance; } }
 
         protected override void Awake()

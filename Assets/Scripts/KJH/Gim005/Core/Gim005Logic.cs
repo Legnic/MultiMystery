@@ -113,6 +113,15 @@ namespace Gim005
             return true;
         }
 
+        // 개발자 모드 전용 (DevGimmickPanel): 미로를 건너뛰고 바로 완료 상태로 만든다.
+        public void DebugForceComplete()
+        {
+            if (State == Gim005State.Complete) return;
+            State = Gim005State.Complete;
+            OnChanged?.Invoke();
+            OnComplete?.Invoke();
+        }
+
         public void Tick(float dt)
         {
             if (dt <= 0f) return;

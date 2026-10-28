@@ -46,7 +46,9 @@ namespace Gim007
         float nextStrainAt;
         float shakeUntil, shakeSeconds, shakeAmp;
 
-        GUIStyle bigStyle, midStyle, smallStyle;
+        // NonSerialized: 에디터가 스크립트를 다시 불러올 때 빈 GUIStyle을 채워 넣어 "이미 만들었다"고 착각하면
+        // 가운데 정렬·글자색 설정이 통째로 빠진다 (Gim002PlayBook과 같은 이유)
+        [System.NonSerialized] GUIStyle bigStyle, midStyle, smallStyle;
 
         public bool IsGripping { get { return localHandle >= 0; } }
 
@@ -299,8 +301,9 @@ namespace Gim007
                 var r = s.Result(other);
                 partner = r == Gim007RoundResult.Success ? "상대: 성공" : r == Gim007RoundResult.Fail ? "상대: 실패" : "상대: 입력 중…";
             }
-            Label(new Rect(cx - boxW / 2f, top + 152f, boxW, 18f), partner, smallStyle, new Color(0.85f, 0.85f, 0.85f));
-            Label(new Rect(cx - boxW / 2f, top + 170f, boxW, 18f), c.Config.msgReleasePrompt, smallStyle, new Color(0.65f, 0.65f, 0.65f));
+            // 아래 두 줄(상대 상태, 손 떼기)은 밝은 가구 위에 겹쳐 잘 안 보여서 흰색·그림자 없이 그린다 (2026-10-28)
+            Label(new Rect(cx - boxW / 2f, top + 152f, boxW, 18f), partner, smallStyle, Color.white, false);
+            Label(new Rect(cx - boxW / 2f, top + 170f, boxW, 18f), c.Config.msgReleasePrompt, smallStyle, Color.white, false);
             GUI.color = Color.white;
         }
 
@@ -323,6 +326,7 @@ namespace Gim007
             bigStyle = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter, fontSize = 64, fontStyle = FontStyle.Bold };
             midStyle = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter, fontSize = 20, wordWrap = true };
             smallStyle = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter, fontSize = 13 };
+            smallStyle.normal.textColor = Color.white;   // 기본 라벨 글자색(회색빛)이 곱해지지 않게
         }
 
         static void Fill(Rect r, Color col)
@@ -338,10 +342,13 @@ namespace Gim007
             Fill(new Rect(r.x, r.y, r.width * t01, r.height), col);
         }
 
-        static void Label(Rect r, string text, GUIStyle style, Color col)
+        static void Label(Rect r, string text, GUIStyle style, Color col, bool shadow = true)
         {
-            GUI.color = new Color(0f, 0f, 0f, 0.7f);
-            GUI.Label(new Rect(r.x + 1f, r.y + 2f, r.width, r.height), text, style);
+            if (shadow)
+            {
+                GUI.color = new Color(0f, 0f, 0f, 0.7f);
+                GUI.Label(new Rect(r.x + 1f, r.y + 2f, r.width, r.height), text, style);
+            }
             GUI.color = col;
             GUI.Label(r, text, style);
             GUI.color = Color.white;

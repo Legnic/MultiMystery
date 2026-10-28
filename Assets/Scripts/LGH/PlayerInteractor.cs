@@ -205,6 +205,8 @@ namespace LGH
 
         void OnGUI()
         {
+            // 게임 안 화면 글자를 LevelUp 폰트로 (2026-10-28, CoopDemo.GameFont 참고)
+            CoopDemo.GameFont.ApplyToGuiSkin();
             if (style == null) style = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter, fontSize = 20 };
             var v = UiScale.Apply();
             float w = v.x, h = v.y;
@@ -232,10 +234,12 @@ namespace LGH
             if (wrapStyle == null) wrapStyle = new GUIStyle(style) { wordWrap = true };
             float bw = Mathf.Min(w - 40f, 820f);
             float bh = Mathf.Max(32f, wrapStyle.CalcHeight(new GUIContent(text), bw));
+            // 상호작용 문구·진행 문구 높이: 화면 위에서 69% (2026-10-28: 62% → 조금 아래로)
+            const float TextY = 0.69f;
             GUI.color = new Color(0f, 0f, 0f, 0.7f);
-            GUI.Label(new Rect(w / 2f - bw / 2f + 1f, h * 0.62f + 2f, bw, bh), text, wrapStyle);
+            GUI.Label(new Rect(w / 2f - bw / 2f + 1f, h * TextY + 2f, bw, bh), text, wrapStyle);
             GUI.color = Color.white;
-            GUI.Label(new Rect(w / 2f - bw / 2f, h * 0.62f, bw, bh), text, wrapStyle);
+            GUI.Label(new Rect(w / 2f - bw / 2f, h * TextY, bw, bh), text, wrapStyle);
         }
     }
 }

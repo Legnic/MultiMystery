@@ -19,6 +19,8 @@ namespace Gim004
         [Tooltip("기록일지 내용이 담긴 설정 (비우면 씬의 Gim004Controller 설정)")]
         [SerializeField] Gim004Config config;
         [SerializeField] string prompt = "[E] 온실 기록일지 펼쳐보기";
+        [Tooltip("펼친 책 그림 (비우면 Resources/KJH_OpenBook). 왼쪽 쪽에 사진, 오른쪽 쪽에 글")]
+        [SerializeField] Texture2D bookTexture;
 
         public static Gim004Journal Current { get; private set; }
         public bool IsOpen { get { return Current == this; } }
@@ -27,7 +29,6 @@ namespace Gim004
         int openedFrame;
         int reenableFrame = -1;
         [System.NonSerialized] GUIStyle titleStyle, headingStyle, bodyStyle, numberStyle, hintStyle;
-        static Texture2D paperTex;
 
         Gim004Config Cfg
         {
@@ -102,30 +103,19 @@ namespace Gim004
             GUI.DrawTexture(new Rect(0, 0, v.x, v.y), Texture2D.whiteTexture);
             GUI.color = Color.white;
 
-            // 펼친 책 (가로 90%, 세로 86%, 가로:세로 최대 1.75)
-            float w = Mathf.Min(v.x * 0.9f, v.y * 0.86f * 1.75f);
-            float h = Mathf.Min(v.y * 0.86f, w / 1.45f);
-            var book = new Rect((v.x - w) * 0.5f, (v.y - h) * 0.5f, w, h);
-            GUI.color = new Color(0.32f, 0.2f, 0.11f);
-            GUI.DrawTexture(new Rect(book.x - 6, book.y - 6, book.width + 12, book.height + 12), Texture2D.whiteTexture);
-            GUI.color = Color.white;
-            GUI.DrawTexture(book, paperTex);
-            // 가운데 접힌 선
-            GUI.color = new Color(0.55f, 0.45f, 0.3f, 0.8f);
-            GUI.DrawTexture(new Rect(book.center.x - 1.5f, book.y + 40, 3f, book.height - 72), Texture2D.whiteTexture);   // 제목 아래부터 (제목과 겹치지 않게)
-            GUI.color = Color.white;
-
-            const float pad = 22f;
-            GUI.Label(new Rect(book.x, book.y + 8, book.width, 28), cfg.journalTitle, titleStyle);
-
-            float top = book.y + 42f, bottom = book.yMax - 30f;
-            var left = new Rect(book.x + pad, top, book.width * 0.5f - pad * 1.5f, bottom - top);
-            var right = new Rect(book.center.x + pad * 0.5f, top, book.width * 0.5f - pad * 1.5f, bottom - top);
+            // 펼친 책 그림 (그림 비율 유지). 왼쪽 쪽 = 사진, 오른쪽 쪽 = 제목 + 배치 기록 + 안내
+            var book = OpenBookArt.Fit(v.x, v.y);
+            GUI.DrawTexture(book, OpenBookArt.Get(bookTexture), ScaleMode.StretchToFill);
+            var left = OpenBookArt.LeftPage(book);
+            var right = OpenBookArt.RightPage(book);
 
             DrawPhotos(left, cfg);
-            DrawRecord(right, cfg);
 
-            GUI.Label(new Rect(book.x, book.yMax - 26, book.width, 20), "E / Esc / 우클릭: 덮기", hintStyle);
+            GUI.Label(new Rect(right.x, right.y, right.width, 28), cfg.journalTitle, titleStyle);
+            var record = new Rect(right.x, right.y + 34f, right.width, right.height - 34f - 24f);
+            DrawRecord(record, cfg);
+
+            GUI.Label(new Rect(right.x, right.yMax - 20, right.width, 20), "E / Esc / 우클릭: 덮기", hintStyle);
             GUI.matrix = Matrix4x4.identity;
         }
 
@@ -186,7 +176,6 @@ namespace Gim004
 
         void MakeStyles()
         {
-            if (paperTex == null) { paperTex = new Texture2D(1, 1); paperTex.SetPixel(0, 0, new Color(0.94f, 0.9f, 0.8f)); paperTex.Apply(); }
             if (titleStyle != null) return;
             var ink = new Color(0.22f, 0.14f, 0.08f);
             titleStyle = Style(20, FontStyle.Bold, TextAnchor.MiddleCenter, ink);
