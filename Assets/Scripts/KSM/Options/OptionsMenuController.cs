@@ -61,6 +61,9 @@ namespace CoopDemo
 
         void OnDestroy()
         {
+            // 막아 둔 채로 사라지면 타이틀 버튼이 영영 안 눌리므로 되돌려 둔다
+            if (blockedInputModule != null) blockedInputModule.enabled = true;
+            if (blockedEventSystem != null) blockedEventSystem.enabled = true;
             if (Instance == this) Instance = null;
         }
 
@@ -96,20 +99,49 @@ namespace CoopDemo
         // 옵션 창은 OnGUI(IMGUI)로 그려지는데, 타이틀 화면은 uGUI(Canvas+EventSystem)라서 서로 입력 체계가 다르다.
         // 그냥 두면 옵션 창 뒤에 깔린 "시작/옵션/나가기" 같은 uGUI 버튼이 옵션 창 너머로 그대로 클릭된다.
         // EventSystem을 꺼서 uGUI 쪽 클릭 처리를 통째로 멈춘다 — OnGUI는 EventSystem과 무관하게 동작하므로 옵션 자체는 영향 없다.
+        //
+        // 주의(2026-10-28 발견 — 빌드가 "갑자기 꺼지던" 원인): EventSystem만 끄면 입력 모듈(InputSystemUIInputModule)은
+        // 계속 켜져 있어서 옵션 창 위에서 누른 클릭을 쌓아 둔다. 그 상태로 EventSystem을 다시 켜면 쌓인 클릭이 그대로 처리되어,
+        // 옵션 [닫기]/[기본값]을 누른 자리 밑에 있던 타이틀 "나가기" 버튼이 눌려 게임이 종료됐다.
+        // 그래서 입력 모듈도 같이 끄고(꺼진 동안엔 클릭을 기록하지 않음), 다시 켤 때는 마우스 버튼을 모두 뗀 다음 프레임에 켠다.
         EventSystem blockedEventSystem;
+        BaseInputModule blockedInputModule;
+        bool unblockPending;
+        int unblockAfterFrame;
 
         void SetBackgroundUiBlocked(bool blocked)
         {
             if (blocked)
             {
-                blockedEventSystem = EventSystem.current != null ? EventSystem.current : FindAnyObjectByType<EventSystem>(FindObjectsInactive.Include);
-                if (blockedEventSystem != null) blockedEventSystem.enabled = false;
+                unblockPending = false;
+                if (blockedEventSystem == null)
+                    blockedEventSystem = EventSystem.current != null ? EventSystem.current : FindAnyObjectByType<EventSystem>(FindObjectsInactive.Include);
+                if (blockedEventSystem != null)
+                {
+                    if (blockedInputModule == null) blockedInputModule = blockedEventSystem.GetComponent<BaseInputModule>();
+                    if (blockedInputModule != null) blockedInputModule.enabled = false;
+                    blockedEventSystem.enabled = false;
+                }
             }
             else if (blockedEventSystem != null)
             {
-                blockedEventSystem.enabled = true;
-                blockedEventSystem = null;
+                unblockPending = true;
+                unblockAfterFrame = Time.frameCount + 1;
             }
+        }
+
+        void TryUnblockBackgroundUi()
+        {
+            if (IsOpen) { unblockPending = false; return; }   // 그 사이 다시 열렸으면 계속 막아 둔다
+            if (Time.frameCount <= unblockAfterFrame) return;
+            var mouse = Mouse.current;
+            if (mouse != null && (mouse.leftButton.isPressed || mouse.rightButton.isPressed || mouse.middleButton.isPressed)) return;
+
+            unblockPending = false;
+            if (blockedInputModule != null) blockedInputModule.enabled = true;
+            if (blockedEventSystem != null) blockedEventSystem.enabled = true;
+            blockedInputModule = null;
+            blockedEventSystem = null;
         }
 
         void LockLocalPlayer(bool locked)
@@ -131,6 +163,7 @@ namespace CoopDemo
 
         void Update()
         {
+            if (unblockPending) TryUnblockBackgroundUi();
             if (!IsOpen) return;
             var kb = Keyboard.current;
             // 인벤토리 등 상위 모달이 이번 프레임에 Esc를 이미 썼으면 옵션은 반응하지 않는다 (우선순위: 상위 모달 > 옵션 > 일반 인게임).
