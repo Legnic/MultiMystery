@@ -426,17 +426,8 @@ namespace LGH
             var v = UiScale.Apply();
             float w = v.x, h = v.y;
 
-            if (gInGame && !lobbyStage && !gPaused)
-            {
-                if (gHasSession)
-                {
-                    string info = gSessionName + "   참가 코드 " + gSessionCode + "   " + gPlayerCount + "/" + gMaxPlayers + "명";
-                    string names = gPlayerNames;
-                    if (names.Length > 0) info += "      " + names;
-                    GUI.Label(new Rect(14, 8, w - 28, 28), info, small);
-                }
-                return;
-            }
+            // 플레이 중에는 아무것도 그리지 않는다 (2026-10-28: 왼쪽 위 방 이름·참가 코드·인원 표시 제거 — ESC 메뉴에서 볼 수 있다)
+            if (gInGame && !lobbyStage && !gPaused) return;
 
             // 옵션 창이 떠 있는 동안은 이 패널을 그리지 않는다 (OptionsMenuController가 같은 화면 영역을 쓴다).
             if (CoopDemo.OptionsMenuController.IsOpen) return;

@@ -32,6 +32,12 @@ namespace CoopDemo
         public Texture2D toggleKnob;     // 토글 동그라미
         public Texture2D rowLine;        // 줄 사이 구분선 색
 
+        [Header("플레이 화면 마이크 (왼쪽 아래, 배경 투명)")]
+        public Texture2D hudMic;         // 금색 마이크
+        public Texture2D hudMicMuted;    // 빨간 사선이 그어진 마이크
+        [Tooltip("말하는 중 마이크 모양 테두리에 켜지는 빛 (흰색, 코드에서 초록으로 칠함). hudMic과 같은 크기")]
+        public Texture2D hudMicGlow;
+
         [Header("인게임 메뉴 (ESC)")]
         [Tooltip("ESC 메뉴 패널 (780x775, 바깥은 투명). 디자인 이미지 1536x864에서 (379, 44) 자리")]
         public Texture2D menuPanel;
