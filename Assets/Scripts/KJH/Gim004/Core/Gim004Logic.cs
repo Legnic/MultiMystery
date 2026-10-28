@@ -81,6 +81,18 @@ namespace Gim004
             if (judgeTimer <= 0f) Judge();
         }
 
+        // 개발자 모드 전용 (DevGimmickPanel): 선반에 정답 화분을 놓고 바로 완료 상태로 만든다.
+        public void DebugForceComplete()
+        {
+            if (IsComplete) return;
+            var ans = rules.answer;
+            if (ans != null && ans.Length == Gim004Rules.SlotCount)
+                for (int i = 0; i < Gim004Rules.SlotCount; i++) s.SetSlot(i, (int)ans[i]);
+            s.state = Gim004State.Complete;
+            OnChanged?.Invoke();
+            OnComplete?.Invoke();
+        }
+
         // 지금 선반 배치가 정답인가 (왼쪽부터 answer와 같은가)
         public bool IsCorrect()
         {

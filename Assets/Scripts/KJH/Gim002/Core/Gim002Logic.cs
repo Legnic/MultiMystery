@@ -323,6 +323,25 @@ namespace Gim002
             timer = 0f;
         }
 
+        // 개발자 모드 전용 (DevGimmickPanel): 진행을 건너뛰고 바로 완료 상태로 만든다. 일반 게임 흐름에서는 부르지 않는다.
+        public void DebugForceComplete()
+        {
+            if (State == Gim002State.Complete) return;
+            phase = Phase.None;
+            timer = 0f;
+            MusicDoorOpened = true;
+            StageWound = true;
+            CurtainOpen = false;
+            SlotDoll = null;
+            SlotBg = null;
+            ScoreboardOpen = false;
+            SceneIndex = rules.Length;
+            ProgressCount = rules.Length;
+            SetState(Gim002State.Complete);
+            Commit();
+            OnComplete?.Invoke();
+        }
+
         void SetState(Gim002State s)
         {
             if (State == s) return;

@@ -50,6 +50,18 @@ namespace Gim007
             OnChanged?.Invoke();
         }
 
+        // 개발자 모드 전용 (DevGimmickPanel): 가구를 끝 칸까지 밀어 바로 완료 상태로 만든다 (문 열림 연출까지 일어나도록 Complete 사건도 보낸다).
+        public void DebugForceComplete()
+        {
+            if (s.IsComplete) return;
+            s.step = rules.requiredSteps;
+            s.state = Gim007State.Complete;
+            s.grip0 = s.grip1 = NoPlayer;
+            timer = 0f;
+            OnChanged?.Invoke();
+            OnEvent?.Invoke(Gim007NetEvent.Complete, s.failCount);
+        }
+
         // ---------------- 손잡이 ----------------
 
         public Gim007GripResult Grip(int handle, ulong player)
