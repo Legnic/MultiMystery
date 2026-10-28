@@ -15,10 +15,12 @@ public class HandEmote : MonoBehaviour
         public Key key;
         public float turnY;        // 손마다 원래 만들어진 방향이 달라서 Y축으로 돌려 맞춘다 (도)
         public float scale = 1f;   // 손마다 크기가 달라서 맞춘다
+        public Vector3 offset;     // 손마다 뜨는 자리를 조금 옮긴다 (예: 엄지척은 얼굴 옆으로 들어 올림)
     }
 
     [SerializeField] Gesture[] gestures;
     [SerializeField] Transform[] slots;
+    [SerializeField] Transform myViewSlot;   // 내 화면에 보이는 손 자리. 여기는 offset을 쓰지 않는다
     [SerializeField] Material handMaterial;
     [SerializeField] float showSeconds = 3f;
 
@@ -49,6 +51,7 @@ public class HandEmote : MonoBehaviour
         {
             var hand = Instantiate(gesture.model, slots[i], false);
             hand.name = gesture.name;
+            if (slots[i] != myViewSlot) hand.transform.localPosition = gesture.offset;
             hand.transform.localRotation = Quaternion.Euler(0f, gesture.turnY, 0f);
             hand.transform.localScale = Vector3.one * gesture.scale;
             SetLayer(hand.transform, slots[i].gameObject.layer);
