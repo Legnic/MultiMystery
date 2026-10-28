@@ -161,7 +161,7 @@ GameObject:
   - component: {fileID: 44561785}
   - component: {fileID: 44561786}
   m_Layer: 30
-  m_Name: "\uC8FC\uD669\uC774_\uC190(\uC911\uC9C0)"
+  m_Name: Orange_Hand_MyView
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -216,7 +216,7 @@ GameObject:
   m_Component:
   - component: {fileID: 82225453}
   m_Layer: 0
-  m_Name: "\uD30C\uB791\uC774"
+  m_Name: Blue
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -310,7 +310,7 @@ GameObject:
   - component: {fileID: 267061029}
   - component: {fileID: 267061030}
   m_Layer: 31
-  m_Name: "\uC8FC\uD669\uC774_\uC190(\uC0C1\uB300\uC2DC\uC810\uC6A9)"
+  m_Name: Orange_Hand_OtherView
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -398,7 +398,7 @@ GameObject:
   - component: {fileID: 397313327}
   - component: {fileID: 397313328}
   m_Layer: 0
-  m_Name: "\uC8FC\uD669\uC774_\uB208(\uCE74\uBA54\uB77C)"
+  m_Name: Orange_EyeCam
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2250,7 +2250,7 @@ Transform:
   m_GameObject: {fileID: 1095938527}
   serializedVersion: 2
   m_LocalRotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071067}
-  m_LocalPosition: {x: 0.0059301853, y: 0, z: 0}
+  m_LocalPosition: {x: 0.006, y: -0, z: -0.149}
   m_LocalScale: {x: 100, y: 100, z: 100}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3222,7 +3222,7 @@ GameObject:
   - component: {fileID: 1196620879}
   - component: {fileID: 1196620880}
   m_Layer: 0
-  m_Name: "\uD30C\uB791\uC774_\uB208(\uCE74\uBA54\uB77C)"
+  m_Name: Blue_EyeCam
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3736,7 +3736,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1560764890}
   m_Layer: 0
-  m_Name: "\uC8FC\uD669\uC774"
+  m_Name: Orange
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
