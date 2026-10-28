@@ -13,7 +13,8 @@ namespace LGH
     // 2-player menu: one player creates a room, it shows up in everyone's room list, the other clicks it to join.
     // Joining by code still works as a fallback. Connection goes through Unity's online services,
     // so it works across different home networks.
-    public class MultiplayerMenu : MonoBehaviour
+    // ESC 메뉴 디자인 버전은 MultiplayerMenu.PauseMenu.cs
+    public partial class MultiplayerMenu : MonoBehaviour
     {
         public Camera menuCamera;
         public int maxPlayers = 2;
@@ -443,6 +444,12 @@ namespace LGH
             // 방 목록/만들기 화면: 디자이너 이미지 버전
             if (!gInGame && lobbyBackground != null) { DrawDesignedLobby(); return; }
 
+            // 플레이 중 ESC 메뉴: 디자이너 이미지 버전 (리소스가 없으면 아래 예전 패널)
+            if (gInGame && !lobbyStage && DrawDesignedPause()) return;
+
+            // 대기방: 디자이너 이미지 버전 (MultiplayerMenu.WaitingRoom.cs, 리소스가 없으면 아래 예전 패널)
+            if (lobbyStage && DrawDesignedWaitingRoom(flow)) return;
+
             float pw = 520f, ph = !gInGame ? Mathf.Min(680f, h - 40f) : (lobbyStage ? 420f : 320f);
             var r = new Rect((w - pw) / 2f, (h - ph) / 2f, pw, ph);
             GUI.Box(r, GUIContent.none, CoopDemo.MeetYouGuiSkin.Window);
@@ -519,17 +526,18 @@ namespace LGH
         // 좌표는 전부 디자인 이미지(1536x864) 픽셀 기준. 이미지를 화면에 꽉 차게(넘치는 쪽은 잘림) 깔고,
         // GUI.matrix로 같은 배율을 걸어서 이미지 속 칸 위치에 그대로 컨트롤을 얹는다.
         const float LobbyW = 1536f, LobbyH = 864f;
-        static readonly Rect LbRoomName = Rect.MinMaxRect(424, 223, 790, 272);
-        static readonly Rect LbCreate = Rect.MinMaxRect(816, 222, 1105, 274);
-        static readonly Rect LbCount = Rect.MinMaxRect(422, 314, 940, 353);   // 왼쪽 끝 = 위 입력칸·아래 목록 칸 테두리 바깥선(x 422)
-        static readonly Rect LbRefresh = Rect.MinMaxRect(956, 314, 1105, 353);
-        static readonly Rect LbList = Rect.MinMaxRect(462, 388, 1072, 640);   // 이미지 속 구분선(4줄) 안쪽
-        const float LbRowH = 63f;
+        static readonly Rect LbNickname = Rect.MinMaxRect(548, 213, 1102, 260);   // '닉네임' 글자 오른쪽 칸 (2026-10-28 추가)
+        static readonly Rect LbRoomName = Rect.MinMaxRect(425, 283, 790, 330);
+        static readonly Rect LbCreate = Rect.MinMaxRect(816, 282, 1105, 334);
+        static readonly Rect LbCount = Rect.MinMaxRect(422, 370, 1104, 412);   // 방 만들기 줄과 목록 칸 사이 빈 곳 (새로고침 버튼은 디자인에서 빠짐 — 목록은 자동 갱신)
+        static readonly Rect LbList = Rect.MinMaxRect(462, 436, 1072, 640);   // 이미지 속 구분선(2줄, 3칸) 안쪽
+        const float LbRowH = 68f;
         static readonly Rect LbCode = Rect.MinMaxRect(426, 670, 778, 719);
         static readonly Rect LbJoin = Rect.MinMaxRect(805, 669, 1105, 720);
         static readonly Rect LbStatus = Rect.MinMaxRect(400, 738, 1136, 806);   // 긴 오류 문구도 두 줄까지
         static readonly Rect LbBack = Rect.MinMaxRect(1203, 760, 1480, 815);
-        static readonly Color LbCream = new Color(0.96f, 0.90f, 0.76f);
+        // 빌드에서 IMGUI 색이 진하게 나오는 문제 보정 (MeetYouGuiSkin.GuiColor 참고)
+        static Color LbCream => CoopDemo.MeetYouGuiSkin.GuiColor(new Color(0.96f, 0.90f, 0.76f));
 
         GUIStyle lbCount, lbText, lbField, lbRowName, lbRowInfo, lbHit, lbOutline, lbRowHover;
         Texture2D lbRowTex, lbDimTex;
@@ -586,17 +594,19 @@ namespace LGH
 
             bool canAct = gReady && !gBusy && gSessionNull;
 
-            // 방 이름 (랜덤 기본값, 클릭해서 수정 — 한글 입력 지원) + 방 만들기
+            // 닉네임 (클릭해서 수정 — 한글 입력 지원, 바꾸는 즉시 저장). 방에 들어가 있는 동안에는 바꾸지 않는다
             GUI.enabled = canAct;
+            ImeField(1, nickname, LbNickname, lbField);
+
+            // 방 이름 (랜덤 기본값, 클릭해서 수정 — 한글 입력 지원) + 방 만들기
             ImeField(2, roomName, LbRoomName, lbField);
             GUI.enabled = true;
             if (LobbyButton(LbCreate, canAct)) CreateRoom();
 
-            // 열린 방 개수 + 새로고침
+            // 열린 방 개수
             GUI.Label(LbCount, "열린 방 (" + shown.Count + ")", lbCount);
-            if (LobbyButton(LbRefresh, canAct && !querying)) RefreshRooms();
 
-            // 방 목록: 이미지 속 4줄 칸에 맞춰 한 줄씩, 넘치면 스크롤
+            // 방 목록: 이미지 속 3줄 칸에 맞춰 한 줄씩, 넘치면 스크롤
             if (shown.Count == 0)
             {
                 GUI.Label(LbList, gReady ? "아직 열린 방이 없어요" : "연결 중...", lbText);
