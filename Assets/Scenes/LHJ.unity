@@ -172,6 +172,7 @@ MonoBehaviour:
     turnY: 0
     scale: 1
     offset: {x: 0, y: 0, z: 0}
+    mirror: 0
   - name: Hand_VSign
     model: {fileID: 919132149155446097, guid: f037732ecafc927439154e69b905744f, type: 3}
     controller: {fileID: 9100000, guid: 2823a7cb3412782459c022f7c2e42e62, type: 2}
@@ -179,6 +180,7 @@ MonoBehaviour:
     turnY: 0
     scale: 1
     offset: {x: 0, y: 0, z: 0}
+    mirror: 0
   - name: Hand_MiddleFinger
     model: {fileID: 919132149155446097, guid: feda8b83dd14fbb4ea081c4346998c58, type: 3}
     controller: {fileID: 9100000, guid: 71eb63b943d5f214dbd6887f089f0e24, type: 2}
@@ -186,6 +188,7 @@ MonoBehaviour:
     turnY: 0
     scale: 1
     offset: {x: 0, y: 0, z: 0}
+    mirror: 0
   - name: Hand_Point
     model: {fileID: 919132149155446097, guid: 705039518eae5644fbbf880307e3597a, type: 3}
     controller: {fileID: 9100000, guid: e6b16d5d269d9334aa0195472d3d05a7, type: 2}
@@ -193,13 +196,15 @@ MonoBehaviour:
     turnY: 135
     scale: 0.8
     offset: {x: 0, y: 0, z: 0}
+    mirror: 0
   - name: Hand_ThumbsUp
     model: {fileID: 919132149155446097, guid: 34e067edcb56b8f40988ade00f781edc, type: 3}
     controller: {fileID: 9100000, guid: 62c4c08a274da9b4bb3c6f65b832ff6a, type: 2}
     key: 50
-    turnY: 140
+    turnY: 185
     scale: 0.8
     offset: {x: 0, y: 0, z: 0}
+    mirror: 1
   slots:
   - {fileID: 962892106}
   myViewSlot: {fileID: 0}
@@ -3432,6 +3437,7 @@ MonoBehaviour:
     turnY: 0
     scale: 1
     offset: {x: 0, y: 0, z: 0}
+    mirror: 0
   - name: Hand_VSign
     model: {fileID: 919132149155446097, guid: f037732ecafc927439154e69b905744f, type: 3}
     controller: {fileID: 9100000, guid: 2823a7cb3412782459c022f7c2e42e62, type: 2}
@@ -3439,6 +3445,7 @@ MonoBehaviour:
     turnY: 0
     scale: 1
     offset: {x: 0, y: 0, z: 0}
+    mirror: 0
   - name: Hand_MiddleFinger
     model: {fileID: 919132149155446097, guid: feda8b83dd14fbb4ea081c4346998c58, type: 3}
     controller: {fileID: 9100000, guid: 71eb63b943d5f214dbd6887f089f0e24, type: 2}
@@ -3446,6 +3453,7 @@ MonoBehaviour:
     turnY: 0
     scale: 1
     offset: {x: 0, y: 0, z: 0}
+    mirror: 0
   - name: Hand_Point
     model: {fileID: 919132149155446097, guid: 705039518eae5644fbbf880307e3597a, type: 3}
     controller: {fileID: 9100000, guid: e6b16d5d269d9334aa0195472d3d05a7, type: 2}
@@ -3453,13 +3461,15 @@ MonoBehaviour:
     turnY: 135
     scale: 0.8
     offset: {x: 0, y: 0, z: 0}
+    mirror: 0
   - name: Hand_ThumbsUp
     model: {fileID: 919132149155446097, guid: 34e067edcb56b8f40988ade00f781edc, type: 3}
     controller: {fileID: 9100000, guid: 62c4c08a274da9b4bb3c6f65b832ff6a, type: 2}
     key: 45
-    turnY: 140
+    turnY: 185
     scale: 0.8
     offset: {x: 0, y: 0, z: 0}
+    mirror: 1
   slots:
   - {fileID: 1095049877}
   - {fileID: 82599806}

@@ -16,6 +16,7 @@ public class HandEmote : MonoBehaviour
         public float turnY;        // 손마다 원래 만들어진 방향이 달라서 Y축으로 돌려 맞춘다 (도)
         public float scale = 1f;   // 손마다 크기가 달라서 맞춘다
         public Vector3 offset;     // 손마다 뜨는 자리를 조금 옮긴다 (예: 엄지척은 얼굴 옆으로 들어 올림)
+        public bool mirror;        // 켜면 거울처럼 좌우를 뒤집는다
     }
 
     [SerializeField] Gesture[] gestures;
@@ -49,12 +50,16 @@ public class HandEmote : MonoBehaviour
         Hide();
         for (int i = 0; i < slots.Length; i++)
         {
-            var hand = Instantiate(gesture.model, slots[i], false);
-            hand.name = gesture.name;
-            if (slots[i] != myViewSlot) hand.transform.localPosition = gesture.offset;
+            // 손을 감싸는 빈 오브젝트: 자리 옮기기와 좌우 뒤집기는 여기서 한다 (손을 돌린 뒤에 화면 기준으로 뒤집히도록)
+            var holder = new GameObject(gesture.name).transform;
+            holder.SetParent(slots[i], false);
+            if (slots[i] != myViewSlot) holder.localPosition = gesture.offset;
+            holder.localScale = new Vector3(gesture.mirror ? -1f : 1f, 1f, 1f);
+
+            var hand = Instantiate(gesture.model, holder, false);
             hand.transform.localRotation = Quaternion.Euler(0f, gesture.turnY, 0f);
             hand.transform.localScale = Vector3.one * gesture.scale;
-            SetLayer(hand.transform, slots[i].gameObject.layer);
+            SetLayer(holder, slots[i].gameObject.layer);
             if (handMaterial != null)
             {
                 foreach (var r in hand.GetComponentsInChildren<Renderer>()) r.sharedMaterial = handMaterial;
@@ -63,7 +68,7 @@ public class HandEmote : MonoBehaviour
             var animator = hand.GetComponent<Animator>();
             if (animator == null) animator = hand.AddComponent<Animator>();
             animator.runtimeAnimatorController = gesture.controller;
-            shown[i] = hand;
+            shown[i] = holder.gameObject;
         }
         hideAt = Time.time + showSeconds;
     }
