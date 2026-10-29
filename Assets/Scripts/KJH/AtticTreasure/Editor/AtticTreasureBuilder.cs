@@ -59,7 +59,9 @@ namespace AtticTreasure.EditorTools
                 Cube(t, new Vector3(0f, 0.1f, 0f), new Vector3(0.13f, 0.2f, 0.13f), Mat("Gold", new Color(0.83f, 0.66f, 0.2f), 0.75f)));
             var keyVisual = VisualPrefab("AtticTreasure_KeyVisual", forceVisuals, t =>
                 Cube(t, new Vector3(0f, 0.01f, 0f), new Vector3(0.14f, 0.02f, 0.045f), Mat("KeyIron", new Color(0.45f, 0.42f, 0.36f), 0.5f)));
-            var syncPrefab = BuildSyncPrefab(statueItem, keyItem);
+            BuildSyncPrefab(statueItem, keyItem);
+            AtticTreasureCutsceneBuilder.Build();   // 황금상 획득 연출 연결 (2026-10-29)
+            var syncPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(Root + "/AtticTreasureSync.prefab");
 
             foreach (var go in UnityEngine.SceneManagement.SceneManager.GetActiveScene().GetRootGameObjects()
                          .Where(g => g.name == "AtticTreasure_KJH" || g.name == "AtticTreasureSync_KJH").ToList())
@@ -193,7 +195,7 @@ namespace AtticTreasure.EditorTools
                 var go = new GameObject("AtticTreasureSync");
                 go.AddComponent<NetworkObject>();
                 go.AddComponent<AtticTreasureSync>();
-                go.AddComponent<AtticTreasurePlaceholderCutscene>();
+                // 획득 연출은 아래 AtticTreasureCutsceneBuilder가 붙인다
                 existing = PrefabUtility.SaveAsPrefabAsset(go, path);
                 Object.DestroyImmediate(go);
             }

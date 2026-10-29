@@ -6,6 +6,7 @@ namespace AtticTreasure
     public class AtticTreasureStatue : AtticTreasureBoxItem
     {
         protected override bool InBox { get { return Sync != null && Sync.State == StatueState.InBox; } }
+        // 연출 중에는 숨긴다. 연출 화면에는 AtticTreasureGlowCutscene가 만든 임시 황금상이 대신 보인다 (2026-10-29)
         protected override bool Hidden { get { return Sync != null && Sync.State == StatueState.Cutscene; } }
         protected override void RequestTake() { Sync.RequestTake(); }
         protected override void RequestReturn() { if (Sync != null) Sync.RequestReturnStatue(); }
