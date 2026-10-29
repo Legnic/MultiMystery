@@ -26,7 +26,9 @@ namespace CoopDemo
 
         [Header("왼손 위 감정표현 손 (EmoteHand, 상대에게 보이는 쪽)")]
         [Tooltip("왼손 위치 기준, 모델 좌표(오른쪽, 위, 앞)로 얼마나 띄울지. 1인칭에서 손이 화면 왼쪽에 뜨므로 상대에게도 왼손 위에 띄운다")]
-        public Vector3 emoteHandOffset = new Vector3(-0.08f, 0.18f, 0.10f);
+        public Vector3 emoteHandOffset = new Vector3(-0.30f, -0.05f, 0.10f);   // 몸통과 안 겹치게(손 상자↔몸통 정점 최소 8.9cm, 웅크려도 10cm 이상 — 2026-10-29 측정)
+        [Tooltip("상대 화면에서만 손 크기 배율 (1인칭 크기 기준). 멀리서 봐도 손 모양이 잘 보이게 키운다")]
+        public float emoteHandScale = 1.6f;
 
         [Header("왼손에 든 공용 물건 (인형·배경카드·화분 등, 상대에게 보이는 쪽)")]
         [Tooltip("왼손 위치 기준, 모델 좌표(오른쪽, 위, 앞)로 얼마나 띄울지")]
@@ -184,8 +186,6 @@ namespace CoopDemo
                 emoteHandSocket = go.transform;
                 emoteHandSocket.SetParent(transform, false);
             }
-            float s = Mathf.Max(0.0001f, transform.lossyScale.x);
-            emoteHandSocket.localScale = Vector3.one / s;   // 1인칭 때와 같은 크기로 보이게
             item.SetParent(emoteHandSocket, false);         // 로컬 회전·크기는 1인칭 값 그대로 유지
             item.localPosition = Vector3.zero;
             UpdateEmoteHand();
@@ -194,6 +194,8 @@ namespace CoopDemo
         void UpdateEmoteHand()
         {
             if (emoteHandSocket == null || leftHand == null) return;
+            float s = Mathf.Max(0.0001f, transform.lossyScale.x);
+            emoteHandSocket.localScale = Vector3.one * (emoteHandScale / s);   // 1인칭 크기 × 상대 화면 배율
             emoteHandSocket.position = leftHand.position + transform.TransformVector(emoteHandOffset);
             emoteHandSocket.rotation = Quaternion.Euler(0f, transform.eulerAngles.y, 0f);
         }
