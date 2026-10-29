@@ -39,7 +39,7 @@ namespace CoopDemo
         LGH.FirstPersonController firstPerson;
         Transform cameraTransform;
         bool lastCrouchSent;
-        EmoteHandView emoteHand;   // "EmoteHand" 오브젝트(카메라 자식, Hand_Wave_Rigged) - 내 것은 그대로 1인칭, 상대 것은 얼굴 앞 소켓으로 옮겨 붙인다
+        EmoteHandView emoteHand;   // "EmoteHand" 오브젝트(카메라 자식, LHJ 손 5종) - 내 것은 그대로 1인칭, 상대 것은 얼굴 앞 소켓으로 옮겨 붙인다
 
         // ---- 재접속 위치 기억 (서버 컴퓨터에만 쌓인다) ----
         // 자리(PlayerSlot)별로 "마지막으로 있던 곳"을 기억해 두었다가, 같은 자리 사람이 다시 들어오면 거기로 돌려보낸다.
@@ -189,7 +189,7 @@ namespace CoopDemo
             if (Model != null) Model.SetCrouching(now);
         }
 
-        // 0=인사 1=브이 2=따봉 3=가리키기. EmoteWheelUI(마우스 가운데 버튼 도넛 메뉴)가 고른 번호를 넘겨준다.
+        // 0=인사 1=브이 2=중지 3=가리키기 4=엄지척(EmoteHandView.hands 순서). EmoteWheelUI(마우스 가운데 버튼 도넛 메뉴)가 고른 번호를 넘겨준다.
         // 누른 사람 화면엔 바로(1인칭), 상대 화면엔 emoteSignal을 보고 재생한다.
         public void RequestEmote(int gesture)
         {

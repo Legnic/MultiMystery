@@ -10,9 +10,8 @@ namespace CoopDemo
     // NetworkPlayer.ownerOnly 배열에 들어가서 소유자 화면에서만 켜진다(FirstPersonController/PlayerInteractor와 같은 방식).
     public class EmoteWheelUI : MonoBehaviour
     {
-        // 2026-10-27: 손가락 구부리기 몸짓은 팀원이 Blender로 다시 만들 때까지 빼고 인사만 남김.
-        // 배열에 다시 추가하기만 하면 조각 개수(72도→...)는 자동으로 맞춰진다.
-        static readonly string[] Labels = { "인사" };
+        // 2026-10-29: LHJ님이 Blender로 만든 손 5종을 연결. 순서는 EmoteHandView.hands(EmoteHandBuilder.Gestures)와 같아야 한다.
+        static readonly string[] Labels = { "인사", "브이", "중지", "가리키기", "엄지척" };
         public float radius = 110f;
         public float deadZone = 30f;   // 이 반경 안에서 떼면 선택 취소
 

@@ -1,216 +1,93 @@
-using System.Linq;
 using UnityEditor;
-using UnityEditor.Animations;
 using UnityEngine;
 
 namespace CoopDemo.EditorTools
 {
-    // Builds the placeholder gesture clip(s) + Animator Controller for the "face emote hand"
-    // (LHJ's Hand_Wave_Rigged) and wires an instance under NetworkPlayer_LGH's Main Camera.
-    // Re-runnable (same pattern as AvatarBuilder): clips/controller are rebuilt from code every
-    // time, prefab wiring is only added if missing.
+    // Wires the "face emote hand" under NetworkPlayer_LGH's Main Camera. Re-runnable: the EmoteHand
+    // holder is rebuilt from scratch every time.
     //
-    // 2026-10-27: team decided finger-curl gestures (peace/thumbsUp/point/middleFinger) looked
-    // too distorted when posed by rotating joints in code - a teammate will animate those properly
-    // in Blender instead. Only "Wave" (no finger curling, just a wrist rock) stays as a code-driven
-    // placeholder for now. When the Blender clips arrive, drop them into OutDir with the same
-    // naming scheme and extend BuildClips/BuildController the way this file did before this round
-    // (see git history) rather than hand-posing joints again.
+    // 2026-10-29: 코드로 관절을 돌려 만들던 임시 클립(Emote_Idle/Wave)을 버리고, LHJ님이 Blender로 만든
+    // 손 5종(Assets/VARCO 3D/LHJ/Hands)과 각 손의 Animator Controller를 그대로 쓴다. 손별 방향(turnY)·크기·
+    // 좌우반전 값은 LHJ 씬의 HandEmote에 저장된 값을 그대로 옮겨 온 것 - LHJ님이 값을 바꾸면 Gestures 표만
+    // 고치고 Build All을 다시 돌리면 된다. 표 순서 = EmoteHandView.hands = EmoteWheelUI.Labels 순서.
     public static class EmoteHandBuilder
     {
-        const string HandFbx = "Assets/VARCO 3D/LHJ/Hands/Hand_Wave_Rigged.fbx";
-        const string OutDir = "Assets/Animations/KSM/EmoteHand";
+        const string HandDir = "Assets/VARCO 3D/LHJ/Hands/";
+        const string HandMaterial = HandDir + "Hand_White_Mat.mat";
+        const string OldClipDir = "Assets/Animations/KSM/EmoteHand";
         const string PlayerPrefab = "Assets/Objects/LGH/NetworkPlayer_LGH.prefab";
 
-        // 실제 게임에서 EmoteHand 오브젝트에 거는 회전과 반드시 같아야 한다 - 손목 흔들기(WaveAxis)는 세계축이라
-        // 이 값이 다르면 전혀 다른 방향으로 돈다(실제로 한 번 빠뜨렸다가 "인사"가 거의 안 움직이는 버그가 났었음).
+        struct Gesture
+        {
+            public string name; public float turnY; public float scale; public bool mirror;
+            public Gesture(string name, float turnY, float scale, bool mirror) { this.name = name; this.turnY = turnY; this.scale = scale; this.mirror = mirror; }
+        }
+
+        static readonly Gesture[] Gestures =
+        {
+            new Gesture("Hand_Wave",         0f,   1.0f, false),   // 인사
+            new Gesture("Hand_VSign",        0f,   1.0f, false),   // 브이
+            new Gesture("Hand_MiddleFinger", 0f,   1.0f, false),   // 중지
+            new Gesture("Hand_Point",        135f, 0.8f, false),   // 가리키기
+            new Gesture("Hand_ThumbsUp",     185f, 0.8f, true),    // 엄지척
+        };
+
+        // LHJ 씬의 손 자리(slot)도 Y 180도로 돌아 있다 - 위 turnY 값들이 이 회전을 전제로 맞춰져 있다.
         static readonly Quaternion HolderRotation = Quaternion.Euler(0f, 180f, 0f);
 
         [MenuItem("Tools/KSM/EmoteHand/Build All")]
         public static void BuildAll()
         {
-            EnsureFolder("Assets/Animations/KSM", "EmoteHand");
-
-            var fbx = AssetDatabase.LoadAssetAtPath<GameObject>(HandFbx);
-            if (fbx == null) { Debug.LogError("[EmoteHand] Hand_Wave_Rigged.fbx를 찾지 못했어요: " + HandFbx); return; }
-
-            var inst = (GameObject)PrefabUtility.InstantiatePrefab(fbx);
-            inst.transform.localRotation = HolderRotation;
-            try
-            {
-                var clips = BuildClips(inst);
-                var controller = BuildController(clips);
-                WirePlayerPrefab(controller);
-            }
-            finally { Object.DestroyImmediate(inst); }
-
-            // 이전 라운드에서 만들었던 손가락 몸짓 클립은 더 이상 쓰지 않음 - 팀원이 Blender로 다시 만들 예정.
-            foreach (var name in new[] { "Emote_Peace", "Emote_ThumbsUp", "Emote_Point", "Emote_MiddleFinger" })
-                AssetDatabase.DeleteAsset(OutDir + "/" + name + ".anim");
-
-            AssetDatabase.SaveAssets();
-            AssetDatabase.ImportAsset(PlayerPrefab, ImportAssetOptions.ForceUpdate);
-            Debug.Log("[EmoteHand] Build All 완료: 인사 클립만 유지 + Animator + 플레이어 프리팹 연결.");
-        }
-
-        // ---------- 몸짓 클립 ----------
-
-        static (AnimationClip idle, AnimationClip wave) BuildClips(GameObject inst)
-        {
-            Transform Find(string n) => inst.GetComponentsInChildren<Transform>(true).FirstOrDefault(t => t.name == n);
-            var hand = Find("Hand");
-            if (hand == null)
-            {
-                Debug.LogError("[EmoteHand] 'Hand' 뼈를 찾지 못했어요 (이름이 바뀌었을 수 있어요).");
-                return (null, null);
-            }
-
-            var restHand = hand.localRotation;
-
-            AnimationClip MakeClip(string name, float[] times, System.Func<float, Quaternion> poseAt)
-            {
-                var clip = new AnimationClip { name = name, frameRate = 30 };
-                var quats = times.Select(poseAt).ToArray();
-                hand.localRotation = restHand;
-                string p = AnimationUtility.CalculateTransformPath(hand, inst.transform);
-                SetQuatCurves(clip, p, times, quats);
-                var s = AnimationUtility.GetAnimationClipSettings(clip); s.loopTime = false; AnimationUtility.SetAnimationClipSettings(clip, s);
-                return clip;
-            }
-
-            var idle = MakeClip("Emote_Idle", new[] { 0f, 1f }, _ => restHand);
-
-            // 인사: 손가락은 그대로(기본 자세가 이미 펼친 손) 손목만 좌우로 흔든다.
-            Vector3 waveAxis = hand.forward;
-            var waveTimes = new[] { 0f, 0.25f, 0.55f, 0.85f, 1.15f, 1.45f, 1.6f };
-            var waveAngles = new[] { 0f, 22f, -22f, 22f, -22f, 10f, 0f };
-            var wave = MakeClip("Emote_Wave", waveTimes, t =>
-            {
-                hand.localRotation = restHand;
-                int i = System.Array.IndexOf(waveTimes, t);
-                Pose(hand, waveAxis, waveAngles[i]);
-                return hand.localRotation;
-            });
-
-            void Save(AnimationClip c)
-            {
-                string path = OutDir + "/" + c.name + ".anim";
-                AssetDatabase.DeleteAsset(path);
-                AssetDatabase.CreateAsset(c, path);
-            }
-            Save(idle); Save(wave);
-            return (idle, wave);
-        }
-
-        static void Pose(Transform bone, Vector3 axisWorld, float angle)
-        {
-            if (bone == null || Mathf.Abs(angle) < 0.001f) return;
-            Quaternion pw = bone.parent != null ? bone.parent.rotation : Quaternion.identity;
-            bone.localRotation = Quaternion.Inverse(pw) * Quaternion.AngleAxis(angle, axisWorld) * pw * bone.localRotation;
-        }
-
-        static void SetQuatCurves(AnimationClip clip, string path, float[] times, Quaternion[] q)
-        {
-            var cx = new AnimationCurve(); var cy = new AnimationCurve(); var cz = new AnimationCurve(); var cw = new AnimationCurve();
-            Quaternion prev = q[0];
-            for (int i = 0; i < times.Length; i++)
-            {
-                var cur = q[i];
-                if (Quaternion.Dot(prev, cur) < 0f) cur = new Quaternion(-cur.x, -cur.y, -cur.z, -cur.w);
-                prev = cur;
-                cx.AddKey(times[i], cur.x); cy.AddKey(times[i], cur.y); cz.AddKey(times[i], cur.z); cw.AddKey(times[i], cur.w);
-            }
-            foreach (var cv in new[] { cx, cy, cz, cw }) for (int i = 0; i < cv.length; i++) cv.SmoothTangents(i, 0f);
-            clip.SetCurve(path, typeof(Transform), "localRotation.x", cx);
-            clip.SetCurve(path, typeof(Transform), "localRotation.y", cy);
-            clip.SetCurve(path, typeof(Transform), "localRotation.z", cz);
-            clip.SetCurve(path, typeof(Transform), "localRotation.w", cw);
-        }
-
-        // ---------- Animator Controller ----------
-
-        static AnimatorController BuildController((AnimationClip idle, AnimationClip wave) clips)
-        {
-            string path = OutDir + "/EmoteHand.controller";
-            AssetDatabase.DeleteAsset(path);
-            var ctrl = AnimatorController.CreateAnimatorControllerAtPath(path);
-            ctrl.AddParameter("Wave", AnimatorControllerParameterType.Trigger);
-
-            var sm = ctrl.layers[0].stateMachine;
-            var idle = sm.AddState("Idle");
-            idle.motion = clips.idle;
-            idle.writeDefaultValues = true;
-            sm.defaultState = idle;
-
-            var wave = sm.AddState("Wave");
-            wave.motion = clips.wave;
-            wave.writeDefaultValues = true;
-
-            var toWave = idle.AddTransition(wave);
-            toWave.hasExitTime = false;
-            toWave.duration = 0.08f;
-            toWave.AddCondition(AnimatorConditionMode.If, 0f, "Wave");
-
-            var back = wave.AddTransition(idle);
-            back.hasExitTime = true;
-            back.exitTime = 0.95f;
-            back.duration = 0.12f;
-
-            // 연타하면 처음부터 다시 재생
-            var again = wave.AddTransition(wave);
-            again.hasExitTime = false;
-            again.duration = 0.05f;
-            again.AddCondition(AnimatorConditionMode.If, 0f, "Wave");
-
-            return ctrl;
-        }
-
-        // ---------- 플레이어 프리팹 연결 ----------
-
-        static void WirePlayerPrefab(AnimatorController controller)
-        {
-            var fbx = AssetDatabase.LoadAssetAtPath<GameObject>(HandFbx);
-            if (fbx == null) return;
-
+            var mat = AssetDatabase.LoadAssetAtPath<Material>(HandMaterial);
             var root = PrefabUtility.LoadPrefabContents(PlayerPrefab);
             try
             {
                 var cam = root.transform.Find("Main Camera");
                 if (cam == null) { Debug.LogError("[EmoteHand] 플레이어 프리팹에 Main Camera가 없어요."); return; }
 
-                var holder = cam.Find("EmoteHand");
-                if (holder == null)
-                {
-                    // 클립의 뼈 경로("Hand_Armature/Hand/...")가 Animator가 붙은 오브젝트 기준이므로,
-                    // 별도 빈 껍데기를 만들지 않고 FBX 인스턴스 자체를 "EmoteHand"로 쓴다(AvatarBuilder와 같은 방식).
-                    var rig = (GameObject)PrefabUtility.InstantiatePrefab(fbx, cam);
-                    rig.name = "EmoteHand";
-                    holder = rig.transform;
+                var old = cam.Find("EmoteHand");
+                if (old != null) Object.DestroyImmediate(old.gameObject);
 
-                    var animator = rig.AddComponent<Animator>();
-                    animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
-
-                    var view = rig.AddComponent<EmoteHandView>();
-                    var so = new SerializedObject(view);
-                    so.FindProperty("animator").objectReferenceValue = animator;
-                    so.ApplyModifiedPropertiesWithoutUndo();
-                }
-
-                // 2026-10-27 피드백: 얼굴 앞이 시야를 가려서 몸쪽(아래·옆)으로 내림 - 재실행해도 항상 이 값으로
-                // 맞춰지도록 if(holder==null) 밖에 둔다. HeldCandle(0.22,-0.15,0.67)과 겹치지 않는 반대쪽.
-                // scale=1(원본 FBX 크기)이면 폭이 1.2m짜리 거대한 손이 돼서 화면을 거의 다 가렸던 게 "시야를
-                // 가리는 문제"의 진짜 원인이었음(스크린샷으로 직접 확인) - 실제 사람 손 크기(폭 약 18cm)에
-                // 맞춰 0.22로 줄임.
+                var holder = new GameObject("EmoteHand").transform;
+                holder.SetParent(cam, false);
+                // 얼굴 앞이 시야를 가리지 않도록 왼쪽 아래(HeldCandle의 반대쪽). scale 0.22 = 실제 사람 손 크기(폭 약 18cm).
                 holder.localPosition = new Vector3(-0.20f, -0.05f, 0.42f);
                 holder.localRotation = HolderRotation;
                 holder.localScale = Vector3.one * 0.22f;
 
-                var anim = holder.GetComponent<Animator>();
-                if (anim != null) anim.runtimeAnimatorController = controller;
+                var hands = new GameObject[Gestures.Length];
+                for (int i = 0; i < Gestures.Length; i++)
+                {
+                    var g = Gestures[i];
+                    var fbx = AssetDatabase.LoadAssetAtPath<GameObject>(HandDir + g.name + "_Rigged.fbx");
+                    var ctrl = AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(HandDir + g.name + "_Anim.controller");
+                    if (fbx == null || ctrl == null) { Debug.LogError("[EmoteHand] 손 모델/컨트롤러를 못 찾았어요: " + g.name); continue; }
 
-                // 마우스 가운데 버튼 도넛 메뉴 - 루트(FirstPersonController와 같은 자리)에 붙이고, 다른 소유자
-                // 전용 스크립트들(FirstPersonController/PlayerInteractor)과 같은 방식으로 NetworkPlayer.ownerOnly에
-                // 등록해서 상대 화면에서는 아예 꺼져 있게 한다.
+                    // 좌우 뒤집기는 손을 돌린 뒤 화면 기준으로 뒤집히도록 감싸는 오브젝트에서 한다(LHJ HandEmote와 같은 순서).
+                    var wrap = new GameObject(g.name).transform;
+                    wrap.SetParent(holder, false);
+                    wrap.localScale = new Vector3(g.mirror ? -1f : 1f, 1f, 1f);
+
+                    var hand = (GameObject)PrefabUtility.InstantiatePrefab(fbx, wrap);
+                    hand.transform.localPosition = Vector3.zero;
+                    hand.transform.localRotation = Quaternion.Euler(0f, g.turnY, 0f);
+                    hand.transform.localScale = Vector3.one * g.scale;
+                    if (mat != null)
+                        foreach (var r in hand.GetComponentsInChildren<Renderer>(true)) r.sharedMaterial = mat;
+
+                    var animator = hand.GetComponent<Animator>();
+                    if (animator == null) animator = hand.AddComponent<Animator>();
+                    animator.runtimeAnimatorController = ctrl;
+                    animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;   // 상대 화면에서도 항상 움직이게
+
+                    wrap.gameObject.SetActive(false);
+                    hands[i] = wrap.gameObject;
+                }
+
+                var view = holder.gameObject.AddComponent<EmoteHandView>();
+                view.hands = hands;
+
+                // 마우스 가운데 버튼 도넛 메뉴 - 루트에 붙이고 NetworkPlayer.ownerOnly에 등록해 상대 화면에서는 꺼져 있게 한다.
                 var wheel = root.GetComponent<EmoteWheelUI>();
                 if (wheel == null) wheel = root.AddComponent<EmoteWheelUI>();
                 var netPlayer = root.GetComponent<LGH.NetworkPlayer>();
@@ -233,11 +110,12 @@ namespace CoopDemo.EditorTools
                 PrefabUtility.SaveAsPrefabAsset(root, PlayerPrefab);
             }
             finally { PrefabUtility.UnloadPrefabContents(root); }
-        }
 
-        static void EnsureFolder(string parent, string name)
-        {
-            if (!AssetDatabase.IsValidFolder(parent + "/" + name)) AssetDatabase.CreateFolder(parent, name);
+            // 예전 임시 클립(코드로 만든 인사)은 더 이상 쓰지 않는다.
+            if (AssetDatabase.IsValidFolder(OldClipDir)) AssetDatabase.DeleteAsset(OldClipDir);
+
+            AssetDatabase.SaveAssets();
+            Debug.Log("[EmoteHand] Build All 완료: LHJ 손 5종 + 플레이어 프리팹 연결.");
         }
     }
 }
