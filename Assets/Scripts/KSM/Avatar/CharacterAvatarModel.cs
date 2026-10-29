@@ -24,11 +24,12 @@ namespace CoopDemo
         [Tooltip("모델이 아니라 \"월드\"를 기준으로 촛불을 똑바로 세운다 (팔이 돌아가도 촛불은 기울지 않는다)")]
         public bool handCandleUpright = true;
 
-        [Header("왼손 위 감정표현 손 (EmoteHand, 상대에게 보이는 쪽)")]
-        [Tooltip("왼손 위치 기준, 모델 좌표(오른쪽, 위, 앞)로 얼마나 띄울지. 1인칭에서 손이 화면 왼쪽에 뜨므로 상대에게도 왼손 위에 띄운다")]
-        public Vector3 emoteHandOffset = new Vector3(-0.30f, -0.05f, 0.10f);   // 몸통과 안 겹치게(손 상자↔몸통 정점 최소 8.9cm, 웅크려도 10cm 이상 — 2026-10-29 측정)
+        [Header("몸 정면 감정표현 손 (EmoteHand, 상대에게 보이는 쪽)")]
+        [Tooltip("기준점 = 몸 중심(가로·앞뒤)과 머리 높이. 거기서 모델 좌표(오른쪽, 위, 앞)로 얼마나 띄울지")]
+        public Vector3 emoteHandOffset = new Vector3(0f, -0.15f, 0.45f);   // 몸 정면 가슴 높이, 몸통 앞면과 약 18cm 간격 (모델 배율 1.5 기준, 2026-10-29 측정)
+        // 주의: 이 두 값은 Avatar_Blue/Orange 프리팹에 저장된 값이 우선한다. 바꿀 때는 프리팹 값도 같이 바꿀 것.
         [Tooltip("상대 화면에서만 손 크기 배율 (1인칭 크기 기준). 멀리서 봐도 손 모양이 잘 보이게 키운다")]
-        public float emoteHandScale = 1.6f;
+        public float emoteHandScale = 2.0f;
 
         [Header("왼손에 든 공용 물건 (인형·배경카드·화분 등, 상대에게 보이는 쪽)")]
         [Tooltip("왼손 위치 기준, 모델 좌표(오른쪽, 위, 앞)로 얼마나 띄울지")]
@@ -172,7 +173,7 @@ namespace CoopDemo
             handItemSocket.rotation = handItemUpright ? Quaternion.Euler(0f, transform.eulerAngles.y, 0f) : leftHand.rotation;
         }
 
-        // 촛불 잡느라 바쁜 오른손 대신 쓰는 감정표현 손(EmoteHand)을 상대 화면에서 왼손 위에 붙인다.
+        // 촛불 잡느라 바쁜 오른손 대신 쓰는 감정표현 손(EmoteHand)을 상대 화면에서 몸 정면 앞에 붙인다.
         // AttachHandCandle과 같은 패턴 - 같은 오브젝트를 그대로 옮겨 붙이므로 모양이 바뀔 때마다 다시 할 필요가 없다.
         // 소켓은 "플레이어가 바라보는 방향"(카메라와 같은 Y 방향)으로 세우고, 손의 로컬 회전(1인칭 카메라 기준 Y180)은
         // 그대로 둔다 → 월드에서 1인칭과 똑같은 방향을 향하므로, 마주 선 상대는 내가 보는 면의 정반대 면을 본다
@@ -196,7 +197,10 @@ namespace CoopDemo
             if (emoteHandSocket == null || leftHand == null) return;
             float s = Mathf.Max(0.0001f, transform.lossyScale.x);
             emoteHandSocket.localScale = Vector3.one * (emoteHandScale / s);   // 1인칭 크기 × 상대 화면 배율
-            emoteHandSocket.position = leftHand.position + transform.TransformVector(emoteHandOffset);
+            // 걸을 때 흔들리는 팔이 아니라 몸 중심에 고정한다. 높이만 머리 뼈를 따라가서 웅크리면 같이 내려간다.
+            Vector3 basePos = transform.position;
+            basePos.y = (head != null ? head : leftHand).position.y;
+            emoteHandSocket.position = basePos + transform.TransformVector(emoteHandOffset);
             emoteHandSocket.rotation = Quaternion.Euler(0f, transform.eulerAngles.y, 0f);
         }
 

@@ -474,8 +474,8 @@ MonoBehaviour:
   leftHand: {fileID: 0}
   handCandleOffset: {x: 0, y: 0.1, z: 0.1}
   handCandleUpright: 1
-  faceItemOffset: {x: 0, y: -0.05, z: 0.3}
-  faceItemUpright: 0
+  emoteHandOffset: {x: 0, y: -0.15, z: 0.45}
+  emoteHandScale: 2
   handItemOffset: {x: 0, y: 0.08, z: 0.1}
   handItemUpright: 1
   holdPoseBlendSpeed: 8
