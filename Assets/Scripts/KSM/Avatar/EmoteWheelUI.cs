@@ -11,6 +11,7 @@ namespace CoopDemo
     public class EmoteWheelUI : MonoBehaviour
     {
         // 2026-10-29: LHJ님이 Blender로 만든 손 5종을 연결. 순서는 EmoteHandView.hands(EmoteHandBuilder.Gestures)와 같아야 한다.
+        // 칸 이름(화면에는 그리지 않고 칸 개수·순서 기준으로만 쓴다 - 2026-10-29 텍스트 표시 제거, 아이콘만 표시)
         static readonly string[] Labels = { "인사", "브이", "중지", "가리키기", "엄지척" };
         [Tooltip("Labels와 같은 순서의 아이콘 (Assets/Images/KSM/Emote). EmoteHandBuilder가 연결한다. 비어 있으면 점으로 그린다")]
         public Texture2D[] icons;
@@ -23,7 +24,6 @@ namespace CoopDemo
         bool open;
         Vector2 cursor;   // 화면 가운데(0,0) 기준 가상 커서 - OS 커서는 계속 잠긴 채다
 
-        GUIStyle labelStyle, highlightStyle;
         Texture2D ringTex, dotTex, dotHighlightTex, iconBackTex;
 
         void Awake()
@@ -93,7 +93,6 @@ namespace CoopDemo
                 bool hi = i == hovered;
 
                 var icon = icons != null && i < icons.Length ? icons[i] : null;
-                float half;
                 if (icon != null)
                 {
                     // 어두운 원 배경 위에 아이콘. 고른 칸은 노란 테두리 + 1.3배
@@ -102,30 +101,19 @@ namespace CoopDemo
                     if (hi) GUI.DrawTexture(new Rect(pos.x - back * 0.5f - 4f, pos.y - back * 0.5f - 4f, back + 8f, back + 8f), dotHighlightTex);
                     GUI.DrawTexture(new Rect(pos.x - back * 0.5f, pos.y - back * 0.5f, back, back), iconBackTex);
                     GUI.DrawTexture(new Rect(pos.x - iconPx * 0.5f, pos.y - iconPx * 0.5f, iconPx, iconPx), icon, ScaleMode.ScaleToFit, true);
-                    half = back * 0.5f + 4f;
                 }
                 else
                 {
                     float dotSize = hi ? 46f : 34f;
                     var dotTexture = hi ? dotHighlightTex : dotTex;
                     GUI.DrawTexture(new Rect(pos.x - dotSize * 0.5f, pos.y - dotSize * 0.5f, dotSize, dotSize), dotTexture);
-                    half = dotSize * 0.5f;
                 }
-
-                var style = hi ? highlightStyle : labelStyle;
-                var labelPos = pos + dir * (half + 16f);
-                var size = style.CalcSize(new GUIContent(Labels[i]));
-                GUI.Label(new Rect(labelPos.x - size.x * 0.5f, labelPos.y - size.y * 0.5f, size.x, size.y), Labels[i], style);
             }
         }
 
         void EnsureAssets()
         {
-            if (labelStyle != null) return;
-            labelStyle = new GUIStyle(GUI.skin.label) { fontSize = 18, alignment = TextAnchor.MiddleCenter };
-            labelStyle.normal.textColor = new Color(1f, 1f, 1f, 0.8f);
-            highlightStyle = new GUIStyle(labelStyle) { fontSize = 24, fontStyle = FontStyle.Bold };
-            highlightStyle.normal.textColor = Color.white;
+            if (ringTex != null) return;
 
             ringTex = MakeRing(256, 0.62f, 0.78f, new Color(0f, 0f, 0f, 0.55f));
             dotTex = MakeDot(64, new Color(1f, 1f, 1f, 0.5f));
