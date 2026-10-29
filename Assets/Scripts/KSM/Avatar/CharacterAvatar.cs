@@ -39,7 +39,7 @@ namespace CoopDemo
         LGH.FirstPersonController firstPerson;
         Transform cameraTransform;
         bool lastCrouchSent;
-        EmoteHandView emoteHand;   // "EmoteHand" 오브젝트(카메라 자식, LHJ 손 5종) - 내 것은 그대로 1인칭, 상대 것은 얼굴 앞 소켓으로 옮겨 붙인다
+        EmoteHandView emoteHand;   // "EmoteHand" 오브젝트(카메라 자식, LHJ 손 5종) - 내 것은 그대로 1인칭, 상대 것은 왼손 위 소켓으로 옮겨 붙인다
 
         // ---- 재접속 위치 기억 (서버 컴퓨터에만 쌓인다) ----
         // 자리(PlayerSlot)별로 "마지막으로 있던 곳"을 기억해 두었다가, 같은 자리 사람이 다시 들어오면 거기로 돌려보낸다.
@@ -72,12 +72,12 @@ namespace CoopDemo
 
             // 상대 화면에서는 촛불이 얼굴 앞(카메라 기준 위치)이 아니라 모델의 손에 들려 보이게 옮긴다.
             // 내 촛불은 그대로 1인칭 카메라 앞에 둔다 → "1인칭 촛불"과 "모델이 든 촛불"이 서로 다른 모습으로 따로 쓰인다.
-            // 감정표현 손(EmoteHand)도 같은 방식: 내 화면은 1인칭 그대로, 상대 화면에서는 모델 얼굴 앞으로 옮겨 붙인다.
+            // 감정표현 손(EmoteHand)도 같은 방식: 내 화면은 1인칭 그대로, 상대 화면에서는 모델 왼손 위로 옮겨 붙인다.
             if (!IsOwner && Model != null)
             {
                 var candle = GetComponentInParent<NetworkObject>().GetComponentInChildren<LGH.HeldCandle>(true);
                 if (candle != null) Model.AttachHandCandle(candle.transform);
-                if (emoteHand != null) Model.AttachFaceItem(emoteHand.transform);
+                if (emoteHand != null) Model.AttachEmoteHand(emoteHand.transform);
             }
 
             if (IsServer)

@@ -4,7 +4,7 @@ namespace CoopDemo
 {
     // Lives on the "EmoteHand" holder under the player's camera. CharacterAvatar finds this to
     // (a) play a gesture on the owner's own first-person view and (b) hand its Transform to
-    // CharacterAvatarModel.AttachFaceItem so the SAME object shows up near the 3D avatar's face
+    // CharacterAvatarModel.AttachEmoteHand so the SAME object shows up above the 3D avatar's left hand
     // on everyone else's screen - the same trick HeldCandle already uses.
     //
     // 2026-10-29: LHJ님이 Blender로 만든 손 5종(인사·브이·중지·가리키기·엄지척)을 자식으로 미리 넣어 두고,

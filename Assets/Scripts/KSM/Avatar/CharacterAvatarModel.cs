@@ -24,11 +24,9 @@ namespace CoopDemo
         [Tooltip("모델이 아니라 \"월드\"를 기준으로 촛불을 똑바로 세운다 (팔이 돌아가도 촛불은 기울지 않는다)")]
         public bool handCandleUpright = true;
 
-        [Header("얼굴 앞 감정표현 손 (EmoteHand, 상대에게 보이는 쪽)")]
-        [Tooltip("머리 위치 기준, 모델 좌표(오른쪽, 위, 앞)로 얼마나 띄울지")]
-        public Vector3 faceItemOffset = new Vector3(0.0f, -0.05f, 0.30f);
-        [Tooltip("감정표현 손이 머리 기울기를 따라갈지(false) 월드 기준으로 세울지(true)")]
-        public bool faceItemUpright = false;
+        [Header("왼손 위 감정표현 손 (EmoteHand, 상대에게 보이는 쪽)")]
+        [Tooltip("왼손 위치 기준, 모델 좌표(오른쪽, 위, 앞)로 얼마나 띄울지. 1인칭에서 손이 화면 왼쪽에 뜨므로 상대에게도 왼손 위에 띄운다")]
+        public Vector3 emoteHandOffset = new Vector3(-0.08f, 0.18f, 0.10f);
 
         [Header("왼손에 든 공용 물건 (인형·배경카드·화분 등, 상대에게 보이는 쪽)")]
         [Tooltip("왼손 위치 기준, 모델 좌표(오른쪽, 위, 앞)로 얼마나 띄울지")]
@@ -95,7 +93,7 @@ namespace CoopDemo
 
         Transform handCandleSocket;
         Transform handItemSocket;
-        Transform faceItemSocket;
+        Transform emoteHandSocket;
         bool wantCrouch;
         float crouchAmount;
         float landCrouchNow;   // 이번 프레임의 착지 굽힘(0~1)
@@ -172,30 +170,32 @@ namespace CoopDemo
             handItemSocket.rotation = handItemUpright ? Quaternion.Euler(0f, transform.eulerAngles.y, 0f) : leftHand.rotation;
         }
 
-        // 촛불 잡느라 바쁜 오른손 대신 쓰는 감정표현 손(EmoteHand)을 상대 화면에서 얼굴 앞에 붙인다.
+        // 촛불 잡느라 바쁜 오른손 대신 쓰는 감정표현 손(EmoteHand)을 상대 화면에서 왼손 위에 붙인다.
         // AttachHandCandle과 같은 패턴 - 같은 오브젝트를 그대로 옮겨 붙이므로 모양이 바뀔 때마다 다시 할 필요가 없다.
-        public void AttachFaceItem(Transform item)
+        // 소켓은 "플레이어가 바라보는 방향"(카메라와 같은 Y 방향)으로 세우고, 손의 로컬 회전(1인칭 카메라 기준 Y180)은
+        // 그대로 둔다 → 월드에서 1인칭과 똑같은 방향을 향하므로, 마주 선 상대는 내가 보는 면의 정반대 면을 본다
+        // (브이는 손등, 인사는 손바닥이 상대에게 보임).
+        public void AttachEmoteHand(Transform item)
         {
-            if (item == null || head == null) return;
-            if (faceItemSocket == null)
+            if (item == null || leftHand == null) return;
+            if (emoteHandSocket == null)
             {
-                var go = new GameObject("FaceItemSocket");
-                faceItemSocket = go.transform;
-                faceItemSocket.SetParent(transform, false);
+                var go = new GameObject("EmoteHandSocket");
+                emoteHandSocket = go.transform;
+                emoteHandSocket.SetParent(transform, false);
             }
             float s = Mathf.Max(0.0001f, transform.lossyScale.x);
-            faceItemSocket.localScale = Vector3.one / s;
-            item.SetParent(faceItemSocket, false);
+            emoteHandSocket.localScale = Vector3.one / s;   // 1인칭 때와 같은 크기로 보이게
+            item.SetParent(emoteHandSocket, false);         // 로컬 회전·크기는 1인칭 값 그대로 유지
             item.localPosition = Vector3.zero;
-            item.localRotation = Quaternion.identity;
-            UpdateFaceItem();
+            UpdateEmoteHand();
         }
 
-        void UpdateFaceItem()
+        void UpdateEmoteHand()
         {
-            if (faceItemSocket == null || head == null) return;
-            faceItemSocket.position = head.position + transform.TransformVector(faceItemOffset);
-            faceItemSocket.rotation = faceItemUpright ? Quaternion.Euler(0f, transform.eulerAngles.y, 0f) : head.rotation;
+            if (emoteHandSocket == null || leftHand == null) return;
+            emoteHandSocket.position = leftHand.position + transform.TransformVector(emoteHandOffset);
+            emoteHandSocket.rotation = Quaternion.Euler(0f, transform.eulerAngles.y, 0f);
         }
 
         // ---- 바깥에서 부르는 것 ----
@@ -312,7 +312,7 @@ namespace CoopDemo
             GroundFeet();
             UpdateHandCandle();   // 뼈를 다 돌린 뒤에 손 위치를 읽는다
             UpdateHandItem();
-            UpdateFaceItem();
+            UpdateEmoteHand();
             UpdateMouth(dt);
         }
 
