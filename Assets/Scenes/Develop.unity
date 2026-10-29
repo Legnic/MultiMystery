@@ -367224,22 +367224,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d194f203eaa85fe42a99e131258ecf41, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PotionCraft.MixerPowderFill
-  floorCenter: {x: 0.003, y: 0.172, z: -0.003}
-  floorRadius: 0.17
+  floorCenter: {x: 0.003, y: 0.152, z: -0.003}
+  floorRadius: 0.105
   pileRadius:
-  - 0.17
-  - 0.14
-  - 0.11
+  - 0.105
+  - 0.085
+  - 0.065
   pileHeight:
-  - 0.04
-  - 0.032
-  - 0.034
+  - 0.026
+  - 0.021
+  - 0.022
   pileOffset:
   - {x: 0, y: 0}
-  - {x: 0.012, y: -0.008}
-  - {x: -0.01, y: 0.01}
-  baseThickness: 0.014
-  lumpiness: 0.005
+  - {x: 0.007, y: -0.005}
+  - {x: -0.006, y: 0.006}
+  baseThickness: 0.009
+  lumpiness: 0.003
   powderMaterial: {fileID: 2100000, guid: fadd562ab77f85b4993cd77151c63757, type: 2}
   pourSeconds: 1
   collapseSeconds: 0.35
