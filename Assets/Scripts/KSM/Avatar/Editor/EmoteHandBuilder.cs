@@ -16,20 +16,21 @@ namespace CoopDemo.EditorTools
         const string HandMaterial = HandDir + "Hand_White_Mat.mat";
         const string OldClipDir = "Assets/Animations/KSM/EmoteHand";
         const string PlayerPrefab = "Assets/Objects/LGH/NetworkPlayer_LGH.prefab";
+        const string IconDir = "Assets/Images/KSM/Emote/";   // 도넛 메뉴 아이콘 (Gesture.icon + ".png")
 
         struct Gesture
         {
-            public string name; public float turnY; public float scale; public bool mirror;
-            public Gesture(string name, float turnY, float scale, bool mirror) { this.name = name; this.turnY = turnY; this.scale = scale; this.mirror = mirror; }
+            public string name; public float turnY; public float scale; public bool mirror; public string icon;
+            public Gesture(string name, float turnY, float scale, bool mirror, string icon) { this.name = name; this.turnY = turnY; this.scale = scale; this.mirror = mirror; this.icon = icon; }
         }
 
         static readonly Gesture[] Gestures =
         {
-            new Gesture("Hand_Wave",         0f,   1.0f, false),   // 인사
-            new Gesture("Hand_VSign",        0f,   1.0f, false),   // 브이
-            new Gesture("Hand_MiddleFinger", 0f,   1.0f, false),   // 중지
-            new Gesture("Hand_Point",        135f, 0.8f, false),   // 가리키기
-            new Gesture("Hand_ThumbsUp",     185f, 0.8f, true),    // 엄지척
+            new Gesture("Hand_Wave",         0f,   1.0f, false, "Greeting"),   // 인사
+            new Gesture("Hand_VSign",        0f,   1.0f, false, "V"),          // 브이
+            new Gesture("Hand_MiddleFinger", 0f,   1.0f, false, "FuckYou"),    // 중지
+            new Gesture("Hand_Point",        135f, 0.8f, false, "There"),      // 가리키기
+            new Gesture("Hand_ThumbsUp",     185f, 0.8f, true,  "ThumbsUp"),   // 엄지척
         };
 
         // LHJ 씬의 손 자리(slot)도 Y 180도로 돌아 있다 - 위 turnY 값들이 이 회전을 전제로 맞춰져 있다.
@@ -90,6 +91,13 @@ namespace CoopDemo.EditorTools
                 // 마우스 가운데 버튼 도넛 메뉴 - 루트에 붙이고 NetworkPlayer.ownerOnly에 등록해 상대 화면에서는 꺼져 있게 한다.
                 var wheel = root.GetComponent<EmoteWheelUI>();
                 if (wheel == null) wheel = root.AddComponent<EmoteWheelUI>();
+                var icons = new Texture2D[Gestures.Length];
+                for (int i = 0; i < Gestures.Length; i++)
+                {
+                    icons[i] = AssetDatabase.LoadAssetAtPath<Texture2D>(IconDir + Gestures[i].icon + ".png");
+                    if (icons[i] == null) Debug.LogWarning("[EmoteHand] 도넛 메뉴 아이콘을 못 찾았어요: " + Gestures[i].icon);
+                }
+                wheel.icons = icons;
                 var netPlayer = root.GetComponent<LGH.NetworkPlayer>();
                 if (netPlayer != null)
                 {

@@ -2724,7 +2724,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 83d448a822bdf5f4b986d0b55ee853fd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CoopDemo.EmoteWheelUI
+  icons:
+  - {fileID: 2800000, guid: 3a7f01ca4b6646b438d951f17332d241, type: 3}
+  - {fileID: 2800000, guid: 2272bb5d3e844ed4085a89a500b5f4ec, type: 3}
+  - {fileID: 2800000, guid: d05a213342d1c9a41b31d87409410e6b, type: 3}
+  - {fileID: 2800000, guid: 0b29e3e5efb4bad4daadfafcebcf9211, type: 3}
+  - {fileID: 2800000, guid: 22fa642cf1a019c4f9cbd52821813ac9, type: 3}
   radius: 110
+  iconSize: 64
   deadZone: 30
 --- !u!1 &8166699084792856829
 GameObject:

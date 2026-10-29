@@ -12,7 +12,10 @@ namespace CoopDemo
     {
         // 2026-10-29: LHJ님이 Blender로 만든 손 5종을 연결. 순서는 EmoteHandView.hands(EmoteHandBuilder.Gestures)와 같아야 한다.
         static readonly string[] Labels = { "인사", "브이", "중지", "가리키기", "엄지척" };
+        [Tooltip("Labels와 같은 순서의 아이콘 (Assets/Images/KSM/Emote). EmoteHandBuilder가 연결한다. 비어 있으면 점으로 그린다")]
+        public Texture2D[] icons;
         public float radius = 110f;
+        public float iconSize = 64f;   // 고른 칸은 1.3배
         public float deadZone = 30f;   // 이 반경 안에서 떼면 선택 취소
 
         LGH.FirstPersonController move;
@@ -21,7 +24,7 @@ namespace CoopDemo
         Vector2 cursor;   // 화면 가운데(0,0) 기준 가상 커서 - OS 커서는 계속 잠긴 채다
 
         GUIStyle labelStyle, highlightStyle;
-        Texture2D ringTex, dotTex, dotHighlightTex;
+        Texture2D ringTex, dotTex, dotHighlightTex, iconBackTex;
 
         void Awake()
         {
@@ -89,12 +92,28 @@ namespace CoopDemo
                 Vector2 pos = center + dir * radius;
                 bool hi = i == hovered;
 
-                float dotSize = hi ? 46f : 34f;
-                var dotTexture = hi ? dotHighlightTex : dotTex;
-                GUI.DrawTexture(new Rect(pos.x - dotSize * 0.5f, pos.y - dotSize * 0.5f, dotSize, dotSize), dotTexture);
+                var icon = icons != null && i < icons.Length ? icons[i] : null;
+                float half;
+                if (icon != null)
+                {
+                    // 어두운 원 배경 위에 아이콘. 고른 칸은 노란 테두리 + 1.3배
+                    float iconPx = hi ? iconSize * 1.3f : iconSize;
+                    float back = iconPx * 1.25f;
+                    if (hi) GUI.DrawTexture(new Rect(pos.x - back * 0.5f - 4f, pos.y - back * 0.5f - 4f, back + 8f, back + 8f), dotHighlightTex);
+                    GUI.DrawTexture(new Rect(pos.x - back * 0.5f, pos.y - back * 0.5f, back, back), iconBackTex);
+                    GUI.DrawTexture(new Rect(pos.x - iconPx * 0.5f, pos.y - iconPx * 0.5f, iconPx, iconPx), icon, ScaleMode.ScaleToFit, true);
+                    half = back * 0.5f + 4f;
+                }
+                else
+                {
+                    float dotSize = hi ? 46f : 34f;
+                    var dotTexture = hi ? dotHighlightTex : dotTex;
+                    GUI.DrawTexture(new Rect(pos.x - dotSize * 0.5f, pos.y - dotSize * 0.5f, dotSize, dotSize), dotTexture);
+                    half = dotSize * 0.5f;
+                }
 
                 var style = hi ? highlightStyle : labelStyle;
-                var labelPos = pos + dir * 32f;
+                var labelPos = pos + dir * (half + 16f);
                 var size = style.CalcSize(new GUIContent(Labels[i]));
                 GUI.Label(new Rect(labelPos.x - size.x * 0.5f, labelPos.y - size.y * 0.5f, size.x, size.y), Labels[i], style);
             }
@@ -111,6 +130,7 @@ namespace CoopDemo
             ringTex = MakeRing(256, 0.62f, 0.78f, new Color(0f, 0f, 0f, 0.55f));
             dotTex = MakeDot(64, new Color(1f, 1f, 1f, 0.5f));
             dotHighlightTex = MakeDot(64, new Color(1f, 0.85f, 0.4f, 0.95f));
+            iconBackTex = MakeDot(128, new Color(0.08f, 0.08f, 0.1f, 0.78f));
         }
 
         // 가운데가 뚫린 도넛 모양 알파 텍스처 (innerFrac~outerFrac 사이만 칠한다, 0~1 = 텍스처 반지름 비율)
@@ -159,6 +179,7 @@ namespace CoopDemo
             if (ringTex != null) Destroy(ringTex);
             if (dotTex != null) Destroy(dotTex);
             if (dotHighlightTex != null) Destroy(dotHighlightTex);
+            if (iconBackTex != null) Destroy(iconBackTex);
         }
     }
 }
