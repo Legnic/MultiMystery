@@ -58,12 +58,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\Scripts\KSM\Avatar\Editor\AvatarBuilder.cs" />
+    <Compile Include="Assets\Scripts\KSM\Audio\Editor\LcwSoundBankBuilder.cs" />
+    <Compile Include="Assets\Scripts\KJH\AtticTreasure\Editor\AtticTreasureCutsceneBuilder.cs" />
     <Compile Include="Assets\Scripts\LHJ\Editor\MouthShapeMaker.cs" />
     <Compile Include="Assets\Scripts\KJH\Common\Editor\NetworkSceneObjectValidator.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim007\Editor\Gim007Builder.cs" />
     <Compile Include="Assets\Scripts\KSM\Avatar\Editor\EmoteHandBuilder.cs" />
     <Compile Include="Assets\Scripts\KJH\Dumbwaiter\Editor\DumbwaiterBuilder.cs" />
-    <Compile Include="Assets\Scripts\KJH\Gim007\Tests\Editor\Gim007LogicTests.cs" />
+    <Compile Include="Assets\Scripts\KSM\Audio\Editor\LcwSoundSceneAssigner.cs" />
     <Compile Include="Assets\Scripts\KJH\Clue\Editor\ClueSetupMenu.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim005\Editor\Gim005Builder.cs" />
     <Compile Include="Assets\Scripts\KJH\GimmickDoors\Editor\GimmickDoorsBuilder.cs" />
@@ -72,10 +74,12 @@
     <Compile Include="Assets\Scripts\KJH\Gim004\Editor\Gim004Art.cs" />
     <Compile Include="Assets\Scripts\KJH\GameTime\Editor\GameClockEditor.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim004\Editor\Gim004Builder.cs" />
+    <Compile Include="Assets\Scripts\KJH\FloorMap\Editor\FloorMapBuilder.cs" />
     <Compile Include="Assets\Scripts\KJH\PotionCraft\Editor\PotionCraftBuilder.cs" />
     <Compile Include="Assets\Scripts\KJH\ObjectEcho\Editor\ObjectEchoSetupMenu.cs" />
     <Compile Include="Assets\Scripts\KJH\AtticTreasure\Editor\AtticTreasureBuilder.cs" />
     <Compile Include="Assets\Scripts\KJH\Common\Editor\GameUIGroups.cs" />
+    <Compile Include="Assets\Scripts\KJH\AtticTreasure\Editor\StarBoxInteriorBuilder.cs" />
     <Compile Include="Assets\TutorialInfo\Editor\ReadmeEditor.cs" />
   </ItemGroup>
   <ItemGroup>

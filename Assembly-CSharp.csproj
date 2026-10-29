@@ -78,6 +78,7 @@
     <Compile Include="Assets\Scripts\KJH\PotionCraft\PotionTypes.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim004\Runtime\Gim004Controller.cs" />
     <Compile Include="Assets\Scripts\KJH\GimmickDoors\GimmickDoorLink.cs" />
+    <Compile Include="Assets\Scripts\LGH\MultiplayerMenu.PauseMenu.cs" />
     <Compile Include="Assets\Scripts\KJH\Puzzle\PortraitPuzzleScene.cs" />
     <Compile Include="Assets\Scripts\KJH\Dumbwaiter\DumbwaiterWindow.cs" />
     <Compile Include="Assets\Scripts\KJH\Dumbwaiter\DumbwaiterNetworkSync.cs" />
@@ -100,6 +101,7 @@
     <Compile Include="Assets\Scripts\LGH\PlayerInteractor.cs" />
     <Compile Include="Assets\Scripts\KJH\KeySafe\LockedSafe.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim002\Runtime\Gim002Curtain.cs" />
+    <Compile Include="Assets\Scripts\KSM\Options\OptionsMenuController.Designed.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim007\Runtime\Gim007WeightPlate.cs" />
     <Compile Include="Assets\Scripts\KJH\AtticTreasure\AtticTreasureStatue.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim005\Runtime\Gim005Config.cs" />
@@ -109,6 +111,7 @@
     <Compile Include="Assets\Scripts\KJH\Photo\PlayerMovement.cs" />
     <Compile Include="Assets\Scripts\KJH\Common\IRequiresAbility.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim005\Runtime\Gim005Controller.cs" />
+    <Compile Include="Assets\Scripts\KJH\AtticTreasure\AtticTreasureFrontDoorKeyUse.cs" />
     <Compile Include="Assets\Scripts\KSM\Avatar\EmoteWheelUI.cs" />
     <Compile Include="Assets\Scripts\KJH\KeySafe\KeyPickup.cs" />
     <Compile Include="Assets\Scripts\KJH\KeySafe\SimpleDoorOpenSequence.cs" />
@@ -118,6 +121,7 @@
     <Compile Include="Assets\Scripts\KJH\KeySafe\InteractionMessageUI.cs" />
     <Compile Include="Assets\Scripts\KJH\PotionCraft\PotionRecipeTable.cs" />
     <Compile Include="Assets\Scripts\LGH\MultiplayerMenu.cs" />
+    <Compile Include="Assets\Scripts\KSM\UI\GameFont.cs" />
     <Compile Include="Assets\Scripts\KJH\Common\Hold\IHoldableSocket.cs" />
     <Compile Include="Assets\Scripts\LHJ\CharacterKeyMove.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim007\Runtime\Gim007Config.cs" />
@@ -128,6 +132,7 @@
     <Compile Include="Assets\Scripts\KJH\Clue\IModalInteraction.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim005\Runtime\Gim005Panel.cs" />
     <Compile Include="Assets\Scripts\KJH\PotionCraft\TrashStation.cs" />
+    <Compile Include="Assets\Scripts\LHJ\HandEmote.cs" />
     <Compile Include="Assets\Scripts\KSM\UI\TitleMenuUI.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim002\Runtime\Gim002Controller.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim005\Runtime\Gim005SymbolDisplay.cs" />
@@ -135,8 +140,12 @@
     <Compile Include="Assets\Scripts\LGH\PaperNote.cs" />
     <Compile Include="Assets\Scripts\KWJ\UI\MainMenuButtonHover.cs" />
     <Compile Include="Assets\Scripts\KJH\ObjectEcho\IHandReach.cs" />
+    <Compile Include="Assets\Scripts\KSM\Audio\LcwSfx.cs" />
     <Compile Include="Assets\Scripts\KJH\PotionCraft\PotionCatalog.cs" />
+    <Compile Include="Assets\Scripts\KSM\Audio\LcwSoundBank.cs" />
+    <Compile Include="Assets\Scripts\KJH\Common\Hold\HeldItemHud.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim004\Runtime\Gim004ShelfSlot.cs" />
+    <Compile Include="Assets\Scripts\KJH\Dev\DevGimmickPanel.cs" />
     <Compile Include="Assets\Scripts\KSM\UI\MultiplayerBackButton.cs" />
     <Compile Include="Assets\Scripts\KJH\Photo\InteractionPromptUI.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim004\Runtime\LocalGim004Net.cs" />
@@ -146,11 +155,14 @@
     <Compile Include="Assets\Scripts\LGH\CandleSconce.cs" />
     <Compile Include="Assets\Scripts\KJH\Photo\IPhotoSubject.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim002\Runtime\Gim002StageItem.cs" />
+    <Compile Include="Assets\Scripts\LGH\MultiplayerMenu.WaitingRoom.cs" />
+    <Compile Include="Assets\Scripts\KJH\AtticTreasure\AtticTreasureGlowCutscene.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim002\Runtime\Gim002StageLight.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim004\Runtime\Gim004Pot.cs" />
     <Compile Include="Assets\Scripts\KSM\Player\ToyActionAnimator.cs" />
     <Compile Include="Assets\Scripts\KSM\Options\OptionsMenuController.cs" />
     <Compile Include="Assets\Scripts\KJH\KeySafe\SafeClue.cs" />
+    <Compile Include="Assets\Scripts\KSM\Audio\LcwSoundDirector.Gimmicks.cs" />
     <Compile Include="Assets\Scripts\KJH\Photo\FlashEffect.cs" />
     <Compile Include="Assets\Scripts\LGH\Ladder.cs" />
     <Compile Include="Assets\Scripts\KSM\Voice\VoiceChatHud.cs" />
@@ -184,6 +196,7 @@
     <Compile Include="Assets\Scripts\KJH\Gim007\Runtime\Gim007NetSync.cs" />
     <Compile Include="Assets\Scripts\KJH\Clue\ViewableClue.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim007\Runtime\Gim007Sounds.cs" />
+    <Compile Include="Assets\Scripts\KJH\FloorMap\FloorMapBoard.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim002\Runtime\Gim002Scoreboard.cs" />
     <Compile Include="Assets\Scripts\KSM\GameFlow\ResultCanvasController.cs" />
     <Compile Include="Assets\Scripts\KJH\PotionCraft\RecipeBookData.cs" />
@@ -218,11 +231,13 @@
     <Compile Include="Assets\Scripts\KJH\AtticTreasure\AtticTreasureFrontDoor.cs" />
     <Compile Include="Assets\Scripts\KJH\Common\PlayerAbilities.cs" />
     <Compile Include="Assets\Scripts\KJH\Photo\PhotoItemData.cs" />
+    <Compile Include="Assets\Scripts\KJH\PotionCraft\MixerPowderFill.cs" />
     <Compile Include="Assets\Scripts\KJH\AtticTreasure\AtticTreasureHiddenAtStart.cs" />
     <Compile Include="Assets\Scripts\KSM\Voice\VoiceChatManager.cs" />
     <Compile Include="Assets\Scripts\KWJ\UI\MainMenuController.cs" />
     <Compile Include="Assets\Scripts\KJH\Clue\InspectableClue.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim004\Runtime\IGim004Net.cs" />
+    <Compile Include="Assets\Scripts\KJH\Common\OpenBookArt.cs" />
     <Compile Include="Assets\Scripts\KJH\Photo\PhotoInventory.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim005\Runtime\Gim005SymbolData.cs" />
     <Compile Include="Assets\Scripts\KSM\Avatar\EmoteHandView.cs" />
@@ -232,11 +247,14 @@
     <Compile Include="Assets\Scripts\KJH\SoundCue\SoundCue.cs" />
     <Compile Include="Assets\Scripts\KJH\Common\Hold\PlayerHand.cs" />
     <Compile Include="Assets\Scripts\KJH\ObjectEcho\ObjectEchoController.cs" />
+    <Compile Include="Assets\Scripts\KJH\Options\SystemAudioDevices.cs" />
+    <Compile Include="Assets\Scripts\KJH\Options\OptionsDesignTheme.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim007\Runtime\Gim007Controller.cs" />
     <Compile Include="Assets\Scripts\KJH\Clue\ClueViewerUI.cs" />
     <Compile Include="Assets\Scripts\KSM\GameFlow\DebugEscapeTrigger.cs" />
     <Compile Include="Assets\Scripts\KJH\SoundCue\InkWaveformGraphic.cs" />
     <Compile Include="Assets\Scripts\LGH\WorldItem.cs" />
+    <Compile Include="Assets\Scripts\LHJ\PovViewSwitch.cs" />
     <Compile Include="Assets\Scripts\KJH\Dumbwaiter\DumbwaiterButton.cs" />
     <Compile Include="Assets\Scripts\KSM\GameFlow\GameFlowUI.cs" />
     <Compile Include="Assets\Scripts\KJH\AtticTreasure\AtticTreasureSync.cs" />
@@ -251,8 +269,8 @@
     <Compile Include="Assets\Scripts\LGH\CandleNetworkSync.cs" />
     <Compile Include="Assets\Scripts\LGH\NetworkPlayer.cs" />
     <Compile Include="Assets\Scripts\KJH\KeySafe\KeyData.cs" />
+    <Compile Include="Assets\Scripts\KSM\Audio\LcwSoundDirector.cs" />
     <Compile Include="Assets\Scripts\KJH\Dumbwaiter\Dumbwaiter.cs" />
-    <Compile Include="Assets\Scripts\KJH\Gim007\Core\Gim007Types.cs" />
     <Compile Include="Assets\Scripts\KJH\Map\PlayerSpawnPoint.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim002\Runtime\Gim002StageSlot.cs" />
     <Compile Include="Assets\Scripts\LGH\DayNightCycle.cs" />
