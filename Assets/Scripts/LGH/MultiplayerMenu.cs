@@ -306,6 +306,21 @@ namespace LGH
             imeCompFrame = Time.frameCount;
         }
 
+        // 개발자 모드(DevMode)가 입력칸에 친 비밀 커맨드 글자를 지운다. 칸에 포커스가 있을 때만, 끝이 그 글자일 때만 지우고 포커스를 푼다.
+        // (한글 입력 상태에서는 글자가 한글로 들어가 일치하지 않으므로 지워지지 않는다 → 입력칸 밖에서 치는 것을 권장)
+        public void ClearTypedCommand(string word)
+        {
+            if (imeFocus == 0 || string.IsNullOrEmpty(word)) return;
+            string cur = imeFocus == 1 ? nickname : imeFocus == 2 ? roomName : joinCode;
+            if (cur != null && cur.EndsWith(word, StringComparison.OrdinalIgnoreCase))
+            {
+                cur = cur.Substring(0, cur.Length - word.Length);
+                if (imeFocus == 1) SetNickname(cur); else if (imeFocus == 2) roomName = cur; else joinCode = cur;
+            }
+            imeComposing = "";
+            imeFocus = 0;
+        }
+
         // dir 1: add c at the end, -1: delete the last letter
         // imeFocus 3 = 참가 코드 칸 (영문 대문자·숫자만, 최대 12자)
         void EditIme(int dir, char c)
