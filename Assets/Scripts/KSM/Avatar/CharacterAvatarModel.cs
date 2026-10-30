@@ -97,6 +97,7 @@ namespace CoopDemo
         Transform handCandleSocket;
         Transform handItemSocket;
         Transform emoteHandSocket;
+        EmoteHandView emoteView;
         bool wantCrouch;
         float crouchAmount;
         float landCrouchNow;   // 이번 프레임의 착지 굽힘(0~1)
@@ -189,6 +190,7 @@ namespace CoopDemo
             }
             item.SetParent(emoteHandSocket, false);         // 로컬 회전·크기는 1인칭 값 그대로 유지
             item.localPosition = Vector3.zero;
+            emoteView = item.GetComponent<EmoteHandView>();
             UpdateEmoteHand();
         }
 
@@ -201,7 +203,9 @@ namespace CoopDemo
             Vector3 basePos = transform.position;
             basePos.y = (head != null ? head : leftHand).position.y;
             emoteHandSocket.position = basePos + transform.TransformVector(emoteHandOffset);
-            emoteHandSocket.rotation = Quaternion.Euler(0f, transform.eulerAngles.y, 0f);
+            // 인사·브이는 상대에게 손바닥이 보이게 몸짓별로 Y를 더 돌린다(내 1인칭 방향은 그대로)
+            float extraYaw = emoteView != null ? emoteView.CurrentOtherViewYaw : 0f;
+            emoteHandSocket.rotation = Quaternion.Euler(0f, transform.eulerAngles.y + extraYaw, 0f);
         }
 
         // ---- 바깥에서 부르는 것 ----

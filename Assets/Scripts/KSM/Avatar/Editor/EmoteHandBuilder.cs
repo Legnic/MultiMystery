@@ -1,4 +1,5 @@
 using UnityEditor;
+using UnityEditor.Animations;
 using UnityEngine;
 
 namespace CoopDemo.EditorTools
@@ -21,20 +22,73 @@ namespace CoopDemo.EditorTools
         struct Gesture
         {
             public string name; public float turnY; public float scale; public bool mirror; public string icon;
-            public Gesture(string name, float turnY, float scale, bool mirror, string icon) { this.name = name; this.turnY = turnY; this.scale = scale; this.mirror = mirror; this.icon = icon; }
+            public float otherYaw;   // 상대 화면에서만 더 돌리는 Y 각도 (인사·브이=180: 마주 선 상대에게 손바닥이 보이게)
+            public Gesture(string name, float turnY, float scale, bool mirror, string icon, float otherYaw = 0f) { this.name = name; this.turnY = turnY; this.scale = scale; this.mirror = mirror; this.icon = icon; this.otherYaw = otherYaw; }
         }
 
         static readonly Gesture[] Gestures =
         {
-            new Gesture("Hand_Wave",         0f,   1.0f, false, "Greeting"),   // 인사
-            new Gesture("Hand_VSign",        0f,   1.0f, false, "V"),          // 브이
+            // 인사·브이: turnY 180 = 1인칭에서 손등이 보이고, 마주 선 상대에게는 손바닥이 보인다(2026-10-30).
+            new Gesture("Hand_Wave",         180f, 1.0f, false, "Greeting"),   // 인사
+            new Gesture("Hand_VSign",        180f, 1.0f, false, "V"),          // 브이
             new Gesture("Hand_MiddleFinger", 0f,   1.0f, false, "FuckYou"),    // 중지
-            new Gesture("Hand_Point",        135f, 0.8f, false, "There"),      // 가리키기
+            // 가리키기: LHJ 원본(135도)은 손끝이 정면에서 왼쪽으로 41도 틀어져 있다. 177도 = 정면 가운데를 가리킨다. (2026-10-30)
+            new Gesture("Hand_Point",        177f, 0.8f, false, "There"),      // 가리키기
             new Gesture("Hand_ThumbsUp",     185f, 0.8f, true,  "ThumbsUp"),   // 엄지척
         };
 
         // LHJ 씬의 손 자리(slot)도 Y 180도로 돌아 있다 - 위 turnY 값들이 이 회전을 전제로 맞춰져 있다.
         static readonly Quaternion HolderRotation = Quaternion.Euler(0f, 180f, 0f);
+
+        // ---- 가리키기: 가운데에서 위아래로 미세하게 까딱 ----
+        const string PointAnimDir = "Assets/Animations/KSM/EmoteHandPoint/";   // OldClipDir(EmoteHand)는 Build All이 지우므로 다른 폴더를 쓴다
+        const string PointBoneName = "Hand_Point_Armature/Hand";   // LHJ 원본 클립이 움직이던 뼈 경로와 같다
+        const float PointBobDegrees = 6f;                          // 위아래로 ±6도
+        const float PointBobSeconds = 1.2f;                        // 한 번 오르내리는 시간
+
+        // 재실행해도 같은 에셋을 덮어쓴다. 원본(LHJ) 클립의 기준 자세(Hand 뼈 localRotation = X축 90도)에서 로컬 X축으로만 돌린다.
+        static RuntimeAnimatorController EnsurePointBobController()
+        {
+            System.IO.Directory.CreateDirectory(PointAnimDir);
+            string clipPath = PointAnimDir + "Hand_Point_Bob.anim";
+            string ctrlPath = PointAnimDir + "Hand_Point_Bob.controller";
+
+            var clip = AssetDatabase.LoadAssetAtPath<AnimationClip>(clipPath);
+            if (clip == null) { clip = new AnimationClip(); AssetDatabase.CreateAsset(clip, clipPath); }
+            clip.ClearCurves();
+            clip.frameRate = 30f;
+            var baseRot = Quaternion.Euler(90f, 0f, 0f);
+            var cx = new AnimationCurve(); var cy = new AnimationCurve(); var cz = new AnimationCurve(); var cw = new AnimationCurve();
+            const int steps = 12;
+            for (int i = 0; i <= steps; i++)
+            {
+                float t = PointBobSeconds * i / steps;
+                float a = Mathf.Sin(2f * Mathf.PI * i / steps) * PointBobDegrees;
+                var q = baseRot * Quaternion.AngleAxis(a, Vector3.right);
+                cx.AddKey(t, q.x); cy.AddKey(t, q.y); cz.AddKey(t, q.z); cw.AddKey(t, q.w);
+            }
+            clip.SetCurve(PointBoneName, typeof(Transform), "localRotation.x", cx);
+            clip.SetCurve(PointBoneName, typeof(Transform), "localRotation.y", cy);
+            clip.SetCurve(PointBoneName, typeof(Transform), "localRotation.z", cz);
+            clip.SetCurve(PointBoneName, typeof(Transform), "localRotation.w", cw);
+            clip.EnsureQuaternionContinuity();
+            var settings = AnimationUtility.GetAnimationClipSettings(clip);
+            settings.loopTime = true;
+            AnimationUtility.SetAnimationClipSettings(clip, settings);
+            EditorUtility.SetDirty(clip);
+
+            var ctrl = AssetDatabase.LoadAssetAtPath<AnimatorController>(ctrlPath);
+            if (ctrl == null) ctrl = AnimatorController.CreateAnimatorControllerAtPath(ctrlPath);
+            var sm = ctrl.layers[0].stateMachine;
+            AnimatorState state = null;
+            foreach (var s in sm.states) if (s.state.name == "Bob") state = s.state;
+            if (state == null) state = sm.AddState("Bob");
+            state.motion = clip;
+            sm.defaultState = state;
+            EditorUtility.SetDirty(ctrl);
+            AssetDatabase.SaveAssets();
+            return ctrl;
+        }
 
         [MenuItem("Tools/KSM/EmoteHand/Build All")]
         public static void BuildAll()
@@ -61,7 +115,10 @@ namespace CoopDemo.EditorTools
                 {
                     var g = Gestures[i];
                     var fbx = AssetDatabase.LoadAssetAtPath<GameObject>(HandDir + g.name + "_Rigged.fbx");
-                    var ctrl = AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(HandDir + g.name + "_Anim.controller");
+                    // 가리키기는 LHJ 원본(좌우로 휘두름) 대신 가운데에서 위아래로 미세하게 까딱이는 우리 쪽 애니메이션을 쓴다.
+                    var ctrl = g.name == "Hand_Point"
+                        ? EnsurePointBobController()
+                        : AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(HandDir + g.name + "_Anim.controller");
                     if (fbx == null || ctrl == null) { Debug.LogError("[EmoteHand] 손 모델/컨트롤러를 못 찾았어요: " + g.name); continue; }
 
                     // 좌우 뒤집기는 손을 돌린 뒤 화면 기준으로 뒤집히도록 감싸는 오브젝트에서 한다(LHJ HandEmote와 같은 순서).
@@ -87,6 +144,8 @@ namespace CoopDemo.EditorTools
 
                 var view = holder.gameObject.AddComponent<EmoteHandView>();
                 view.hands = hands;
+                view.otherViewYaw = new float[Gestures.Length];
+                for (int i = 0; i < Gestures.Length; i++) view.otherViewYaw[i] = Gestures[i].otherYaw;
 
                 // 마우스 가운데 버튼 도넛 메뉴 - 루트에 붙이고 NetworkPlayer.ownerOnly에 등록해 상대 화면에서는 꺼져 있게 한다.
                 var wheel = root.GetComponent<EmoteWheelUI>();

@@ -14,8 +14,17 @@ namespace CoopDemo
     {
         public GameObject[] hands;      // 0=인사 1=브이 2=중지 3=가리키기 4=엄지척 (EmoteWheelUI.Labels와 같은 순서)
         public float holdSeconds = 3.0f;
+        [Tooltip("상대 화면에서만 손을 Y로 더 돌리는 각도(몸짓별). 1인칭(내 화면) 방향은 그대로 두고, 마주 선 상대에게 보이는 면만 바꾼다. 인사·브이=180 → 상대에게 손바닥이 보인다.")]
+        public float[] otherViewYaw;
 
         float hideAt;
+        int current = -1;
+
+        // 지금 보이는 손에 맞는 "상대 화면 전용" 추가 회전 (CharacterAvatarModel이 매 프레임 읽는다)
+        public float CurrentOtherViewYaw
+        {
+            get { return otherViewYaw != null && current >= 0 && current < otherViewYaw.Length ? otherViewYaw[current] : 0f; }
+        }
 
         void Awake()
         {
@@ -26,6 +35,7 @@ namespace CoopDemo
         {
             if (hands == null || gesture < 0 || gesture >= hands.Length || hands[gesture] == null) return;
             gameObject.SetActive(true);
+            current = gesture;
             for (int i = 0; i < hands.Length; i++)
                 if (hands[i] != null) hands[i].SetActive(false);
             hands[gesture].SetActive(true);   // 꺼졌다 켜지면 Animator가 처음부터 다시 재생한다(연타해도 처음부터)

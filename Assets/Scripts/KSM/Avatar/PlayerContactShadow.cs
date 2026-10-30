@@ -5,8 +5,12 @@ using UnityEngine.SceneManagement;
 
 namespace CoopDemo
 {
-    // 모델의 스킨/그림자 맵 대신 바닥에만 투영하는 로컬 접지 그림자.
+    // 모델의 스킨/그림자 맵 대신 바닥에만 그리는 로컬 타원형 접지 그림자.
     // 각 클라이언트가 동기화된 플레이어 위치로 그리므로 추가 RPC/NetworkObject가 필요 없다.
+    //
+    // 2026-10-30: 바닥에 메시를 덮어씌우던 방식(계단에서 삼각형이 단차마다 끊겨 평행사변형 조각으로 갈라졌다)을 버리고,
+    // 발 주변을 감싸는 상자 하나를 그려 깊이 버퍼에서 바닥 위치를 복원하는 투영(데칼) 셰이더(PlayerContactShadowDecal)로 바꿨다.
+    // 바닥 모양에 상관없이 타원이 그대로 얹히고, 계단에서는 서 있는 단이 가장 진하고 아랫단으로 갈수록 옅어진다.
     [DisallowMultipleComponent, RequireComponent(typeof(NetworkPlayer))]
     public class PlayerContactShadow : MonoBehaviour
     {
@@ -14,27 +18,29 @@ namespace CoopDemo
         [SerializeField] Vector2 radius = new Vector2(0.85f, 0.7f);
         [SerializeField, Range(0f, 1f)] float opacity = 0.9f;
         [SerializeField, Min(0.1f)] float maxHeight = 1.6f;
-        [SerializeField, Min(0.001f)] float surfaceOffset = 0.02f;
         [SerializeField] LayerMask groundLayers = ~0;
+        [Tooltip("서 있는 바닥보다 이만큼 위까지는 그림자가 그대로 보인다(그 위는 사라짐). 캐릭터 신발이 칠해지지 않을 만큼 작게.")]
+        [SerializeField, Min(0f)] float upAllowance = 0.03f;
+        [SerializeField, Min(0.01f)] float upFade = 0.12f;
+        [Tooltip("서 있는 바닥보다 아래(아랫단)로 이만큼까지 옅어지며 이어진다.")]
+        [SerializeField, Min(0.05f)] float downFade = 0.5f;
         [Tooltip("진단용: 그림자를 밝은 자홍색으로 표시해 어두운 바닥에서의 대비 문제를 구분한다.")]
         [SerializeField] bool debugFootprint;
 
-        const int Grid = 9;
         static readonly int ColorId = Shader.PropertyToID("_Color");
+        static readonly int CenterId = Shader.PropertyToID("_Center");
+        static readonly int AxesId = Shader.PropertyToID("_Axes");
+        static readonly int FadeId = Shader.PropertyToID("_Fade");
+        static Mesh cubeMesh;
+
         readonly RaycastHit[] hits = new RaycastHit[32];
-        readonly Vector3[] vertices = new Vector3[Grid * Grid];
-        readonly Vector3[] normals = new Vector3[Grid * Grid];
-        readonly bool[] valid = new bool[Grid * Grid];
-        readonly int[] indices = new int[(Grid - 1) * (Grid - 1) * 6];
         NetworkPlayer player;
         CharacterController controller;
         GameObject shadowObject;
         MeshRenderer shadowRenderer;
-        Mesh mesh;
         MaterialPropertyBlock properties;
         string projectionStatus = "Not initialized";
         float lastHeight, lastAlpha;
-        int lastIndexCount;
 
         void Awake()
         {
@@ -47,19 +53,17 @@ namespace CoopDemo
                 enabled = false;
                 return;
             }
-            // 별도 루트로 두어 아바타 숨김/100배 FBX 스케일의 영향을 받지 않는다.
+            if (cubeMesh == null)
+            {
+                var tmp = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                cubeMesh = tmp.GetComponent<MeshFilter>().sharedMesh;
+                Destroy(tmp);
+            }
+            // 별도 루트로 두어 아바타 숨김/FBX 스케일의 영향을 받지 않는다.
             shadowObject = new GameObject("PlayerContactShadow", typeof(MeshFilter), typeof(MeshRenderer));
             shadowObject.layer = gameObject.layer;
             SceneManager.MoveGameObjectToScene(shadowObject, gameObject.scene);
-            mesh = new Mesh { name = "Player contact shadow projection" };
-            mesh.MarkDynamic();
-            mesh.vertices = vertices;
-            var uv = new Vector2[vertices.Length];
-            for (int z = 0; z < Grid; z++)
-                for (int x = 0; x < Grid; x++)
-                    uv[z * Grid + x] = new Vector2(x / (Grid - 1f), z / (Grid - 1f));
-            mesh.uv = uv;
-            shadowObject.GetComponent<MeshFilter>().sharedMesh = mesh;
+            shadowObject.GetComponent<MeshFilter>().sharedMesh = cubeMesh;
             shadowRenderer = shadowObject.GetComponent<MeshRenderer>();
             shadowRenderer.sharedMaterial = shadowMaterial;
             shadowRenderer.shadowCastingMode = ShadowCastingMode.Off;
@@ -89,8 +93,7 @@ namespace CoopDemo
                 ground = hit;
                 found = true;
             }
-            // 벽/급경사를 건너뛰어 그 뒤의 바닥에 투영하지 않는다.
-            return found && ground.normal.y >= 0.65f;
+            return found;
         }
 
         void LateUpdate()
@@ -99,59 +102,39 @@ namespace CoopDemo
             shadowRenderer.enabled = false;
             projectionStatus = "Waiting for network spawn";
             lastAlpha = 0f;
-            lastIndexCount = 0;
             if (!player.IsSpawned) return;
             Vector3 feet = controller != null
                 ? transform.TransformPoint(controller.center - Vector3.up * controller.height * 0.5f)
                 : transform.position;
-            Vector3 origin = feet + Vector3.up * 0.4f;
             projectionStatus = "No ground surface";
-            if (!GroundAt(origin, out var ground)) return;
+            if (!GroundAt(feet + Vector3.up * 0.4f, out var ground)) return;
             float height = Mathf.Max(0f, feet.y - ground.point.y);
             lastHeight = height;
             float fade = 1f - Mathf.InverseLerp(0.05f, maxHeight, height);
             projectionStatus = "Above shadow height limit";
             if (fade <= 0.01f) return;
-            // 렌더러는 실제 그림자 위치에 두고 메시 좌표는 작은 로컬 값으로 유지한다.
-            // 원점에 둔 렌더러/납작한 월드 좌표 메시가 가림 판정에 의존하지 않게 한다.
-            shadowObject.transform.SetPositionAndRotation(ground.point, Quaternion.identity);
-            Vector3 shadowOrigin = ground.point;
-            float spread = Mathf.Lerp(1f, 1.35f, 1f - fade);
-            Vector3 right = transform.right;
-            Vector3 forward = transform.forward;
-            for (int z = 0; z < Grid; z++)
-            for (int x = 0; x < Grid; x++)
-            {
-                int i = z * Grid + x;
-                Vector3 offset = right * ((x / (Grid - 1f) * 2f - 1f) * radius.x * spread)
-                    + forward * ((z / (Grid - 1f) * 2f - 1f) * radius.y * spread);
-                valid[i] = GroundAt(origin + offset, out var hit);
-                vertices[i] = valid[i] ? hit.point + hit.normal * surfaceOffset - shadowOrigin : Vector3.zero;
-                normals[i] = valid[i] ? hit.normal : ground.normal;
-            }
-            int length = 0;
-            for (int z = 0; z < Grid - 1; z++)
-            for (int x = 0; x < Grid - 1; x++)
-            {
-                int a = z * Grid + x, b = a + 1, c = a + Grid, d = c + 1;
-                AddTriangle(a, c, b, ref length);
-                AddTriangle(b, c, d, ref length);
-            }
-            projectionStatus = "No connected ground triangles";
-            if (length == 0) return;
-            mesh.vertices = vertices;
-            mesh.SetTriangles(indices, 0, length, 0, false);
-            mesh.RecalculateBounds();
-            var bounds = mesh.bounds;
-            bounds.Expand(0.05f); // 완전히 납작한 bounds의 경계 가림을 방지한다.
-            mesh.bounds = bounds;
-            lastAlpha = debugFootprint ? 0.9f : opacity * fade;
-            properties.SetColor(ColorId, debugFootprint
-                ? new Color(1f, 0f, 1f, lastAlpha)
-                : new Color(0f, 0f, 0f, lastAlpha));
+
+            float spread = Mathf.Lerp(1f, 1.35f, 1f - fade);   // 높이 뜰수록 넓고 옅게
+            float yaw = transform.eulerAngles.y;
+            Vector3 right = Quaternion.Euler(0f, yaw, 0f) * Vector3.right;
+            float rx = radius.x * spread, rz = radius.y * spread;
+
+            // 상자: 가로세로는 타원이 들어갈 만큼, 높이는 서 있는 바닥 위 upAllowance+upFade ~ 아래 downFade
+            float top = upAllowance + upFade, bottom = downFade;
+            float boxHeight = top + bottom;
+            // 회전한 타원이 상자 밖으로 잘리지 않게 대각선 길이만큼 여유를 둔다
+            float half = Mathf.Max(rx, rz) * 1.05f;
+            var t = shadowObject.transform;
+            t.SetPositionAndRotation(new Vector3(feet.x, ground.point.y + (top - bottom) * 0.5f, feet.z), Quaternion.identity);
+            t.localScale = new Vector3(half * 2f, boxHeight, half * 2f);
+
+            lastAlpha = (debugFootprint ? 0.9f : opacity) * fade;
+            properties.SetColor(ColorId, debugFootprint ? new Color(1f, 0f, 1f, 1f) : new Color(0f, 0f, 0f, 1f));
+            properties.SetVector(CenterId, new Vector4(feet.x, ground.point.y, feet.z, lastAlpha));
+            properties.SetVector(AxesId, new Vector4(right.x, right.z, rx, rz));
+            properties.SetVector(FadeId, new Vector4(upAllowance, upFade, downFade, 0f));
             shadowRenderer.SetPropertyBlock(properties);
             shadowRenderer.enabled = true;
-            lastIndexCount = length;
             projectionStatus = "Rendering";
         }
 
@@ -161,22 +144,8 @@ namespace CoopDemo
             string shader = shadowMaterial != null && shadowMaterial.shader != null
                 ? $"{shadowMaterial.shader.name} (supported={shadowMaterial.shader.isSupported})" : "missing";
             Debug.Log($"[ContactShadow] {name}: {projectionStatus}, height={lastHeight:F3}m, " +
-                $"alpha={lastAlpha:F3}, triangles={lastIndexCount / 3}, shader={shader}, " +
-                $"isOwner={player != null && player.IsOwner}, radius={radius}, " +
-                $"rendererEnabled={shadowRenderer != null && shadowRenderer.enabled}, " +
-                $"bounds={(shadowRenderer != null ? shadowRenderer.bounds.ToString() : "none")}", this);
-        }
-
-        void AddTriangle(int a, int b, int c, ref int length)
-        {
-            if (!valid[a] || !valid[b] || !valid[c]) return;
-            // 계단의 서로 다른 단/절벽을 삼각형으로 연결해 공중에 그림자가 뜨지 않게 한다.
-            if (Vector3.Dot(normals[a], normals[b]) < 0.95f || Vector3.Dot(normals[a], normals[c]) < 0.95f) return;
-            if (Mathf.Abs(Vector3.Dot(vertices[b] - vertices[a], normals[a])) > 0.04f ||
-                Mathf.Abs(Vector3.Dot(vertices[c] - vertices[a], normals[a])) > 0.04f) return;
-            indices[length++] = a;
-            indices[length++] = b;
-            indices[length++] = c;
+                $"alpha={lastAlpha:F3}, shader={shader}, isOwner={player != null && player.IsOwner}, radius={radius}, " +
+                $"rendererEnabled={shadowRenderer != null && shadowRenderer.enabled}", this);
         }
 
         void OnDisable() { if (shadowRenderer != null) shadowRenderer.enabled = false; }
@@ -184,7 +153,6 @@ namespace CoopDemo
         void OnDestroy()
         {
             if (shadowObject != null) Destroy(shadowObject);
-            if (mesh != null) Destroy(mesh);
         }
     }
 }
