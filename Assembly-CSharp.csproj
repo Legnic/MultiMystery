@@ -172,7 +172,6 @@
     <Compile Include="Assets\Scripts\LGH\ItemNetworkSync.cs" />
     <Compile Include="Assets\Scripts\LGH\RoomResetter.cs" />
     <Compile Include="Assets\Scripts\LHJ\MouthFlapTest.cs" />
-    <Compile Include="Assets\AssetPacks\TheVayuputra\ToonShader\Demo\Script\AutoRotate.cs" />
     <Compile Include="Assets\Scripts\LGH\StarLockBoxInspect.cs" />
     <Compile Include="Assets\Scripts\KJH\Common\Hold\HoldableNetworkSync.cs" />
     <Compile Include="Assets\Scripts\LGH\FirstPersonController.cs" />
@@ -200,7 +199,6 @@
     <Compile Include="Assets\Scripts\KJH\Gim007\Runtime\Gim007Sounds.cs" />
     <Compile Include="Assets\Scripts\KJH\FloorMap\FloorMapBoard.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim002\Runtime\Gim002Scoreboard.cs" />
-    <Compile Include="Assets\AssetPacks\TheVayuputra\ToonShader\Demo\Script\ShaderShowcaseController.cs" />
     <Compile Include="Assets\Scripts\KSM\GameFlow\ResultCanvasController.cs" />
     <Compile Include="Assets\Scripts\KJH\PotionCraft\RecipeBookData.cs" />
     <Compile Include="Assets\Scripts\KJH\ObjectEcho\IPlayerLock.cs" />
@@ -296,7 +294,6 @@
     <None Include="Assets\TextMesh Pro\Shaders\TMP_Bitmap.shader" />
     <None Include="Assets\AssetPacks\Supercyan Free Forest Sample\Shaders\Legacy\CelShader.shader" />
     <None Include="Assets\Objects\LGH\Backup\NetworkPlayer.cs.txt" />
-    <None Include="Assets\AssetPacks\TheVayuputra\ToonShader\Shader\ToonShader.shader" />
     <None Include="Assets\Objects\LGH\Backup\StarLockBox_beforeInspect.cs.txt" />
     <None Include="Assets\AssetPacks\Supercyan Free Forest Sample\Shaders\SupercyanShaderLighting.cginc" />
     <None Include="Assets\TutorialInfo\StyleSheets\ReadmeEditor.uss" />
@@ -320,7 +317,6 @@
     <None Include="Assets\TextMesh Pro\Shaders\TMP_Bitmap-Custom-Atlas.shader" />
     <None Include="Assets\Objects\LGH\Backup\PlayerInteractor_beforePistol.cs.txt" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF.shader" />
-    <None Include="Assets\AssetPacks\TheVayuputra\ToonShader\Documentation\Documentation.txt" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile SSD.shader" />
     <None Include="Assets\TextMesh Pro\Resources\LineBreaking Leading Characters.txt" />
     <None Include="Assets\Objects\LGH\Backup\PlayerInteractor.cs.txt" />
@@ -332,9 +328,7 @@
     <None Include="Assets\TextMesh Pro\Resources\LineBreaking Following Characters.txt" />
     <None Include="Assets\Objects\LGH\Backup\PlayerInventory_beforeEquip.cs.txt" />
     <None Include="Assets\Objects\LGH\Backup\PlayerInventory.cs.txt" />
-    <None Include="Assets\AssetPacks\TheVayuputra\ToonShader\Documentation\Third-Party Notices.txt" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF SSD SpaceWarp.shader" />
-    <None Include="Assets\AssetPacks\TheVayuputra\ToonShader\Documentation\Changelog.txt" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile Masking.shader" />
     <None Include="Assets\Objects\LGH\Backup\MultiplayerMenu.cs.txt" />
     <None Include="Assets\Objects\LGH\Backup\StarLockBox_beforeTouchOff.cs.txt" />

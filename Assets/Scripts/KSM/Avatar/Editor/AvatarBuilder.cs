@@ -21,8 +21,8 @@ namespace CoopDemo.EditorTools
         struct CharInfo { public string name; public string fbx; public string mouthMesh; public string material; }
         static readonly CharInfo[] Chars =
         {
-            new CharInfo { name = "Orange", fbx = "Assets/VARCO 3D/LHJ/Char_Orange/Char_Orange_Rigged.fbx", mouthMesh = "Assets/VARCO 3D/LHJ/Char_Orange/Char_Orange_MouthMesh.asset", material = "Assets/Materials/KSM/Avatar/Avatar_Orange_CartoonFlat.mat" },
-            new CharInfo { name = "Blue",   fbx = "Assets/VARCO 3D/LHJ/Char_Blue/Char_Blue_Rigged.fbx",     mouthMesh = "Assets/VARCO 3D/LHJ/Char_Blue/Char_Blue_MouthMesh.asset",     material = "Assets/Materials/KSM/Avatar/Avatar_Blue_CartoonFlat.mat" },
+            new CharInfo { name = "Orange", fbx = "Assets/VARCO 3D/LHJ/Char_Orange/Char_Orange_Rigged.fbx", mouthMesh = "Assets/VARCO 3D/LHJ/Char_Orange/Char_Orange_MouthMesh.asset", material = "Assets/VARCO 3D/LHJ/Char_Orange/Char_Orange_Mat.mat" },
+            new CharInfo { name = "Blue",   fbx = "Assets/VARCO 3D/LHJ/Char_Blue/Char_Blue_Rigged.fbx",     mouthMesh = "Assets/VARCO 3D/LHJ/Char_Blue/Char_Blue_MouthMesh.asset",     material = "Assets/VARCO 3D/LHJ/Char_Blue/Char_Blue_Mat.mat" },
         };
 
         [MenuItem("Tools/KSM/Avatar/Build All")]
