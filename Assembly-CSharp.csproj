@@ -83,6 +83,7 @@
     <Compile Include="Assets\Scripts\KJH\Dumbwaiter\DumbwaiterWindow.cs" />
     <Compile Include="Assets\Scripts\KJH\Dumbwaiter\DumbwaiterNetworkSync.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim002\Runtime\Gim002KeyItem.cs" />
+    <Compile Include="Assets\Scripts\KSM\Avatar\PlayerContactShadow.cs" />
     <Compile Include="Assets\Scripts\KJH\AtticTreasure\AtticTreasureCutscene.cs" />
     <Compile Include="Assets\Scripts\LGH\PistolLoader.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim005\Runtime\IGim005Net.cs" />
@@ -339,6 +340,7 @@
     <None Include="Assets\TextMesh Pro\Shaders\TMP_Bitmap-Mobile.shader" />
     <None Include="Assets\Objects\LGH\Backup\PistolLoader_src2.cs.txt" />
     <None Include="Assets\TextMesh Pro\Fonts\LiberationSans - OFL.txt" />
+    <None Include="Assets\Shaders\KSM\PlayerContactShadow.shader" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile.shader" />
     <None Include="Assets\TutorialInfo\StyleSheets\ReadmeEditorDark.uss" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile SSD SpaceWarp.shader" />

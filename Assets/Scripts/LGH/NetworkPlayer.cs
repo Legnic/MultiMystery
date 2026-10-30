@@ -58,8 +58,16 @@ namespace LGH
             foreach (var r in body)
                 if (r != null) r.shadowCastingMode = mine ? ShadowCastingMode.ShadowsOnly : ShadowCastingMode.On;
             if (controller != null) controller.enabled = mine;
-            // performance: only your own candle casts shadows; other players' candles just light the room
-            if (!mine) foreach (var cl in GetComponentsInChildren<Light>(true)) cl.shadows = LightShadows.None;
+            // performance: other players' extra lights (muzzle flash...) never cast shadows. Their candle does — the candle is what makes
+            // the other player's body shadow fall on the floor/stairs next to them (our own candle only throws it straight behind them,
+            // out of sight). Our own body is hidden, so it adds nothing to the shadow pass.
+            if (!mine)
+            {
+                var flicker = GetComponentInChildren<CandleFlicker>(true);
+                Light candle = flicker != null ? flicker.candleLight : null;
+                foreach (var cl in GetComponentsInChildren<Light>(true))
+                    if (cl != candle) cl.shadows = LightShadows.None;
+            }
             nickname.OnValueChanged += OnNicknameChanged;
             RefreshName();
             var avatar = GetComponentInChildren<PlayerAvatar>(true);

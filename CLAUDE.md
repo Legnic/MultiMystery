@@ -1057,6 +1057,10 @@ Develop에 가져오지 않음.
 - 스크립트: `Assets/Scripts/KJH/FloorMap/FloorMapBoard.cs`(namespace `FloorMap`). 도구: `Tools/KJH/FloorMap/Build Prefabs`(그림 설정·머티리얼·프리팹 재생성, 씬 인스턴스에 자동 반영), `Tools/KJH/FloorMap/Place In Open Scene`(활성 씬에 같은 이름을 지우고 다시 배치). 그림을 바꾸려면 Board PNG만 교체하고 Build Prefabs를 실행한다.
 - 검증: Play 모드에서 `StartHost()`로 두 액자를 띄워 봄. 카메라 레이가 액자에 맞고 안내 문구 "[E] 지도 보기"가 뜨는 것, `Interact()`로 열고 닫기, 이동 잠금·복구, 확대 화면 캡처, 콘솔 에러 0을 확인. 실제 E키 입력은 직접 플레이로 확인이 필요하다.
 
+## 상대 플레이어 그림자 (2026-10-30)
+- 상대 아바타는 다시 **실제 메시 그림자**를 드리운다(`CharacterAvatar.SpawnModel`: 내 몸 = 렌더러·그림자 꺼짐, 상대 몸 = 그림자 `On`, `Avatar_Blue/Orange.prefab`·`AvatarBuilder`도 `On`). **상대 양초(`CandleFlicker.candleLight`)가 그림자를 드리운다**(`NetworkPlayer.OnNetworkSpawn`에서 상대의 다른 조명만 그림자를 끔). 처음엔 상대 양초 그림자를 꺼 둔 채 몸 그림자만 켰더니 "그림자가 전혀 안 보였다" — 내 양초(내 눈 바로 옆)가 만드는 그림자는 항상 상대 캐릭터 바로 뒤에 가려지기 때문이다. 2026-10-30 실제 2인 접속(임시 게스트 봇 빌드)으로 확인: 상대 화면에 계단 단차를 따라 그림자가 떨어진다. 내 몸은 렌더러가 꺼져 있어 내 그림자는 없다(1인칭 요청).
+- 바닥에 투영하던 타원형 접지 그림자 `PlayerContactShadow`는 계단에서 깨져서 `NetworkPlayer_LGH.prefab`에서 **뗐다**(스크립트·머티리얼·셰이더 파일은 남겨 둠, 필요하면 프리팹에 다시 붙이면 됨).
+
 ## 사용 가능한 Unity 전용 스킬
 이 환경에는 `unity:` 접두사의 스킬들(unity-cli, ui, urp-postprocessing, physics-3d-collision 등)이 이미 연결되어 있습니다. 관련 작업을 할 때는 먼저 해당 스킬을 확인하세요.
 

@@ -2318,7 +2318,6 @@ GameObject:
   - component: {fileID: 5309252809512302919}
   - component: {fileID: 2170318699457270612}
   - component: {fileID: 9064283129769945660}
-  - component: {fileID: 9017736001333000123}
   m_Layer: 0
   m_Name: NetworkPlayer_LGH
   m_TagString: Untagged
@@ -3598,24 +3597,3 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!114 &9017736001333000123
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8036117278228202970}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d6ce815b03d948da96853e320fb43c44, type: 3}
-  m_Name:
-  m_EditorClassIdentifier: Assembly-CSharp::CoopDemo.PlayerContactShadow
-  shadowMaterial: {fileID: 2100000, guid: 6f328e4bf8684c6b87306ce2390b49cf, type: 2}
-  radius: {x: 0.85, y: 0.7}
-  opacity: 0.9
-  maxHeight: 1.6
-  surfaceOffset: 0.02
-  groundLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  debugFootprint: 0
