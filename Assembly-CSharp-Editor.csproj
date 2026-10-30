@@ -60,6 +60,7 @@
     <Compile Include="Assets\Scripts\KSM\Avatar\Editor\AvatarBuilder.cs" />
     <Compile Include="Assets\Scripts\KSM\Audio\Editor\LcwSoundBankBuilder.cs" />
     <Compile Include="Assets\Scripts\KSM\GameFlow\Editor\TitleStyleArt.cs" />
+    <Compile Include="Assets\Scripts\KJH\HeldCandle\Editor\CandleFlameBuilder.cs" />
     <Compile Include="Assets\Scripts\KJH\AtticTreasure\Editor\AtticTreasureCutsceneBuilder.cs" />
     <Compile Include="Assets\Scripts\LHJ\Editor\MouthShapeMaker.cs" />
     <Compile Include="Assets\Scripts\KJH\Common\Editor\NetworkSceneObjectValidator.cs" />
@@ -77,12 +78,14 @@
     <Compile Include="Assets\Scripts\KSM\Lighting\Editor\MasterRoomLightingWindow.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim004\Editor\Gim004Builder.cs" />
     <Compile Include="Assets\Scripts\KJH\FloorMap\Editor\FloorMapBuilder.cs" />
+    <Compile Include="Assets\Scripts\KSM\Lighting\Editor\MoonlightWindowsBuilder.cs" />
     <Compile Include="Assets\Scripts\KJH\PotionCraft\Editor\PotionCraftBuilder.cs" />
     <Compile Include="Assets\Scripts\KJH\ObjectEcho\Editor\ObjectEchoSetupMenu.cs" />
     <Compile Include="Assets\Scripts\KJH\AtticTreasure\Editor\AtticTreasureBuilder.cs" />
     <Compile Include="Assets\Scripts\KJH\Common\Editor\GameUIGroups.cs" />
     <Compile Include="Assets\Scripts\KJH\AtticTreasure\Editor\StarBoxInteriorBuilder.cs" />
     <Compile Include="Assets\TutorialInfo\Editor\ReadmeEditor.cs" />
+    <Compile Include="Assets\Scripts\KSM\Lighting\Editor\MasterRoomLightmapUv.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">

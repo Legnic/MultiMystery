@@ -67,6 +67,7 @@
     <Compile Include="Assets\Scripts\KJH\Gim007\Runtime\LocalGim007Net.cs" />
     <Compile Include="Assets\Scripts\KJH\PotionCraft\ReadableStation.cs" />
     <Compile Include="Assets\Scripts\KJH\Clue\ParchmentRoller.cs" />
+    <Compile Include="Assets\Scripts\KJH\HeldCandle\CandleFlameMotion.cs" />
     <Compile Include="Assets\Scripts\KJH\Photo\InteractionController.cs" />
     <Compile Include="Assets\Scripts\LGH\ItemDatabase.cs" />
     <Compile Include="Assets\Scripts\LGH\CandlePickup.cs" />
@@ -134,6 +135,7 @@
     <Compile Include="Assets\Scripts\KJH\Clue\IModalInteraction.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim005\Runtime\Gim005Panel.cs" />
     <Compile Include="Assets\Scripts\KJH\PotionCraft\TrashStation.cs" />
+    <Compile Include="Assets\Scripts\KSM\Lighting\MoonlightWindowCulling.cs" />
     <Compile Include="Assets\Scripts\LHJ\HandEmote.cs" />
     <Compile Include="Assets\Scripts\KSM\UI\TitleMenuUI.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim002\Runtime\Gim002Controller.cs" />
@@ -314,6 +316,7 @@
     <None Include="Assets\AssetPacks\Pine Forest_LowPoly\Shaders\Mobile_Vtx_Cutout_Wind.shader" />
     <None Include="Assets\TextMesh Pro\Shaders\SDFFunctions.hlsl" />
     <None Include="Assets\Objects\LGH\Backup\FirstPersonController.cs.txt" />
+    <None Include="Assets\Images\KJH\Materials\HeldCandle\KJH_CandleFlameAdditive.shader" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Surface.shader" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_Bitmap-Custom-Atlas.shader" />
     <None Include="Assets\Objects\LGH\Backup\PlayerInteractor_beforePistol.cs.txt" />

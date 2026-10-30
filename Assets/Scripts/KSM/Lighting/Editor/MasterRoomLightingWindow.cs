@@ -36,7 +36,7 @@ namespace CoopDemo.EditorTools
             roomMax = EditorGUILayout.Vector3Field("Room max (world)", roomMax);
             exposure = EditorGUILayout.Slider("Room exposure (EV)", exposure, -1f, 2f);
             EditorGUILayout.LabelField("Tonemapping", "ACES / local Volume, priority 10");
-            EditorGUILayout.LabelField("Bake", "Progressive CPU / 20 texels/m / 512 indirect samples / 4 bounces");
+            EditorGUILayout.LabelField("Bake", "Unity Compute GPU / 20 texels/m / 512 indirect samples / 4 bounces");
             using (new EditorGUI.DisabledScope(EditorApplication.isPlayingOrWillChangePlaymode || Lightmapping.isRunning))
             {
                 if (GUILayout.Button("1. Prepare Master Room")) Run(Prepare);
@@ -192,16 +192,22 @@ namespace CoopDemo.EditorTools
             var light = EnsureComponent<Light>(Child(setup.transform, "WarmIndirectKey"));
             Undo.RecordObject(light, "Mixed room light");
             Undo.RecordObject(light.transform, "Mixed room light position");
-            light.transform.position = new Vector3(bounds.center.x, roomMax.y - 0.5f, bounds.center.z);
+            // 2026-10-30: 천장 바로 밑(roomMax.y-0.5)에 두면 빛이 천장 한 점에만 몰려 방 안으로 번지는 간접광이 거의 안 보였다.
+            // 바닥에서 2.4m(방 가운데 허공)로 내려서 벽·바닥으로 퍼지게 한다.
+            light.transform.position = new Vector3(bounds.center.x, roomMin.y + 2.4f, bounds.center.z);
             light.type = LightType.Point;
-            light.lightmapBakeType = LightmapBakeType.Mixed;
+            // 2026-10-30: Mixed(직접광은 실시간으로 남음) → Baked. 이 광원은 실시간 직접광을 더하지 않고 라이트맵/프로브에만 구워진다.
+            light.lightmapBakeType = LightmapBakeType.Baked;
             light.color = new Color(1f, 0.82f, 0.65f);
-            light.intensity = 1.2f;
+            // 2026-10-30 시험: 1.2(천장 밑)=변화 거의 없음, 4(간접 1)=방 전체가 3~16배 밝아지고 천장이 하얗게 탐,
+            // 1.5(간접 배율 4)=촛불 분위기를 유지하며 바닥·가구가 은은하게 보임 → 1.5 / 4를 기본값으로 한다.
+            light.intensity = 1.5f;
             light.range = Mathf.Max(bounds.size.x, bounds.size.z) * 0.75f;
-            light.bounceIntensity = 1f;
+            light.bounceIntensity = 4f;   // 간접광(번짐) 배율. 직접광(천장 빛 무리)은 줄이고 번짐을 키운다.
             light.shadows = LightShadows.Soft;
             Changed(light);
 
+            ConfigureReflectionProbe(setup, bounds);
             ConfigureBaking();
             ConfigureVolume(setup, bounds);
             EnablePlayerPostProcessing(scene);
@@ -209,6 +215,29 @@ namespace CoopDemo.EditorTools
             Undo.CollapseUndoOperations(group);
             Selection.activeGameObject = setup;
             Debug.Log($"[MasterLighting] 설정 준비: 고정 표면 {statics}, 이동 가구 렌더러 {moving.Length}, 프로브 {positions.Count}. 아직 베이크 전입니다. 경계/보조광 위치를 확인한 뒤 Bake를 실행하세요.");
+        }
+
+        // 방 하나에 반사 프로브 하나(2026-10-30). 박스 투영으로 방 모양에 맞는 반사를 만들고, Baked라 라이트맵과 함께 구워진다.
+        // 프로브 큐브맵은 베이크(Bake Current Scene)할 때 같이 만들어진다. 기본 반사(RenderSettings, 강도 0.05)는 거의 꺼져 있어서
+        // 이 프로브가 없으면 방 안 표면에는 사실상 반사가 없다.
+        void ConfigureReflectionProbe(GameObject setup, Bounds bounds)
+        {
+            var go = Child(setup.transform, "RoomReflectionProbe");
+            var probe = EnsureComponent<ReflectionProbe>(go);
+            Undo.RecordObject(probe, "Room reflection probe");
+            Undo.RecordObject(go.transform, "Room reflection probe position");
+            go.transform.position = new Vector3(bounds.center.x, roomMin.y + 1.6f, bounds.center.z);   // 서 있는 눈높이 근처
+            probe.mode = UnityEngine.Rendering.ReflectionProbeMode.Baked;
+            probe.boxProjection = true;
+            probe.size = new Vector3(bounds.size.x, bounds.size.y, bounds.size.z);
+            probe.center = new Vector3(0f, bounds.center.y - go.transform.position.y, 0f);   // 박스를 방 경계에 맞춘다
+            probe.resolution = 128;
+            probe.hdr = true;
+            probe.intensity = 1f;
+            probe.blendDistance = 1f;
+            probe.importance = 1;
+            probe.timeSlicingMode = UnityEngine.Rendering.ReflectionProbeTimeSlicingMode.NoTimeSlicing;
+            Changed(probe);
         }
 
         void ConfigureBaking()
@@ -223,7 +252,8 @@ namespace CoopDemo.EditorTools
             Undo.RecordObject(settings, "Master lighting settings");
             settings.bakedGI = true;
             settings.realtimeGI = false;
-            settings.lightmapper = LightingSettings.Lightmapper.ProgressiveCPU;
+            // 2026-10-30: ProgressiveCPU는 이 Unity 버전(6000.6)에서 폐지되어(컴파일 경고) GPU 베이커로 바꿨다.
+            settings.lightmapper = LightingSettings.Lightmapper.UnityComputeGPU;
             settings.mixedBakeMode = MixedLightingMode.IndirectOnly;
             settings.lightmapResolution = 20f;
             settings.lightmapMaxSize = 2048;
