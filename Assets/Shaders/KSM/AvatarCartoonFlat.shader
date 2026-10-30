@@ -20,7 +20,7 @@ Shader "CoopDemo/AvatarCartoonFlat"
         _EdgeSoftness ("Edge Softness", Range(0,1)) = 0.4
         _EdgeColor ("Edge Color", Color) = (1,1,1,1)
 
-        _StrokeWidth ("Stroke Width", Range(0.0, 1.0)) = 0.15
+        _StrokeWidth ("Outline Width (0 = Off)", Range(0.0, 1.0)) = 0
         _StrokeColor ("Stroke Color", Color) = (0,0,0,1)
     }
 
@@ -189,8 +189,13 @@ Shader "CoopDemo/AvatarCartoonFlat"
             {
                 v2f o;
 
-                float3 pos = v.vertex.xyz + v.normal * _StrokeWidth * 0.1;
-                o.pos = TransformObjectToHClip(pos);
+                // Skinned body objects use ~100x import scale. Expanding in object
+                // space inflates the outline into a black shell around the player.
+                // Extrude in world space: width 0.1 always means a 1 cm outline.
+                float3 positionWS = TransformObjectToWorld(v.vertex.xyz);
+                float3 normalWS = TransformObjectToWorldNormal(v.normal);
+                positionWS += normalWS * _StrokeWidth * 0.1;
+                o.pos = TransformWorldToHClip(positionWS);
 
                 VertexPositionInputs posInput = GetVertexPositionInputs(v.vertex.xyz);
                 o.fogCoord = ComputeFogFactor(posInput.positionCS.z);
@@ -200,6 +205,9 @@ Shader "CoopDemo/AvatarCartoonFlat"
 
             float4 frag(v2f i) : SV_Target
             {
+                // A zero-width back-face pass can still show on inner surfaces.
+                // Discard it entirely when the material disables outlines.
+                clip(_StrokeWidth - 0.000001);
                 float3 col = MixFog(_StrokeColor.rgb, i.fogCoord);
                 return float4(col, 1.0);
             }
