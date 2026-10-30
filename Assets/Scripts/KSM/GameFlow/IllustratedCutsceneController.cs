@@ -13,6 +13,8 @@ namespace CoopDemo
 
         public Kind kind = Kind.Intro;
         [SerializeField] VideoClip videoClip;
+        [Tooltip("영상의 처음과 마지막에 검정 화면과 디졸브하는 시간(초). 영상 재생 시간을 기준으로 한다.")]
+        [SerializeField, Min(0f)] float dissolveSeconds = 3f;
         [SerializeField] Button skipButton;
         [SerializeField] GameObject playbackRoot;
         [SerializeField] GameObject waitingRoot;
@@ -52,6 +54,11 @@ namespace CoopDemo
             }
 
             EnsureVideoPlayer();
+            SetVideoOpacity(0f);
+            // 영상 종료 후 대기 화면에서도 뒤의 게임 화면이 비치지 않게 한다.
+            var canvasBackground = transform.Find("Background");
+            if (canvasBackground != null && canvasBackground.TryGetComponent<Image>(out var image))
+                image.color = Color.black;
             player.loopPointReached += OnVideoEnded;
             player.errorReceived += OnVideoError;
             preparation = StartCoroutine(PrepareAndPlay());
@@ -78,6 +85,7 @@ namespace CoopDemo
             videoImage = surface.GetComponent<RawImage>();
             videoImage.raycastTarget = false;
             videoImage.enabled = false;
+            SetVideoOpacity(0f);
             var fitter = surface.GetComponent<AspectRatioFitter>();
             fitter.aspectMode = AspectRatioFitter.AspectMode.FitInParent;
             fitter.aspectRatio = (float)videoClip.width / Mathf.Max(1f, videoClip.height);
@@ -133,7 +141,34 @@ namespace CoopDemo
             player.Play();
         }
 
-        void OnVideoEnded(VideoPlayer source) { FinishLocal(); }
+        void Update()
+        {
+            if (localFinished || player == null || !player.isPrepared || !player.isPlaying) return;
+
+            // 별도 타이머 대신 디코더의 재생 위치를 사용해 버퍼링/프레임 지연에도
+            // 첫 프레임은 검정, 마지막 프레임은 검정으로 맞춘다.
+            double duration = player.length > 0d ? player.length : videoClip.length;
+            float fade = Mathf.Min(dissolveSeconds, (float)(duration * 0.5d));
+            float opacity = 1f;
+            if (fade > 0f)
+            {
+                float fadeIn = Mathf.Clamp01((float)(player.time / fade));
+                float fadeOut = Mathf.Clamp01((float)((duration - player.time) / fade));
+                opacity = Mathf.SmoothStep(0f, 1f, Mathf.Min(fadeIn, fadeOut));
+            }
+            SetVideoOpacity(opacity);
+        }
+
+        void SetVideoOpacity(float opacity)
+        {
+            if (videoImage != null) videoImage.color = new Color(1f, 1f, 1f, opacity);
+        }
+
+        void OnVideoEnded(VideoPlayer source)
+        {
+            SetVideoOpacity(0f);
+            FinishLocal();
+        }
 
         void OnVideoError(VideoPlayer source, string message)
         {
@@ -150,6 +185,7 @@ namespace CoopDemo
 
         void StopVideo()
         {
+            SetVideoOpacity(0f);
             if (preparation != null) { StopCoroutine(preparation); preparation = null; }
             if (player != null) { player.Stop(); player.targetTexture = null; }
             if (videoImage != null) { videoImage.texture = null; videoImage.enabled = false; }
