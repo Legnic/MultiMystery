@@ -19,7 +19,7 @@ public partial class LcwSoundDirector : MonoBehaviour
     [Range(0f, 1f)] public float ambienceVolume = 0.35f;
     [Range(0f, 1f)] public float doorVolume = 1f;
     [Range(0f, 1f)] public float drawerVolume = 0.9f;
-    [Range(0f, 1f)] public float footstepVolume = 0.85f;
+    [Range(0f, 1f)] public float footstepVolume = 0.8f;
     [Tooltip("내 발소리는 거리 감쇠 없이 재생한다. 상대 발소리는 footstepVolume을 사용한다.")]
     [Range(0f, 1f)] public float localFootstepVolume = 1f;
 
