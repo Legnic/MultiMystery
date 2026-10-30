@@ -117,10 +117,12 @@ namespace CoopDemo.EditorTools
             var playback = new GameObject("PlaybackRoot", typeof(RectTransform));
             SetupStretch((RectTransform)playback.transform, canvasRect);
 
-            var skipBtn = CreateButton(playback.transform, "SkipButton", "스킵", Vector2.zero, new Vector2(220, 64));
+            // 타이틀 화면이 쓰는 이미지(Title_MainMenu에서 뽑은 빈 버튼 틀 + 타이틀 호버 테두리)로 만든다.
+            var skipBtn = TitleStyleArt.CreateButton(playback.transform, "SkipButton", "스킵", 32);
             var skipRect = (RectTransform)skipBtn.transform;
             skipRect.anchorMin = skipRect.anchorMax = new Vector2(1, 0);
             skipRect.pivot = new Vector2(1, 0);
+            skipRect.sizeDelta = new Vector2(320, 51);
             skipRect.anchoredPosition = new Vector2(-32, 32);
 
             var waiting = new GameObject("WaitingRoot", typeof(RectTransform));
@@ -149,18 +151,14 @@ namespace CoopDemo.EditorTools
             var canvasGo = CreateOverlayCanvas("ResultCanvas", sortOrder: 10);
             var canvasRect = (RectTransform)canvasGo.transform;
 
-            CreateFullStretchImage(canvasRect, "Background", new Color(0.04f, 0.04f, 0.06f, 0.97f));
-
-            CreateText(canvasRect, "TitleText", "MEET YOU", 64, TextAnchor.MiddleCenter, Color.white, new Vector2(0, 300), new Vector2(1000, 90));
-            CreateText(canvasRect, "SubtitleText", "[탈출 성공]", 36, TextAnchor.MiddleCenter, new Color(0.9f, 0.85f, 0.6f), new Vector2(0, 220), new Vector2(1000, 60));
-            CreateText(canvasRect, "DescriptionText", "마침내 두 사람은 저택을 빠져나왔다.", 24, TextAnchor.MiddleCenter, Color.white, new Vector2(0, 120), new Vector2(1200, 60));
-            CreateText(canvasRect, "PlayerCountText", "탈출 인원 2명", 24, TextAnchor.MiddleCenter, Color.white, new Vector2(0, 40), new Vector2(800, 50));
-            var clearTime = CreateText(canvasRect, "ClearTimeText", "클리어 시간 --:--:--", 24, TextAnchor.MiddleCenter, Color.white, new Vector2(0, -20), new Vector2(800, 50));
-            var titleBtn = CreateButton(canvasRect, "TitleButton", "타이틀로 돌아가기", new Vector2(0, -160), new Vector2(360, 70));
+            // 타이틀 화면과 같은 남색 바탕 + 타이틀이 쓰는 그림(Title_MainMenu의 로고, 버튼 자리만 지움).
+            // 남기는 것은 게임 제목(로고)·클리어 시간·타이틀로 돌아가기 버튼뿐이다. (TitleStyleArt 참고)
+            CreateFullStretchImage(canvasRect, "Background", new Color(0.05f, 0.05f, 0.08f, 1f));
+            TitleStyleArt.BuildResultContents(canvasRect, out var clearTime, out var titleBtn);
 
             var controller = canvasGo.AddComponent<ResultCanvasController>();
-            SetRef(controller, "clearTimeText", clearTime.GetComponent<Text>());
-            SetRef(controller, "titleButton", titleBtn.GetComponent<Button>());
+            SetRef(controller, "clearTimeText", clearTime);
+            SetRef(controller, "titleButton", titleBtn);
 
             return canvasGo;
         }

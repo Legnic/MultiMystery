@@ -59,6 +59,7 @@
   <ItemGroup>
     <Compile Include="Assets\Scripts\KSM\Avatar\Editor\AvatarBuilder.cs" />
     <Compile Include="Assets\Scripts\KSM\Audio\Editor\LcwSoundBankBuilder.cs" />
+    <Compile Include="Assets\Scripts\KSM\GameFlow\Editor\TitleStyleArt.cs" />
     <Compile Include="Assets\Scripts\KJH\AtticTreasure\Editor\AtticTreasureCutsceneBuilder.cs" />
     <Compile Include="Assets\Scripts\LHJ\Editor\MouthShapeMaker.cs" />
     <Compile Include="Assets\Scripts\KJH\Common\Editor\NetworkSceneObjectValidator.cs" />
