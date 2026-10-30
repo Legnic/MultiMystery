@@ -163,12 +163,12 @@ namespace CoopDemo
             Model.transform.localRotation = Quaternion.identity;
             Model.transform.localScale = Vector3.one * modelScale;
 
-            // 내 몸은 1인칭에서 몸도 그림자도 보이지 않게 완전히 끈다 (뼈 애니메이션은 계속 돌아가서 상대 화면과 손 위치 계산에는 영향이 없다).
-            // 상대 몸은 그대로 보이게. (이 컴퓨터에 그려지는 것만 끄는 것이라 상대 컴퓨터에서는 내 모델이 정상으로 보인다)
+            // 내 몸 렌더러는 1인칭에서 숨긴다 (뼈 애니메이션은 계속 돌아가서 상대 화면과 손 위치 계산에는 영향이 없다).
+            // 상대 몸은 표시하되 스킨 메시 그림자는 끈다. 두 플레이어의 발밑 그림자는 별도 접지 메시로 그린다.
             foreach (var r in Model.GetComponentsInChildren<Renderer>(true))
             {
                 r.enabled = !IsOwner;
-                r.shadowCastingMode = IsOwner ? ShadowCastingMode.Off : ShadowCastingMode.On;
+                r.shadowCastingMode = ShadowCastingMode.Off; // 발밑 그림자는 PlayerContactShadow가 담당한다.
             }
         }
 
