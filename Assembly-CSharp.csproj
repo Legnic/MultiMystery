@@ -123,6 +123,7 @@
     <Compile Include="Assets\Scripts\LGH\MultiplayerMenu.cs" />
     <Compile Include="Assets\Scripts\KSM\UI\GameFont.cs" />
     <Compile Include="Assets\Scripts\KJH\Common\Hold\IHoldableSocket.cs" />
+    <Compile Include="Assets\Scripts\KSM\Lighting\RoomExposureOptions.cs" />
     <Compile Include="Assets\Scripts\LHJ\CharacterKeyMove.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim007\Runtime\Gim007Config.cs" />
     <Compile Include="Assets\Scripts\KSM\Options\PlayerOptions.cs" />
