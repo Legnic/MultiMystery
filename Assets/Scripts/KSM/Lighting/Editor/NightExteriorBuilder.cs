@@ -20,6 +20,7 @@ namespace CoopDemo.EditorTools
 
         const uint MoonLayer = 2u;     // 렌더링 레이어 1 = 달빛 방향광 전용
         const uint AllLayers = 3u;     // 레이어 0 + 1: 기본 광원과 달빛 둘 다 받음
+        const uint HeldCandleBodyLayers = 130u;   // 레이어 1 + 7: 달빛과 양초 전용 빛(CandleSelfLight)만 받음, 방 조명은 안 받음
 
         // 수평선 색 = 안개 색 (경계가 이어지게)
         static readonly Color Horizon = new Color(0.035f, 0.048f, 0.095f);
@@ -188,7 +189,14 @@ namespace CoopDemo.EditorTools
             try
             {
                 foreach (var cam in root.GetComponentsInChildren<Camera>(true)) cam.clearFlags = CameraClearFlags.Skybox;
-                foreach (var r in root.GetComponentsInChildren<Renderer>(true)) r.renderingLayerMask = AllLayers;   // 플레이어 몸/손/양초도 야외 달빛을 받는다
+                foreach (var r in root.GetComponentsInChildren<Renderer>(true))
+                {
+                    // 플레이어 몸/손/양초도 야외 달빛을 받는다. 단 손 양초 몸체(밀랍·접시)는 방 조명(레이어 0)에서 뺀다:
+                    // 불꽃과 5~8cm 거리라 방 조명을 받으면 밀랍 전체가 새하얗게 날아가고 불꽃보다 밀랍이 더 밝아 보인다.
+                    // 전용 빛 CandleSelfLight(레이어 7 = 128)만 받게 해 불꽃 쪽이 가장 밝고 아래로 어두워지게 한다(2026-10-31).
+                    bool candleBody = r.name == "Model" && r.GetComponentInParent<LGH.HeldCandle>() != null;
+                    r.renderingLayerMask = candleBody ? HeldCandleBodyLayers : AllLayers;
+                }
                 PrefabUtility.SaveAsPrefabAsset(root, PlayerPrefabPath);
             }
             finally { PrefabUtility.UnloadPrefabContents(root); }

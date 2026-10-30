@@ -20,8 +20,12 @@ namespace CoopDemo.EditorTools
         const string CookiePath = "Assets/Settings/KSM/MasterRoom/MoonWindowCookie.png";
         const float Pitch = 32f, Yaw = 150f, SourceDistance = 8f, CookieSpan = 0.68f;
         // 방향광 Moonlight_LGH(0.35)가 같은 방향의 실제 무늬를 따로 만들어서, 스포트를 100으로 두면 둘이 겹쳐 과하게 밝고 창살이 어긋나 보인다 → 60으로 낮춤.
-        // 2026-10-31: 방향광이 실내를 비추지 않게 분리(NightExteriorBuilder의 렌더링 레이어)하면서 방향광이 만들던 창 무늬 밝기가 사라져 60 → 100으로 올림.
-        const float Intensity = 100f;
+        // 2026-10-31: 방향광이 실내를 비추지 않게 분리(NightExteriorBuilder의 렌더링 레이어)하면서 방향광이 만들던 창 무늬 밝기가 사라져 세기를 60 → 100으로 올렸었다.
+        // 같은 날 광원 거리·범위를 창마다 따로 잡게 바꾸면서(아래 d, D) 세기는 "바닥 무늬 밝기" 기준으로 계산한다.
+        // TargetIlluminance: 이전 세기 100(범위 18, 광원→바닥 약 10.8m)일 때의 바닥 무늬 밝기와 같아지게 맞춘 값.
+        // 이론값 0.65(100 × 0.758 ÷ 10.8²)로 두면 실측이 이전의 약 80%라서(Guest1 창, 같은 시점 켬/끔 차이 0.0348 vs 0.0434) 0.8로 올렸다.
+        const float TargetIlluminance = 0.8f;
+        const float MinSourceDistance = 2.5f, RangeMargin = 3f;
 
         [MenuItem("Tools/KSM/Lighting/Moonlight - Place On Windows")]
         public static void Run()
@@ -62,15 +66,38 @@ namespace CoopDemo.EditorTools
                 if (hit.normal.y < 0.6f && PathOf(hit.collider.transform).Contains("/Walls/"))
                 { skipped.Add(r.name + " (달빛이 바닥에 닿기 전에 벽에 막힘)"); continue; }
 
+                // 광원 자리(2026-10-31): 그림자가 없어서 빔이 지나는 길의 건물 안 표면을 전부 비춘다. 창에서 달빛 반대 방향으로 최대 8m를 가되,
+                // 건물(Ravenwood_LGH)에 처음 막히는 곳 앞에서 멈춘다(같은 벽 조각과 바깥 쉘은 무시). 너무 짧으면(<2.5m) 그 창은 건너뛴다.
+                //  예) F2_CorridorW_E_3_Glass2는 8m 뒤가 남쪽 날개 지붕 위라서 빔이 지붕·복도 천장을 뚫고 복도 북쪽 벽 윗부분에 창 무늬를 만들었다.
+                float d = SourceDistance;
+                string wallPrefix = r.name.Substring(0, r.name.LastIndexOf('_'));
+                var back = Physics.RaycastAll(b.center + inward * 0.15f, -dir, SourceDistance + 0.3f, ~0, QueryTriggerInteraction.Ignore);
+                System.Array.Sort(back, (x, y) => x.distance.CompareTo(y.distance));
+                foreach (var bh in back)
+                {
+                    if (bh.distance < 0.35f || bh.collider.name.StartsWith(wallPrefix)) continue;
+                    if (!PathOf(bh.collider.transform).Contains("/Ravenwood_LGH/")) continue;
+                    d = Mathf.Min(d, bh.distance - 0.3f);
+                    break;
+                }
+                if (d < MinSourceDistance) { skipped.Add(r.name + " (광원을 둘 바깥 공간이 " + d.ToString("F1") + "m뿐)"); continue; }
+                // 창에서 바닥까지 거리를 더한 "광원 → 바닥 무늬" 거리. 무늬 크기·범위·세기를 이 거리로 맞춘다.
+                float D = d + 0.15f + hit.distance;
+
                 var go = new GameObject("Moon_" + r.name);
                 go.transform.SetParent(root.transform, false);
-                go.transform.SetPositionAndRotation(b.center + inward * 0.15f - dir * SourceDistance, travel);
+                go.transform.SetPositionAndRotation(b.center + inward * 0.15f - dir * d, travel);
                 float side = Mathf.Max(Mathf.Max(b.size.x, b.size.z), b.size.y);
                 var l = go.AddComponent<Light>();
                 l.type = LightType.Spot;
-                l.spotAngle = 2f * Mathf.Atan(side / CookieSpan * 0.5f / SourceDistance) * Mathf.Rad2Deg;
+                // 점광원이라 바닥에서는 무늬가 (D/창까지 거리)배로 커진다 → 창 평면이 아니라 "바닥 무늬"가 창 크기가 되도록 각도를 잡는다(평행광과 같은 크기).
+                l.spotAngle = 2f * Mathf.Atan(side / CookieSpan * 0.5f / D) * Mathf.Rad2Deg;
                 l.innerSpotAngle = l.spotAngle * 0.9f;
-                l.range = 18f; l.intensity = Intensity;
+                // 범위는 바닥 무늬 바로 뒤까지만: 더 길면 빔이 바닥·천장을 뚫고 아래층 벽·가구(1층 벽, 식물 등)까지 비춘다.
+                l.range = D + RangeMargin;
+                // 바닥 무늬 밝기를 거리와 상관없이 같게(= TargetIlluminance): 역제곱 감쇠와 범위 가장자리 감쇠를 보정한다.
+                float fall = 1f - Mathf.Pow(D / l.range, 4f);
+                l.intensity = TargetIlluminance * D * D / Mathf.Max(0.05f, fall * fall);
                 l.color = new Color(0.55f, 0.68f, 1f);
                 l.shadows = LightShadows.None;
                 l.lightmapBakeType = LightmapBakeType.Realtime;
