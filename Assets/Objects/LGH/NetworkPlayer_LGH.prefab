@@ -79,7 +79,7 @@ Camera:
   m_GameObject: {fileID: 175263037822677984}
   m_Enabled: 1
   serializedVersion: 2
-  m_ClearFlags: 2
+  m_ClearFlags: 1
   m_BackGroundColor: {r: 0.018, g: 0.024, b: 0.05, a: 1}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
@@ -1782,6 +1782,7 @@ MonoBehaviour:
   baseRange: 9.5
   speed: 7
   selfLight: {fileID: 4124141749227639303}
+  intensityScale: 1
 --- !u!114 &3862155750263364956
 MonoBehaviour:
   m_ObjectHideFlags: 0
