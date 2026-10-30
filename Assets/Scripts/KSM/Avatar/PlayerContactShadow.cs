@@ -11,15 +11,15 @@ namespace CoopDemo
     public class PlayerContactShadow : MonoBehaviour
     {
         [SerializeField] Material shadowMaterial;
-        [SerializeField] Vector2 radius = new Vector2(0.45f, 0.34f);
-        [SerializeField, Range(0f, 1f)] float opacity = 0.6f;
+        [SerializeField] Vector2 radius = new Vector2(0.85f, 0.7f);
+        [SerializeField, Range(0f, 1f)] float opacity = 0.9f;
         [SerializeField, Min(0.1f)] float maxHeight = 1.6f;
         [SerializeField, Min(0.001f)] float surfaceOffset = 0.02f;
         [SerializeField] LayerMask groundLayers = ~0;
         [Tooltip("진단용: 그림자를 밝은 자홍색으로 표시해 어두운 바닥에서의 대비 문제를 구분한다.")]
         [SerializeField] bool debugFootprint;
 
-        const int Grid = 5;
+        const int Grid = 9;
         static readonly int ColorId = Shader.PropertyToID("_Color");
         readonly RaycastHit[] hits = new RaycastHit[32];
         readonly Vector3[] vertices = new Vector3[Grid * Grid];
@@ -162,6 +162,7 @@ namespace CoopDemo
                 ? $"{shadowMaterial.shader.name} (supported={shadowMaterial.shader.isSupported})" : "missing";
             Debug.Log($"[ContactShadow] {name}: {projectionStatus}, height={lastHeight:F3}m, " +
                 $"alpha={lastAlpha:F3}, triangles={lastIndexCount / 3}, shader={shader}, " +
+                $"isOwner={player != null && player.IsOwner}, radius={radius}, " +
                 $"rendererEnabled={shadowRenderer != null && shadowRenderer.enabled}, " +
                 $"bounds={(shadowRenderer != null ? shadowRenderer.bounds.ToString() : "none")}", this);
         }

@@ -3611,8 +3611,8 @@ MonoBehaviour:
   m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::CoopDemo.PlayerContactShadow
   shadowMaterial: {fileID: 2100000, guid: 6f328e4bf8684c6b87306ce2390b49cf, type: 2}
-  radius: {x: 0.45, y: 0.34}
-  opacity: 0.6
+  radius: {x: 0.85, y: 0.7}
+  opacity: 0.9
   maxHeight: 1.6
   surfaceOffset: 0.02
   groundLayers:

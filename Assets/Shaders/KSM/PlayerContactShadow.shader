@@ -2,7 +2,7 @@ Shader "CoopDemo/PlayerContactShadow"
 {
     Properties
     {
-        _Color ("Shadow Color", Color) = (0, 0, 0, 0.6)
+        _Color ("Shadow Color", Color) = (0, 0, 0, 0.9)
     }
     SubShader
     {
@@ -35,7 +35,10 @@ Shader "CoopDemo/PlayerContactShadow"
             half4 Frag(Varyings input) : SV_Target
             {
                 half distanceFromCenter = length(input.uv * 2.0h - 1.0h);
-                half softness = 1.0h - smoothstep(0.25h, 1.0h, distanceFromCenter);
+                // A rounded falloff removes the flat, solid center while keeping
+                // a visible core. Fade the outer rim to zero so no quad edge shows.
+                half softness = exp2(-2.0h * distanceFromCenter * distanceFromCenter);
+                softness *= 1.0h - smoothstep(0.7h, 1.0h, distanceFromCenter);
                 return half4(_Color.rgb, _Color.a * softness);
             }
             ENDHLSL
