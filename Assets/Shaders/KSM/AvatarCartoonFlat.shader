@@ -20,8 +20,6 @@ Shader "CoopDemo/AvatarCartoonFlat"
         _EdgeSoftness ("Edge Softness", Range(0,1)) = 0.4
         _EdgeColor ("Edge Color", Color) = (1,1,1,1)
 
-        _StrokeWidth ("Outline Width (0 = Off)", Range(0.0, 1.0)) = 0
-        _StrokeColor ("Stroke Color", Color) = (0,0,0,1)
     }
 
     SubShader
@@ -151,65 +149,6 @@ Shader "CoopDemo/AvatarCartoonFlat"
                 finalColor = MixFog(finalColor, input.fogCoord);
 
                 return float4(finalColor, 1.0);
-            }
-
-            ENDHLSL
-        }
-
-        // Outline Pass
-        Pass
-        {
-            Name "OutlinePass"
-            Cull Front
-            Tags { "LightMode"="SRPDefaultUnlit" }
-
-            HLSLPROGRAM
-            #pragma vertex vert
-            #pragma fragment frag
-            #pragma multi_compile_fog
-
-            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
-
-            struct appdata
-            {
-                float4 vertex : POSITION;
-                float3 normal : NORMAL;
-            };
-
-            struct v2f
-            {
-                float4 pos : SV_POSITION;
-                half fogCoord : TEXCOORD0;
-            };
-
-            float _StrokeWidth;
-            float4 _StrokeColor;
-
-            v2f vert(appdata v)
-            {
-                v2f o;
-
-                // Skinned body objects use ~100x import scale. Expanding in object
-                // space inflates the outline into a black shell around the player.
-                // Extrude in world space: width 0.1 always means a 1 cm outline.
-                float3 positionWS = TransformObjectToWorld(v.vertex.xyz);
-                float3 normalWS = TransformObjectToWorldNormal(v.normal);
-                positionWS += normalWS * _StrokeWidth * 0.1;
-                o.pos = TransformWorldToHClip(positionWS);
-
-                VertexPositionInputs posInput = GetVertexPositionInputs(v.vertex.xyz);
-                o.fogCoord = ComputeFogFactor(posInput.positionCS.z);
-
-                return o;
-            }
-
-            float4 frag(v2f i) : SV_Target
-            {
-                // A zero-width back-face pass can still show on inner surfaces.
-                // Discard it entirely when the material disables outlines.
-                clip(_StrokeWidth - 0.000001);
-                float3 col = MixFog(_StrokeColor.rgb, i.fogCoord);
-                return float4(col, 1.0);
             }
 
             ENDHLSL
