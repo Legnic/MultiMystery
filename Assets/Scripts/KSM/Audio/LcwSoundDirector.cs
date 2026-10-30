@@ -19,7 +19,7 @@ public partial class LcwSoundDirector : MonoBehaviour
     [Range(0f, 1f)] public float ambienceVolume = 0.35f;
     [Range(0f, 1f)] public float doorVolume = 1f;
     [Range(0f, 1f)] public float drawerVolume = 0.9f;
-    [Range(0f, 1f)] public float footstepVolume = 0.7f;
+    [Range(0f, 1f)] public float footstepVolume = 1f;
 
     [Range(0f, 1f)] public float jumpLandingVolume = 1f;
 
