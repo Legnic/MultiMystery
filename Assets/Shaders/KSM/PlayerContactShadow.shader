@@ -2,7 +2,7 @@ Shader "CoopDemo/PlayerContactShadow"
 {
     Properties
     {
-        _Color ("Shadow Color", Color) = (0, 0, 0, 0.32)
+        _Color ("Shadow Color", Color) = (0, 0, 0, 0.6)
     }
     SubShader
     {
@@ -35,8 +35,8 @@ Shader "CoopDemo/PlayerContactShadow"
             half4 Frag(Varyings input) : SV_Target
             {
                 half distanceFromCenter = length(input.uv * 2.0h - 1.0h);
-                half softness = 1.0h - smoothstep(0.1h, 1.0h, distanceFromCenter);
-                return half4(_Color.rgb, _Color.a * softness * softness);
+                half softness = 1.0h - smoothstep(0.25h, 1.0h, distanceFromCenter);
+                return half4(_Color.rgb, _Color.a * softness);
             }
             ENDHLSL
         }

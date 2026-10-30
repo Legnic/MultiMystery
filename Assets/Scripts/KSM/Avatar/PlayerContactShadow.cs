@@ -11,11 +11,13 @@ namespace CoopDemo
     public class PlayerContactShadow : MonoBehaviour
     {
         [SerializeField] Material shadowMaterial;
-        [SerializeField] Vector2 radius = new Vector2(0.36f, 0.28f);
-        [SerializeField, Range(0f, 1f)] float opacity = 0.32f;
+        [SerializeField] Vector2 radius = new Vector2(0.45f, 0.34f);
+        [SerializeField, Range(0f, 1f)] float opacity = 0.6f;
         [SerializeField, Min(0.1f)] float maxHeight = 1.6f;
-        [SerializeField, Min(0.001f)] float surfaceOffset = 0.008f;
+        [SerializeField, Min(0.001f)] float surfaceOffset = 0.02f;
         [SerializeField] LayerMask groundLayers = ~0;
+        [Tooltip("진단용: 그림자를 밝은 자홍색으로 표시해 어두운 바닥에서의 대비 문제를 구분한다.")]
+        [SerializeField] bool debugFootprint;
 
         const int Grid = 5;
         static readonly int ColorId = Shader.PropertyToID("_Color");
@@ -30,6 +32,9 @@ namespace CoopDemo
         MeshRenderer shadowRenderer;
         Mesh mesh;
         MaterialPropertyBlock properties;
+        string projectionStatus = "Not initialized";
+        float lastHeight, lastAlpha;
+        int lastIndexCount;
 
         void Awake()
         {
@@ -37,6 +42,7 @@ namespace CoopDemo
             controller = GetComponent<CharacterController>();
             if (shadowMaterial == null)
             {
+                projectionStatus = "Missing material";
                 Debug.LogWarning("[ContactShadow] 접지 그림자 머티리얼이 없습니다.", this);
                 enabled = false;
                 return;
@@ -60,6 +66,7 @@ namespace CoopDemo
             shadowRenderer.receiveShadows = false;
             shadowRenderer.lightProbeUsage = LightProbeUsage.Off;
             shadowRenderer.reflectionProbeUsage = ReflectionProbeUsage.Off;
+            shadowRenderer.allowOcclusionWhenDynamic = false;
             shadowRenderer.enabled = false;
             properties = new MaterialPropertyBlock();
         }
@@ -90,15 +97,25 @@ namespace CoopDemo
         {
             if (shadowRenderer == null) return;
             shadowRenderer.enabled = false;
+            projectionStatus = "Waiting for network spawn";
+            lastAlpha = 0f;
+            lastIndexCount = 0;
             if (!player.IsSpawned) return;
             Vector3 feet = controller != null
                 ? transform.TransformPoint(controller.center - Vector3.up * controller.height * 0.5f)
                 : transform.position;
             Vector3 origin = feet + Vector3.up * 0.4f;
+            projectionStatus = "No ground surface";
             if (!GroundAt(origin, out var ground)) return;
             float height = Mathf.Max(0f, feet.y - ground.point.y);
+            lastHeight = height;
             float fade = 1f - Mathf.InverseLerp(0.05f, maxHeight, height);
+            projectionStatus = "Above shadow height limit";
             if (fade <= 0.01f) return;
+            // 렌더러는 실제 그림자 위치에 두고 메시 좌표는 작은 로컬 값으로 유지한다.
+            // 원점에 둔 렌더러/납작한 월드 좌표 메시가 가림 판정에 의존하지 않게 한다.
+            shadowObject.transform.SetPositionAndRotation(ground.point, Quaternion.identity);
+            Vector3 shadowOrigin = ground.point;
             float spread = Mathf.Lerp(1f, 1.35f, 1f - fade);
             Vector3 right = transform.right;
             Vector3 forward = transform.forward;
@@ -109,7 +126,7 @@ namespace CoopDemo
                 Vector3 offset = right * ((x / (Grid - 1f) * 2f - 1f) * radius.x * spread)
                     + forward * ((z / (Grid - 1f) * 2f - 1f) * radius.y * spread);
                 valid[i] = GroundAt(origin + offset, out var hit);
-                vertices[i] = valid[i] ? hit.point + hit.normal * surfaceOffset : ground.point;
+                vertices[i] = valid[i] ? hit.point + hit.normal * surfaceOffset - shadowOrigin : Vector3.zero;
                 normals[i] = valid[i] ? hit.normal : ground.normal;
             }
             int length = 0;
@@ -120,13 +137,33 @@ namespace CoopDemo
                 AddTriangle(a, c, b, ref length);
                 AddTriangle(b, c, d, ref length);
             }
+            projectionStatus = "No connected ground triangles";
             if (length == 0) return;
             mesh.vertices = vertices;
             mesh.SetTriangles(indices, 0, length, 0, false);
             mesh.RecalculateBounds();
-            properties.SetColor(ColorId, new Color(0f, 0f, 0f, opacity * fade));
+            var bounds = mesh.bounds;
+            bounds.Expand(0.05f); // 완전히 납작한 bounds의 경계 가림을 방지한다.
+            mesh.bounds = bounds;
+            lastAlpha = debugFootprint ? 0.9f : opacity * fade;
+            properties.SetColor(ColorId, debugFootprint
+                ? new Color(1f, 0f, 1f, lastAlpha)
+                : new Color(0f, 0f, 0f, lastAlpha));
             shadowRenderer.SetPropertyBlock(properties);
             shadowRenderer.enabled = true;
+            lastIndexCount = length;
+            projectionStatus = "Rendering";
+        }
+
+        [ContextMenu("Log Contact Shadow Diagnostics")]
+        void LogDiagnostics()
+        {
+            string shader = shadowMaterial != null && shadowMaterial.shader != null
+                ? $"{shadowMaterial.shader.name} (supported={shadowMaterial.shader.isSupported})" : "missing";
+            Debug.Log($"[ContactShadow] {name}: {projectionStatus}, height={lastHeight:F3}m, " +
+                $"alpha={lastAlpha:F3}, triangles={lastIndexCount / 3}, shader={shader}, " +
+                $"rendererEnabled={shadowRenderer != null && shadowRenderer.enabled}, " +
+                $"bounds={(shadowRenderer != null ? shadowRenderer.bounds.ToString() : "none")}", this);
         }
 
         void AddTriangle(int a, int b, int c, ref int length)

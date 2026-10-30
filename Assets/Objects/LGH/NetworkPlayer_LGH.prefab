@@ -3611,10 +3611,11 @@ MonoBehaviour:
   m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::CoopDemo.PlayerContactShadow
   shadowMaterial: {fileID: 2100000, guid: 6f328e4bf8684c6b87306ce2390b49cf, type: 2}
-  radius: {x: 0.36, y: 0.28}
-  opacity: 0.32
+  radius: {x: 0.45, y: 0.34}
+  opacity: 0.6
   maxHeight: 1.6
-  surfaceOffset: 0.008
+  surfaceOffset: 0.02
   groundLayers:
     serializedVersion: 2
     m_Bits: 4294967295
+  debugFootprint: 0
