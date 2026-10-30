@@ -20,6 +20,8 @@ public partial class LcwSoundDirector : MonoBehaviour
     [Range(0f, 1f)] public float doorVolume = 1f;
     [Range(0f, 1f)] public float drawerVolume = 0.9f;
     [Range(0f, 1f)] public float footstepVolume = 1f;
+    [Tooltip("내 발소리는 거리 감쇠 없이 재생한다. 상대 발소리는 footstepVolume을 사용한다.")]
+    [Range(0f, 1f)] public float localFootstepVolume = 1f;
 
     [Range(0f, 1f)] public float jumpLandingVolume = 1f;
 
@@ -253,15 +255,21 @@ public partial class LcwSoundDirector : MonoBehaviour
             // 땅에 닿아 있을 때만 (점프 중에는 소리 없음)
             if (!Physics.Raycast(pos + Vector3.up * 0.3f, Vector3.down, 0.7f, ~0, QueryTriggerInteraction.Ignore)) continue;
 
-            bool crouch = speed < 3.0f;   // 걷기 4.0 / 달리기 6.4 / 웅크리기 2.2 — 속도로 구분 (상대 플레이어는 웅크림 값을 직접 알 수 없다)
+            bool local = p == NetworkPlayer.Local;
+            var movement = local ? p.GetComponent<FirstPersonController>() : null;
+            // 내 상태는 실제 입력 결과를 사용한다. 상대는 웅크림 값이 동기화되지 않아 속도로 추정한다.
+            bool crouch = movement != null ? movement.IsCrouching : speed < 3.0f;
             float stride = crouch ? crouchStride : walkStride;
             w.distance += delta.magnitude;
             if (w.distance < stride) continue;
             w.distance = 0f;
 
-            float vol = footstepVolume * (crouch ? 0.45f : (speed > 5f ? 1.15f : 1f));
-            if (p != NetworkPlayer.Local) vol *= 0.9f;
-            LcwSfx.Play(bank.footstep, pos, Mathf.Clamp01(vol), 16f, 1.5f, 0.06f);
+            float vol = (local ? localFootstepVolume : footstepVolume)
+                * (crouch ? 0.45f : (speed > 5f ? 1.15f : 1f));
+            if (local)
+                LcwSfx.Play2D(bank.footstep, Mathf.Clamp01(vol), 0.06f);
+            else
+                LcwSfx.Play(bank.footstep, pos, Mathf.Clamp01(vol * 0.9f), 16f, 1.5f, 0.06f);
         }
     }
 }
