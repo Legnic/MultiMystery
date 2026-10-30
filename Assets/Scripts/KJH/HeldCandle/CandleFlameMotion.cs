@@ -74,6 +74,17 @@ namespace CandleFx
             bodyMpb = new MaterialPropertyBlock();
             if (referenceLight != null) refLight = referenceLight.intensity;
             if (selfLight != null) selfRestLocal = pivot.InverseTransformPoint(selfLight.transform.position);
+            flickerSource = GetComponentInParent<LGH.CandleFlicker>();
+        }
+
+        LGH.CandleFlicker flickerSource;
+
+        // 흔들림·꺼져감 밝기 비율 (1 = 새 양초). 상대 화면에서 방을 비추는 빛만 어둡게 해도(intensityScale) 불꽃은 그대로 보이게,
+        // CandleFlicker가 있으면 배율을 뺀 비율을 쓴다.
+        float CurrentRatio()
+        {
+            if (flickerSource != null && flickerSource.isActiveAndEnabled) return flickerSource.Ratio;
+            return referenceLight != null && refLight > 0f ? referenceLight.intensity / refLight : 1f;
         }
 
         void OnEnable()
@@ -154,15 +165,20 @@ namespace CandleFx
                 halo.localScale = new Vector3(hs, hs, 1f);
             }
 
-            float ratio = referenceLight != null && refLight > 0f ? referenceLight.intensity / refLight : 1f;
+            float ratio = CurrentRatio();
             if (coreR != null) { mpb.SetFloat(IntensityId, coreIntensity * ratio); coreR.SetPropertyBlock(mpb); }
             if (haloR != null) { mpb.SetFloat(IntensityId, haloIntensity * ratio); haloR.SetPropertyBlock(mpb); }
 
             if (selfLight != null)
             {
+                // 빛은 항상 "보는 사람 쪽"에 둔다 (프리팹에 둔 거리·높이 그대로). 1인칭에선 원래 자리와 거의 같고,
+                // 상대 화면(아바타 손)에선 몸 쪽이 아니라 보는 사람 쪽을 비춰서 양초가 까맣게 보이지 않는다.
+                float horiz = new Vector2(selfRestLocal.x, selfRestLocal.z).magnitude * s;
+                Vector3 toViewer = Vector3.ProjectOnPlane(camPos - p, Vector3.up);
+                if (toViewer.sqrMagnitude < 1e-8f) toViewer = Vector3.ProjectOnPlane(pivot.TransformDirection(new Vector3(selfRestLocal.x, 0f, selfRestLocal.z)), Vector3.up);
+                Vector3 rest = p + Vector3.up * (selfRestLocal.y * s) + toViewer.normalized * horiz;
                 // 불꽃 가운데가 움직인 만큼 빛도 옮긴다 (가만히 있을 때의 불꽃 가운데 기준)
-                Vector3 rest = pivot.TransformPoint(selfRestLocal);
-                Vector3 flameShift = up * (h * 0.5f * s) - pivot.up * (coreHeight * 0.5f * s);
+                Vector3 flameShift = up * (h * 0.5f * s) - Vector3.up * (coreHeight * 0.5f * s);
                 selfLight.transform.position = rest + flameShift * selfLightFollow;
             }
             if (bodyRenderer != null)

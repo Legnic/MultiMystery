@@ -20,9 +20,13 @@ namespace CoopDemo
 
         [Header("손에 든 촛불 (상대에게 보이는 쪽)")]
         [Tooltip("오른손 위치 기준, 모델 좌표(오른쪽, 위, 앞)로 얼마나 띄울지 (접시 바닥이 손바닥에 오게)")]
-        public Vector3 handCandleOffset = new Vector3(0.0f, 0.10f, 0.10f);
+        public Vector3 handCandleOffset = new Vector3(0.0f, 0.14f, 0.10f);   // 0.10이면 접시·밀랍 아래가 주먹에 묻힌다 (2026-10-30)
         [Tooltip("모델이 아니라 \"월드\"를 기준으로 촛불을 똑바로 세운다 (팔이 돌아가도 촛불은 기울지 않는다)")]
         public bool handCandleUpright = true;
+        [Tooltip("상대 화면에서 그 사람 양초가 방을 비추는 빛의 밝기 배율 (1인칭 기준 1). 몸·얼굴이 하얗게 타지 않게 낮춘다. 불꽃 모양은 그대로")]
+        [Range(0f, 1f)] public float remoteCandleLightScale = 0.5f;
+        [Tooltip("상대 화면에서 양초 빛의 위치 (불꽃 기준, 모델 좌표 오른쪽·위·앞). 1인칭용 위치는 얼굴 쪽(뒤)이라 몸에 붙어 버리므로 앞으로 뺀다")]
+        public Vector3 remoteCandleLightPos = new Vector3(0f, 0.04f, 0.06f);
 
         [Header("몸 정면 감정표현 손 (EmoteHand, 상대에게 보이는 쪽)")]
         [Tooltip("기준점 = 몸 중심(가로·앞뒤)과 머리 높이. 거기서 모델 좌표(오른쪽, 위, 앞)로 얼마나 띄울지")]
@@ -121,6 +125,12 @@ namespace CoopDemo
             candle.SetParent(handCandleSocket, false);
             candle.localPosition = Vector3.zero;
             candle.localRotation = Quaternion.identity;
+            var flicker = candle.GetComponentInChildren<LGH.CandleFlicker>(true);
+            if (flicker != null)
+            {
+                flicker.intensityScale = remoteCandleLightScale;
+                flicker.SetLightLocalPosition(remoteCandleLightPos);
+            }
             UpdateHandCandle();
         }
 
