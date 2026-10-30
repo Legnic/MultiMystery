@@ -20,7 +20,8 @@ namespace CoopDemo.EditorTools
         const string CookiePath = "Assets/Settings/KSM/MasterRoom/MoonWindowCookie.png";
         const float Pitch = 32f, Yaw = 150f, SourceDistance = 8f, CookieSpan = 0.68f;
         // 방향광 Moonlight_LGH(0.35)가 같은 방향의 실제 무늬를 따로 만들어서, 스포트를 100으로 두면 둘이 겹쳐 과하게 밝고 창살이 어긋나 보인다 → 60으로 낮춤.
-        const float Intensity = 60f;
+        // 2026-10-31: 방향광이 실내를 비추지 않게 분리(NightExteriorBuilder의 렌더링 레이어)하면서 방향광이 만들던 창 무늬 밝기가 사라져 60 → 100으로 올림.
+        const float Intensity = 100f;
 
         [MenuItem("Tools/KSM/Lighting/Moonlight - Place On Windows")]
         public static void Run()

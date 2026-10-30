@@ -18,6 +18,9 @@ namespace CoopDemo.EditorTools
         const string MatPath = "Assets/Materials/KSM/Exterior/NightSky.mat";
         const string PlayerPrefabPath = "Assets/Objects/LGH/NetworkPlayer_LGH.prefab";
 
+        const uint MoonLayer = 2u;     // 렌더링 레이어 1 = 달빛 방향광 전용
+        const uint AllLayers = 3u;     // 레이어 0 + 1: 기본 광원과 달빛 둘 다 받음
+
         // 수평선 색 = 안개 색 (경계가 이어지게)
         static readonly Color Horizon = new Color(0.035f, 0.048f, 0.095f);
 
@@ -141,11 +144,51 @@ namespace CoopDemo.EditorTools
                     probesOff++;
                 }
 
+            // 달빛 방향광은 야외 전용으로 분리한다 (렌더링 레이어, 2026-10-31).
+            // 창가 달빛은 스포트라이트(MoonlightWindows)가 만들고, 방향광도 같은 방향으로 자기 창 무늬를 만들어서 둘이 겹쳐 이중 무늬가 보였다.
+            // → 방향광을 레이어 2(비트 1) 전용으로 두고, 그 빛을 받아야 하는 것(야외·지붕·플레이어)만 레이어 0·1을 갖게 한다.
+            //   실내와 모든 기존 광원은 기본 레이어(0) 그대로라 새 조명을 추가해도 아무것도 안 해도 된다.
+            // 주의: 라이트의 레이어는 Light.renderingLayerMask가 아니라 UniversalAdditionalLightData.renderingLayers를 URP가 읽는다.
+            //       그림자는 모든 렌더러가 드리워야 하므로(천장·벽이 방향광을 막아야 함) 그림자 레이어를 따로 3으로 둔다.
+            var moonData = moon.GetComponent<UnityEngine.Rendering.Universal.UniversalAdditionalLightData>() ?? moon.gameObject.AddComponent<UnityEngine.Rendering.Universal.UniversalAdditionalLightData>();
+            moon.renderingLayerMask = (int)MoonLayer;
+            moonData.renderingLayers = MoonLayer;
+            moonData.customShadowLayers = true;
+            moonData.shadowRenderingLayers = AllLayers;
+            EditorUtility.SetDirty(moon); EditorUtility.SetDirty(moonData);
+            int layered = 0;
+            var layerRoots = new System.Collections.Generic.List<Transform>(outdoorRoots);
+            if (rw != null)
+            {
+                var roof = rw.transform.Find("Floor2/Roof"); if (roof != null) layerRoots.Add(roof);
+                var atticT = rw.transform.Find("Attic");
+                if (atticT != null) foreach (Transform c in atticT) if (c.name.StartsWith("AtticRoof")) layerRoots.Add(c);
+            }
+            foreach (var t in layerRoots)
+                foreach (var r in t.GetComponentsInChildren<Renderer>(true))
+                {
+                    if (r.renderingLayerMask == AllLayers) continue;
+                    r.renderingLayerMask = AllLayers;
+                    EditorUtility.SetDirty(r);
+                    if (PrefabUtility.IsPartOfPrefabInstance(r)) PrefabUtility.RecordPrefabInstancePropertyModifications(r);
+                    layered++;
+                }
+            // 플레이어 아바타(야외에서 달빛을 받아야 함)
+            foreach (var guid in AssetDatabase.FindAssets("t:Prefab", new[] { "Assets/Prefabs/KSM/Avatar" }))
+            {
+                string p = AssetDatabase.GUIDToAssetPath(guid);
+                if (!System.IO.Path.GetFileName(p).StartsWith("Avatar_")) continue;
+                var ar = PrefabUtility.LoadPrefabContents(p);
+                try { foreach (var r in ar.GetComponentsInChildren<Renderer>(true)) r.renderingLayerMask = AllLayers; PrefabUtility.SaveAsPrefabAsset(ar, p); }
+                finally { PrefabUtility.UnloadPrefabContents(ar); }
+            }
+
             // 플레이어 카메라가 하늘을 그리게 (지금은 단색 배경)
             var root = PrefabUtility.LoadPrefabContents(PlayerPrefabPath);
             try
             {
                 foreach (var cam in root.GetComponentsInChildren<Camera>(true)) cam.clearFlags = CameraClearFlags.Skybox;
+                foreach (var r in root.GetComponentsInChildren<Renderer>(true)) r.renderingLayerMask = AllLayers;   // 플레이어 몸/손/양초도 야외 달빛을 받는다
                 PrefabUtility.SaveAsPrefabAsset(root, PlayerPrefabPath);
             }
             finally { PrefabUtility.UnloadPrefabContents(root); }
