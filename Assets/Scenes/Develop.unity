@@ -448275,13 +448275,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CoopDemo.IllustratedCutsceneController
   kind: 1
   videoClip: {fileID: 32900000, guid: 99a87aa07ad07f64e854d937a7d6a442, type: 3}
-  illustration: {fileID: 1678833057}
-  caption: {fileID: 1467834562}
-  nextButton: {fileID: 824658837}
+  dissolveSeconds: 3
   skipButton: {fileID: 571619731}
   playbackRoot: {fileID: 255636741}
   waitingRoot: {fileID: 1371873001}
   waitingText: {fileID: 1975975111}
+  illustration: {fileID: 1678833057}
+  caption: {fileID: 1467834562}
+  nextButton: {fileID: 824658837}
 --- !u!114 &1553360569
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -618929,13 +618930,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CoopDemo.IllustratedCutsceneController
   kind: 0
   videoClip: {fileID: 32900000, guid: 7857f4f0abfa1fe4b8caee183a10880c, type: 3}
-  illustration: {fileID: 140718566}
-  caption: {fileID: 1216516883}
-  nextButton: {fileID: 1847912478}
+  dissolveSeconds: 3
   skipButton: {fileID: 1446167149}
   playbackRoot: {fileID: 1293042401}
   waitingRoot: {fileID: 569956979}
   waitingText: {fileID: 1109883821}
+  illustration: {fileID: 140718566}
+  caption: {fileID: 1216516883}
+  nextButton: {fileID: 1847912478}
 --- !u!114 &2128843865
 MonoBehaviour:
   m_ObjectHideFlags: 0
