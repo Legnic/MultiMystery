@@ -87,6 +87,20 @@ namespace LGH
             if (Local == this) Local = null;
         }
 
+        // 소유자의 실제 착지 접촉을 사용한다. 로컬은 즉시 재생하고 나머지 클라이언트에만 알린다.
+        public void ReportJumpLanding()
+        {
+            if (IsSpawned && !IsOwner) return;
+            LcwSoundDirector.PlayJumpLanding(transform.position);
+            if (IsSpawned) JumpLandingRpc(transform.position);
+        }
+
+        [Rpc(SendTo.NotOwner, RequireOwnership = true)]
+        void JumpLandingRpc(Vector3 position)
+        {
+            LcwSoundDirector.PlayJumpLanding(position);
+        }
+
         // owner only: change the name everyone sees
         public void SetNickname(string value)
         {

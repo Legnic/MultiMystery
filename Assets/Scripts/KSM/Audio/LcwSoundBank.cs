@@ -16,6 +16,7 @@ public class LcwSoundBank : ScriptableObject
     public AudioClip drawerOpen;        // 서랍여는소리1
     public AudioClip drawerClose;       // 서랍닫는소리1
     public AudioClip footstep;          // 발소리수정3 — 한 걸음
+    public AudioClip jumpLanding;       // 점프후착지음 — 점프 후 지면에 닿을 때
     public AudioClip paperPickup;       // 종이집어들기1
     public AudioClip smallMetalPickup;  // 작은금속물건집기1
     public AudioClip numpadPress1;      // 번호키누르는소리1   (검토 필요: 어디에 쓰는지)

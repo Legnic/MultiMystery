@@ -42,6 +42,8 @@ namespace LGH
         public void StartClimb(Ladder ladder)
         {
             if (ladder == null || controller == null) return;
+            jumpPendingLanding = false;
+            jumpLeftGround = false;
             Vector3 delta = ladder.GrabPoint(controller) - controller.bounds.center;
             controller.enabled = false;
             transform.position += delta;
@@ -58,6 +60,10 @@ namespace LGH
 
         private CharacterController controller;
         private float verticalVelocity;
+        bool jumpPendingLanding;
+        bool jumpLeftGround;
+
+        void OnDisable() { jumpPendingLanding = false; jumpLeftGround = false; }
         private float pitch;
 
         bool crouching;
@@ -193,7 +199,11 @@ namespace LGH
             {
                 verticalVelocity = -0.5f;
                 if (kb.spaceKey.wasPressedThisFrame && !typing && !paused)
+                {
                     verticalVelocity = Mathf.Sqrt(jumpHeight * -2f * gravity);
+                    jumpPendingLanding = verticalVelocity > 0f;
+                    jumpLeftGround = false;
+                }
             }
             else
             {
@@ -202,7 +212,19 @@ namespace LGH
 
             Vector3 velocity = moveDir * moveSpeed * speedMul * SpeedMultiplier;
             velocity.y = verticalVelocity;
-            controller.Move(velocity * Time.deltaTime);
+            var collisions = controller.Move(velocity * Time.deltaTime);
+            if (jumpPendingLanding)
+            {
+                if (!controller.isGrounded) jumpLeftGround = true;
+                if (jumpLeftGround && verticalVelocity <= 0f && (collisions & CollisionFlags.Below) != 0)
+                {
+                    jumpPendingLanding = false;
+                    jumpLeftGround = false;
+                    var networkPlayer = GetComponent<NetworkPlayer>();
+                    if (networkPlayer != null) networkPlayer.ReportJumpLanding();
+                    else LcwSoundDirector.PlayJumpLanding(transform.position);
+                }
+            }
         }
     }
 }

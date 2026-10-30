@@ -19,6 +19,7 @@ public static class LcwSoundBankBuilder
         ("drawerOpen", "기본사운드/기본사운드/서랍여는소리1.wav"),
         ("drawerClose", "기본사운드/기본사운드/서랍닫는소리1.wav"),
         ("footstep", "기본사운드/기본사운드/발소리수정3.wav"),
+        ("jumpLanding", "기본사운드/기본사운드/점프후착지음.wav"),
         ("paperPickup", "기본사운드/기본사운드/종이집어들기1.wav"),
         ("smallMetalPickup", "기본사운드/기본사운드/작은금속물건집기1.wav"),
         ("numpadPress1", "기본사운드/기본사운드/번호키누르는소리1.wav"),

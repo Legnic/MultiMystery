@@ -21,6 +21,8 @@ public partial class LcwSoundDirector : MonoBehaviour
     [Range(0f, 1f)] public float drawerVolume = 0.9f;
     [Range(0f, 1f)] public float footstepVolume = 0.7f;
 
+    [Range(0f, 1f)] public float jumpLandingVolume = 1f;
+
     [Header("발소리")]
     [Tooltip("걸을 때 한 걸음 사이 거리(m)")] public float walkStride = 1.3f;
     [Tooltip("웅크릴 때 한 걸음 사이 거리(m)")] public float crouchStride = 1.0f;
@@ -216,6 +218,15 @@ public partial class LcwSoundDirector : MonoBehaviour
             if (quiet || prev == open) continue;
             LcwSfx.Play(open ? bank.drawerOpen : bank.drawerClose, d.transform.position, drawerVolume, 16f);
         }
+    }
+
+    // 접지 판정은 실제로 CharacterController.Move를 실행하는 소유자가 담당한다.
+    // 원격 플레이어의 착지도 같은 위치에서 한 번 재생하여 거리 감쇠를 적용한다.
+    public static void PlayJumpLanding(Vector3 position)
+    {
+        var b = LcwSfx.Bank;
+        if (b == null || Instance == null || Instance.quiet || !GameActive) return;
+        LcwSfx.Play(b.jumpLanding, position, Instance.jumpLandingVolume, 16f, 1.5f, 0f);
     }
 
     // ---------------------------------------------------------------- 발소리 (나와 상대 둘 다, 움직인 거리로 한 걸음씩)
