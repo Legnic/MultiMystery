@@ -25,6 +25,8 @@ namespace CandleFx
             WriteTexture(HaloTexPath, DrawHalo(64));
             var coreMat = EnsureMaterial(CoreMatPath, FlameTexPath, new Color(1f, 1f, 1f));
             var haloMat = EnsureMaterial(HaloMatPath, HaloTexPath, new Color(1f, 0.7f, 0.4f));
+            BuildBodyMaps();
+            ApplyBodyMaterial();
             BuildPrefab(coreMat, haloMat);
             AssetDatabase.SaveAssets();
             Debug.Log("[CandleFlameBuilder] 손 양초 불꽃 구성 완료");
@@ -165,6 +167,25 @@ namespace CandleFx
             ImportMap(WaxEmissionTexPath, true);
         }
 
+        const string BodyMatPath = Dir + "/M_HeldCandle.mat";
+        static readonly Color BodyEmission = new Color(0.19f, 0.13f, 0.07f);
+
+        // 양초 몸체 재질에 반사 맵(놋쇠만 금속)과 밀랍 발광 맵을 연결한다.
+        // 맵이 있으면 URP Lit은 금속성은 맵의 R, 광택은 맵의 A × _Smoothness를 쓴다.
+        static void ApplyBodyMaterial()
+        {
+            var mat = AssetDatabase.LoadAssetAtPath<Material>(BodyMatPath);
+            if (mat == null) return;
+            mat.SetTexture("_MetallicGlossMap", AssetDatabase.LoadAssetAtPath<Texture2D>(MetalSmoothTexPath));
+            mat.EnableKeyword("_METALLICSPECGLOSSMAP");
+            mat.SetFloat("_Smoothness", 1f);
+            mat.SetFloat("_SmoothnessTextureChannel", 0f);
+            mat.SetTexture("_EmissionMap", AssetDatabase.LoadAssetAtPath<Texture2D>(WaxEmissionTexPath));
+            mat.SetColor("_EmissionColor", BodyEmission);
+            mat.EnableKeyword("_EMISSION");
+            EditorUtility.SetDirty(mat);
+        }
+
         static float[] Blur3(float[] a, int n)
         {
             var b = new float[a.Length];
@@ -238,6 +259,11 @@ namespace CandleFx
                 motion.halo = halo;
                 var lightTr = flameRoot.Find("CandleLight");
                 motion.referenceLight = lightTr != null ? lightTr.GetComponent<Light>() : null;
+                var selfTr = flameRoot.Find("CandleSelfLight");
+                motion.selfLight = selfTr != null ? selfTr.GetComponent<Light>() : null;
+                var bodyTr = hc.Find("Model");
+                motion.bodyRenderer = bodyTr != null ? bodyTr.GetComponent<Renderer>() : null;
+                motion.bodyEmission = BodyEmission;
                 motion.coreHeight = meshHeight * 1.35f;
                 motion.coreWidth = motion.coreHeight * 0.42f;
                 motion.haloSize = motion.coreHeight * 2.4f;
