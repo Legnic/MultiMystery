@@ -43054,7 +43054,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &140718564
 RectTransform:
   m_ObjectHideFlags: 0
@@ -169670,11 +169670,11 @@ RectTransform:
   - {fileID: 1618008460}
   m_Father: {fileID: 255636742}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 500, y: -380}
+  m_AnchorMin: {x: 1, y: 0}
+  m_AnchorMax: {x: 1, y: 0}
+  m_AnchoredPosition: {x: -32, y: 32}
   m_SizeDelta: {x: 220, y: 64}
-  m_Pivot: {x: 0.5, y: 0.5}
+  m_Pivot: {x: 1, y: 0}
 --- !u!114 &571619729
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -239322,7 +239322,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &824658834
 RectTransform:
   m_ObjectHideFlags: 0
@@ -354304,7 +354304,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1216516881
 RectTransform:
   m_ObjectHideFlags: 0
@@ -419164,11 +419164,11 @@ RectTransform:
   - {fileID: 791754297}
   m_Father: {fileID: 1293042402}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 500, y: -380}
+  m_AnchorMin: {x: 1, y: 0}
+  m_AnchorMax: {x: 1, y: 0}
+  m_AnchoredPosition: {x: -32, y: 32}
   m_SizeDelta: {x: 220, y: 64}
-  m_Pivot: {x: 0.5, y: 0.5}
+  m_Pivot: {x: 1, y: 0}
 --- !u!114 &1446167147
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -424523,7 +424523,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1467834560
 RectTransform:
   m_ObjectHideFlags: 0
@@ -448274,13 +448274,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CoopDemo.IllustratedCutsceneController
   kind: 1
-  cuts:
-  - image: {fileID: 0}
-    caption: "\uB9C8\uC9C0\uB9C9 \uBB38\uC774 \uC5F4\uB9AC\uACE0, \uCC28\uAC00\uC6B4 \uBC24\uACF5\uAE30\uAC00 \uBC00\uB824\uB4E4\uC5B4\uC654\uB2E4."
-    minSeconds: 2
-  - image: {fileID: 0}
-    caption: "\uB450 \uC0AC\uB78C\uC740 \uB4A4\uB97C \uB3CC\uC544\uBCF4\uC9C0 \uC54A\uACE0\n\uC800\uD0DD\uC744 \uBE60\uC838\uB098\uC654\uB2E4."
-    minSeconds: 2
+  videoClip: {fileID: 32900000, guid: 99a87aa07ad07f64e854d937a7d6a442, type: 3}
   illustration: {fileID: 1678833057}
   caption: {fileID: 1467834562}
   nextButton: {fileID: 824658837}
@@ -485914,7 +485908,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1678833055
 RectTransform:
   m_ObjectHideFlags: 0
@@ -536033,7 +536027,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1847912475
 RectTransform:
   m_ObjectHideFlags: 0
@@ -618934,10 +618928,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CoopDemo.IllustratedCutsceneController
   kind: 0
-  cuts:
-  - image: {fileID: 0}
-    caption: "\uD0C8\uCD9C\uD574\uC57C \uD55C\uB2E4"
-    minSeconds: 2
+  videoClip: {fileID: 32900000, guid: 7857f4f0abfa1fe4b8caee183a10880c, type: 3}
   illustration: {fileID: 140718566}
   caption: {fileID: 1216516883}
   nextButton: {fileID: 1847912478}

@@ -4,12 +4,13 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Video;
 
 namespace CoopDemo.EditorTools
 {
     // 로비->도입부->플레이->엔딩->결과 흐름의 Canvas/네트워크 오브젝트를 자동 배치하는 도구. Unity 메뉴 Tools/KSM/GameFlow/Build All.
     // 몇 번을 다시 실행해도 된다 — 이전에 만든 GameFlow 관련 오브젝트를 지우고 새로 만든다(프로젝트의 다른 Build All 도구들과 같은 방식).
-    // 아직 실제 일러스트가 없어서 전부 유니티 기본 UI(단색 Image + Text)로 임시 제작한다 — 나중에 이미지만 갈아끼우면 된다.
+    // 도입부/엔딩은 KSM 영상 에셋을 사용하고 스킵 버튼만 표시한다.
     public static class GameFlowBuilder
     {
         const string PrefabRoot = "Assets/Prefabs/KSM/GameFlow";
@@ -34,8 +35,8 @@ namespace CoopDemo.EditorTools
             RegisterNetworkPrefab(syncPrefab);
 
             var lobbyGo = BuildLobbyCanvas();
-            var introGo = BuildCutsceneCanvas("IntroCanvas", IllustratedCutsceneController.Kind.Intro, DefaultIntroCuts());
-            var endingGo = BuildCutsceneCanvas("EndingCanvas", IllustratedCutsceneController.Kind.Ending, DefaultEndingCuts());
+            var introGo = BuildCutsceneCanvas("IntroCanvas", IllustratedCutsceneController.Kind.Intro, "Assets/Images/KSM/Opening.mp4");
+            var endingGo = BuildCutsceneCanvas("EndingCanvas", IllustratedCutsceneController.Kind.Ending, "Assets/Images/KSM/Ending.mp4");
             var resultGo = BuildResultCanvas();
 
             // 전부 처음엔 꺼져 있다 — GameFlowUI가 단계에 맞춰 하나만 켠다.
@@ -54,29 +55,6 @@ namespace CoopDemo.EditorTools
             EditorSceneManager.MarkSceneDirty(ActiveScene());
             Selection.activeObject = uiGo;
             Debug.Log("[GameFlow] Build All 완료. 씬을 저장(Ctrl+S)하세요. 테스트는 Playing 상태에서 키보드로 'ESCAPE'를 순서대로 입력하면 엔딩으로 넘어갑니다(임시).");
-        }
-
-        static IllustratedCutsceneController.Cut[] DefaultIntroCuts()
-        {
-            return new[]
-            {
-                // 이미지 컷이 준비되면 여기에 컷을 추가한다 (지금은 대사 하나만).
-                NewCut("탈출해야 한다", 2f),
-            };
-        }
-
-        static IllustratedCutsceneController.Cut[] DefaultEndingCuts()
-        {
-            return new[]
-            {
-                NewCut("마지막 문이 열리고, 차가운 밤공기가 밀려들어왔다.", 2f),
-                NewCut("두 사람은 뒤를 돌아보지 않고\n저택을 빠져나왔다.", 2f),
-            };
-        }
-
-        static IllustratedCutsceneController.Cut NewCut(string caption, float minSeconds)
-        {
-            return new IllustratedCutsceneController.Cut { image = null, caption = caption, minSeconds = minSeconds };
         }
 
         // =====================================================================
@@ -129,21 +107,21 @@ namespace CoopDemo.EditorTools
         // 도입부/엔딩 공용 Canvas
         // =====================================================================
 
-        static GameObject BuildCutsceneCanvas(string name, IllustratedCutsceneController.Kind kind, IllustratedCutsceneController.Cut[] cuts)
+        static GameObject BuildCutsceneCanvas(string name, IllustratedCutsceneController.Kind kind, string videoPath)
         {
             var canvasGo = CreateOverlayCanvas(name, sortOrder: 10);
             var canvasRect = (RectTransform)canvasGo.transform;
 
-            CreateFullStretchImage(canvasRect, "Background", new Color(0.04f, 0.04f, 0.06f, 0.97f));
+            CreateFullStretchImage(canvasRect, "Background", Color.black);
 
             var playback = new GameObject("PlaybackRoot", typeof(RectTransform));
             SetupStretch((RectTransform)playback.transform, canvasRect);
 
-            var illustration = CreateImage(playback.transform, "Illustration", new Vector2(0, 120), new Vector2(900, 460), new Color(0.22f, 0.22f, 0.28f, 1f));
-            var caption = CreateText(playback.transform, "Caption", "", 30, TextAnchor.MiddleCenter,
-                new Color(0.95f, 0.95f, 0.9f), new Vector2(0, -220), new Vector2(1400, 160));
-            var nextBtn = CreateButton(playback.transform, "NextButton", "다음", new Vector2(240, -380), new Vector2(220, 64));
-            var skipBtn = CreateButton(playback.transform, "SkipButton", "스킵", new Vector2(500, -380), new Vector2(220, 64));
+            var skipBtn = CreateButton(playback.transform, "SkipButton", "스킵", Vector2.zero, new Vector2(220, 64));
+            var skipRect = (RectTransform)skipBtn.transform;
+            skipRect.anchorMin = skipRect.anchorMax = new Vector2(1, 0);
+            skipRect.pivot = new Vector2(1, 0);
+            skipRect.anchoredPosition = new Vector2(-32, 32);
 
             var waiting = new GameObject("WaitingRoot", typeof(RectTransform));
             SetupStretch((RectTransform)waiting.transform, canvasRect);
@@ -153,14 +131,11 @@ namespace CoopDemo.EditorTools
 
             var controller = canvasGo.AddComponent<IllustratedCutsceneController>();
             SetEnum(controller, "kind", (int)kind);
-            SetRef(controller, "illustration", illustration.GetComponent<Image>());
-            SetRef(controller, "caption", caption.GetComponent<Text>());
-            SetRef(controller, "nextButton", nextBtn.GetComponent<Button>());
+            SetRef(controller, "videoClip", AssetDatabase.LoadAssetAtPath<VideoClip>(videoPath));
             SetRef(controller, "skipButton", skipBtn.GetComponent<Button>());
             SetRef(controller, "playbackRoot", playback);
             SetRef(controller, "waitingRoot", waiting);
             SetRef(controller, "waitingText", waitingText.GetComponent<Text>());
-            controller.cuts = cuts;   // public 배열 필드 — SerializedObject 없이 바로 대입 가능
 
             return canvasGo;
         }
