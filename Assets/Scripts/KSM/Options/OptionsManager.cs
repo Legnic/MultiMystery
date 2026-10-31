@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.Audio;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
+using UnityEngine.SceneManagement;
 
 namespace CoopDemo
 {
@@ -32,6 +33,33 @@ namespace CoopDemo
             Instance = this;
             DontDestroyOnLoad(gameObject);
 
+            BindBrightnessVolume();
+
+            PlayerOptions.EnsureLoaded();
+            PlayerOptions.Changed += Apply;
+            SceneManager.sceneLoaded += OnSceneLoaded;
+            Apply(PlayerOptions.Current);
+        }
+
+        void OnDestroy()
+        {
+            if (Instance == this) Instance = null;
+            PlayerOptions.Changed -= Apply;
+            SceneManager.sceneLoaded -= OnSceneLoaded;
+        }
+
+        // 방이 끝나 씬을 다시 불러오면(RoomSceneReloader) 예전 씬의 Volume은 사라지므로 새 씬 것으로 다시 연결하고 옵션을 다시 적용한다.
+        void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+        {
+            if (mode != LoadSceneMode.Single) return;
+            colorAdjustments = null;
+            BindBrightnessVolume();
+            voiceDevicesApplied = false;
+            Apply(PlayerOptions.Current);
+        }
+
+        void BindBrightnessVolume()
+        {
             if (brightnessVolume == null)
             {
                 foreach (var v in FindObjectsByType<Volume>(FindObjectsInactive.Include, FindObjectsSortMode.None))
@@ -44,16 +72,6 @@ namespace CoopDemo
                 brightnessVolume.profile.TryGet(out colorAdjustments);
             }
             if (colorAdjustments != null) baseExposure = colorAdjustments.postExposure.value;
-
-            PlayerOptions.EnsureLoaded();
-            PlayerOptions.Changed += Apply;
-            Apply(PlayerOptions.Current);
-        }
-
-        void OnDestroy()
-        {
-            if (Instance == this) Instance = null;
-            PlayerOptions.Changed -= Apply;
         }
 
         bool voiceDevicesApplied;

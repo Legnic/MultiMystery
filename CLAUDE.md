@@ -1062,6 +1062,13 @@ Develop에 가져오지 않음.
 - **타원형 그림자 투영 방식(2026-10-30)**: 예전엔 바닥에 9×9 메시를 덮었는데 계단에서 단차마다 삼각형이 끊겨 평행사변형 조각으로 갈라졌다. 지금은 발 주변 상자를 그리고 깊이 버퍼에서 바닥 위치를 복원하는 깊이 기반 데칼 셰이더(`Assets/Shaders/KSM/PlayerContactShadowDecal.shader`, 머티리얼 `Assets/Materials/KSM/Avatar/PlayerContactShadowDecal.mat`)로 그린다. 서 있는 바닥이 가장 진하고 윗단·몸은 빨리, 아랫단은 천천히(0.5m) 옅어지며, 수직면(챌판·벽)은 법선으로 거른다. URP 에셋의 Depth Texture가 켜져 있어야 한다(현재 켜짐). 예전 셰이더(`PlayerContactShadow.shader`)와 머티리얼은 더 이상 쓰지 않는다.
 - 같은 날 메시 그림자(상대 몸 `On` + 상대 촛불 그림자 `On`)를 시험했다가 타원형으로 되돌렸다. 내 촛불이 만드는 그림자는 상대 캐릭터 바로 뒤에 가려져 거의 안 보였고, 상대 촛불에도 그림자를 켜면 보이지만 난간 살대 그림자가 천장에 방사형으로 퍼진다. 어느 부분이 "깨져 보이는지"는 끝내 특정하지 못했다.
 
+## 방이 끝나면 씬을 다시 불러온다 (2026-10-31)
+- 증상: 한 실행 안에서 방을 나갔다가(또는 엔딩 후 타이틀로) 새 방을 만들면 인트로는 나오지만 초상화 각도 등 이전 판 진행이 그대로 남아 있었다. 저장 파일 문제가 아니라(PlayerPrefs는 옵션·닉네임만), 방이 바뀌어도 씬을 다시 불러오지 않는데 `RoomResetter`가 되돌리는 건 `IRoomResettable`(문·쪽지·별 상자)뿐이었기 때문.
+- 수정: `Assets/Scripts/KSM/GameFlow/RoomSceneReloader.cs`. 세션이 끝나면 `RoomSceneReloader.Request(openLobby, status)` → 다음 프레임부터 NetworkManager Shutdown 완료를 기다리고, **DontDestroyOnLoad인 기존 NetworkManager를 지운 뒤**(안 지우면 재로드마다 하나씩 쌓인다) 활성 씬을 다시 불러온다. 호출하는 곳: `MultiplayerMenu.LeaveRoomAsync(backToTitle)`(방 목록 화면으로 돌아오는 "방 나가기"는 false, 결과창 "타이틀로"·`MultiplayerBackButton`은 true), 게스트가 호스트 연결 끊김을 받았을 때(`OnClientDisconnect`, 내가 나가는 중이면 생략). 세션이 없던 경우(방 목록만 보다 타이틀로)는 재로드하지 않는다.
+- 재로드 뒤: `TitleMenuUI.Start`가 `OpenLobbyAfterReload`면 바로 방 목록 화면을 연다. `MultiplayerMenu.Start`는 UGS가 이미 초기화돼 있으면 다시 초기화하지 않고(프로필 재설정 방지), `PendingStatus` 문구를 띄운다. `OptionsManager`(DDOL)는 `sceneLoaded`에서 새 씬의 밝기 Volume을 다시 찾고 옵션을 다시 적용한다. 음성(VoiceChatManager)은 씬 오브젝트라 새로 생기지만 Vivox 초기화·로그인 여부를 확인하고 재사용한다.
+- 앞으로 기믹 상태 초기화를 위해 `IRoomResettable`을 따로 구현할 필요는 없다. 대신 **DontDestroyOnLoad 오브젝트가 씬 오브젝트를 캐시하면 재로드 후 깨지니**, 그런 걸 만들면 `sceneLoaded`에서 다시 찾게 할 것.
+- 검증(에디터 Play, 호스트 1개): `StartHost` → 초상화 한 칸 → `LeaveRoomAsync()` → 씬 재로드, 초상화 0, NetworkManager 1개, 방 목록 화면, UGS 그대로 → 다시 `StartHost` → `LeaveRoomAsync(true)` → 타이틀 화면, 상태 초기화. 콘솔 에러 0(믹서 BGM/SFX 경고는 기존). **빌드에서 실제 Relay 방 생성/게스트 끊김 경로는 직접 확인 필요.**
+
 ## 사용 가능한 Unity 전용 스킬
 이 환경에는 `unity:` 접두사의 스킬들(unity-cli, ui, urp-postprocessing, physics-3d-collision 등)이 이미 연결되어 있습니다. 관련 작업을 할 때는 먼저 해당 스킬을 확인하세요.
 

@@ -79,14 +79,19 @@ namespace LGH
             Nickname = nickname.Trim();
             try
             {
-                var options = new InitializationOptions();
-                // a fresh profile per run so two game windows on the same PC count as two different players
-                options.SetProfile("p" + Guid.NewGuid().ToString("N").Substring(0, 12));
-                await UnityServices.InitializeAsync(options);
+                // 방이 끝나 씬을 다시 불러온 경우(RoomSceneReloader) 서비스는 이미 초기화돼 있으니 그대로 쓴다
+                if (UnityServices.State != ServicesInitializationState.Initialized)
+                {
+                    var options = new InitializationOptions();
+                    // a fresh profile per run so two game windows on the same PC count as two different players
+                    options.SetProfile("p" + Guid.NewGuid().ToString("N").Substring(0, 12));
+                    await UnityServices.InitializeAsync(options);
+                }
                 if (!AuthenticationService.Instance.IsSignedIn)
                     await AuthenticationService.Instance.SignInAnonymouslyAsync();
                 ready = true;
                 status = "방을 만들거나 목록에서 방을 눌러 참가하세요";
+                if (CoopDemo.RoomSceneReloader.PendingStatus != null) { status = CoopDemo.RoomSceneReloader.PendingStatus; CoopDemo.RoomSceneReloader.PendingStatus = null; }
                 RefreshRooms();
                 // test helper: start the game with -lghAutoHost to open a room straight away
                 if (Array.IndexOf(Environment.GetCommandLineArgs(), "-lghAutoHost") >= 0) CreateRoom();
@@ -226,14 +231,18 @@ namespace LGH
         void LeaveRoom() { _ = LeaveRoomAsync(); }
 
         // 결과창("타이틀로 돌아가기") 등 바깥에서도 세션 정리가 끝난 뒤를 기다렸다가 다음 동작을 이어갈 수 있도록 Task로 노출한다.
-        public async System.Threading.Tasks.Task LeaveRoomAsync()
+        // backToTitle: true면 씬을 다시 불러온 뒤 타이틀 화면, false면 방 목록 화면으로 돌아온다.
+        public async System.Threading.Tasks.Task LeaveRoomAsync(bool backToTitle = false)
         {
             busy = true;
+            bool hadRoom = session != null || (NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening);
             try { if (session != null) await session.LeaveAsync(); }
             catch (Exception e) { Debug.LogException(e); }
             session = null;
             if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening) NetworkManager.Singleton.Shutdown();
             status = "방에서 나왔어요";
+            // 씬을 다시 불러오지 않으면 퍼즐 등 이전 판 상태가 다음 방에 그대로 남는다
+            if (hadRoom) CoopDemo.RoomSceneReloader.Request(!backToTitle, status);
             busy = false;
             nextRefresh = 0f;
             ShowCursor(true);
@@ -249,6 +258,9 @@ namespace LGH
                 session = null;
                 nextRefresh = 0f;
                 ShowCursor(true);
+                // 호스트가 나간 뒤 남은 이전 판 상태를 지우려고 씬을 다시 불러온다 (방 목록으로 돌아옴)
+                // (내가 직접 나가는 중이면 LeaveRoomAsync가 요청하므로 여기선 하지 않는다)
+                if (!busy) CoopDemo.RoomSceneReloader.Request(true, status);
             }
         }
 

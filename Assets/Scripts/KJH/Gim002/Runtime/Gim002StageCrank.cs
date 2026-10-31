@@ -22,9 +22,15 @@ namespace Gim002
         [Tooltip("손잡이를 붙잡고 있는지 확인하는 시선 거리 (LGH PlayerInteractor의 reach와 같게)")]
         [SerializeField] float reach = 2.6f;
 
+        [Tooltip("돌리기를 멈췄을 때 돌리는 소리가 줄어들며 사라지는 시간(초)")]
+        [SerializeField] float turnFadeSeconds = 0.3f;
+
         bool holding;
         float progress;
         float nextTick;
+        // turnClip(긴 오르골 소리)은 돌리는 동안 한 번만 재생하고 멈추면 줄여서 끈다.
+        // 0.25초마다 새로 재생하면 긴 소리가 여러 개 겹쳐 메아리처럼 들린다.
+        AudioSource turnSource;
 
         static Gim002Controller C { get { return Gim002Controller.Instance; } }
         float HoldSeconds { get { return C != null ? C.Timing.crankHoldSeconds : 2f; } }
@@ -55,7 +61,11 @@ namespace Gim002
 
         void Update()
         {
-            if (!holding) return;
+            if (!holding)
+            {
+                FadeTurnSound();
+                return;
+            }
 
             var kb = Keyboard.current;
             // 키를 뗐거나, 다른 곳을 보거나, 상태가 바뀌면 처음부터
@@ -68,10 +78,15 @@ namespace Gim002
 
             progress += Time.deltaTime;
             if (handle != null) handle.Rotate(handleAxis, turnDegreesPerSecond * Time.deltaTime, Space.Self);
-            if (Time.time >= nextTick)
+            if (turnClip != null)
             {
+                PlayTurnSound();
+            }
+            else if (Time.time >= nextTick)
+            {
+                // 임시 소리는 짧은 딸깍이라 0.25초마다 반복한다
                 nextTick = Time.time + 0.25f;
-                AudioSource.PlayClipAtPoint(turnClip != null ? turnClip : Gim002Tones.Wind(), transform.position, 0.5f);
+                AudioSource.PlayClipAtPoint(Gim002Tones.Wind(), transform.position, 0.5f);
             }
 
             if (progress >= HoldSeconds)
@@ -80,6 +95,33 @@ namespace Gim002
                 progress = 0f;
                 C.Net.RequestCrankCompleted();
             }
+        }
+
+        // 돌리는 동안: 이미 재생 중이면 그대로 두고, 아니면 처음부터 한 번 재생 (소리가 끝나면 다시 처음부터)
+        void PlayTurnSound()
+        {
+            if (turnSource == null)
+            {
+                turnSource = gameObject.AddComponent<AudioSource>();
+                turnSource.playOnAwake = false;
+                turnSource.spatialBlend = 1f;
+                turnSource.minDistance = 2f;
+                turnSource.maxDistance = 20f;
+                turnSource.rolloffMode = AudioRolloffMode.Linear;
+                turnSource.dopplerLevel = 0f;
+            }
+            turnSource.volume = 0.5f;
+            if (turnSource.isPlaying && turnSource.clip == turnClip) return;
+            turnSource.clip = turnClip;
+            turnSource.Play();
+        }
+
+        // 돌리기를 멈추면 turnFadeSeconds에 걸쳐 줄인 뒤 끈다
+        void FadeTurnSound()
+        {
+            if (turnSource == null || !turnSource.isPlaying) return;
+            turnSource.volume -= 0.5f * Time.deltaTime / Mathf.Max(0.01f, turnFadeSeconds);
+            if (turnSource.volume <= 0f) turnSource.Stop();
         }
 
         // 이 컴퓨터 플레이어가 아직 손잡이를 바라보고 있는가
