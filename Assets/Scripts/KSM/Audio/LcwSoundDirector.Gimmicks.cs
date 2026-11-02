@@ -162,6 +162,31 @@ public partial class LcwSoundDirector
     readonly Dictionary<Dumbwaiter, bool> dumbMoving = new Dictionary<Dumbwaiter, bool>();
     Dumbwaiter[] dumbwaiters = new Dumbwaiter[0];
 
+    // 숙성기(덩이 제조)별로 지금 나고 있는 조합 소리
+    readonly Dictionary<PotionCraft.PotionStation, AudioSource> brewSounds = new Dictionary<PotionCraft.PotionStation, AudioSource>();
+    const float BrewSoundFadeSeconds = 0.2f;
+
+    void StopBrewSound(PotionCraft.PotionStation brewer)
+    {
+        if (!brewSounds.TryGetValue(brewer, out var a)) return;
+        brewSounds.Remove(brewer);
+        // 풀 소스라 이미 다른 소리로 재사용됐으면 건드리지 않는다
+        if (a != null && a.isPlaying && a.clip == bank.combine) StartCoroutine(FadeOut(a, bank.combine, BrewSoundFadeSeconds));
+    }
+
+    // 뚝 끊기는 소리가 나지 않게 짧게 줄이고 멈춘다
+    static System.Collections.IEnumerator FadeOut(AudioSource a, AudioClip clip, float seconds)
+    {
+        float start = a.volume;
+        for (float t = 0f; t < seconds; t += Time.unscaledDeltaTime)
+        {
+            if (a == null || a.clip != clip || !a.isPlaying) yield break;
+            a.volume = start * (1f - t / seconds);
+            yield return null;
+        }
+        if (a != null && a.clip == clip) a.Stop();
+    }
+
     void UpdateGim03()
     {
         if (Time.time >= nextPotionScan)
@@ -186,7 +211,16 @@ public partial class LcwSoundDirector
                 if (prev[0] < 0 && now[0] >= 0) LcwSfx.Play(bank.herbPlace, pos, 0.9f, 14f);
                 if (prev[1] < 0 && now[1] >= 0) LcwSfx.Play(bank.bottlePutDown, pos, 0.9f, 14f);
                 // 재료와 물이 다 차서 제조(조합)가 시작되는 순간 (단계: 0 대기, 1 제조 중, 2 완료)
-                if (prev[2] != 1 && now[2] == 1) After(0.35f, () => LcwSfx.Play(bank.combine, pos, 0.9f, 14f));
+                var brewer = st;
+                if (prev[2] != 1 && now[2] == 1)
+                    After(0.35f, () =>
+                    {
+                        // 그새 제조가 끝났으면 내지 않는다
+                        if (brewer == null || !potionStates.TryGetValue(brewer, out var cur) || cur[2] != 1) return;
+                        brewSounds[brewer] = LcwSfx.Play(bank.combine, pos, 0.9f, 14f);
+                    });
+                // 제조가 끝나면(덩이 완성) 조합 소리가 클립 길이보다 짧아도 거기서 끊는다
+                if (prev[2] == 1 && now[2] != 1) StopBrewSound(brewer);
             }
             else if (st is PotionCraft.GrinderStation)
             {
