@@ -6,9 +6,11 @@ using UnityEngine.Events;
 namespace AtticTreasure
 {
     // 현관 양문(Door_Front_L / Door_Front_R)을 "현관 열쇠"로 열 수 있게 연결하고, 열리면 탈출 성공으로 넘긴다.
-    //  - LGH 맵 프리팹을 고치지 않도록 문을 "이름으로 찾아" 시작할 때 keyItem만 런타임에 넣는다.
-    //    열쇠 확인·잠금 해제·문 동기화는 LGH의 InteractableDoor / DoorNetworkSync가 원래 하던 방식 그대로 한다
-    //    (열쇠를 가진 사람이 E → "[E] 현관 열쇠(으)로 열기" → 호스트가 잠금 해제 후 양문을 연다).
+    //  - LGH 맵 프리팹을 고치지 않도록 문을 "이름으로 찾는다".
+    //  - 2026-10-28: 인벤토리 열쇠(keyItem) 대신 "현관 열쇠를 왼손에 들고 문을 보고 E"로 연다.
+    //    양문 각각에 AtticTreasureFrontDoorKeyUse를 런타임에 붙여서, 열쇠를 든 사람에게만 "[E] 현관 열쇠로 열기"가 뜨게 하고
+    //    누르면 AtticTreasureSync(호스트)가 열쇠를 든 사람인지 확인한 뒤 잠금 해제 + 양문을 연다 (LGH DoorNetworkSync).
+    //    빈손이면 LGH 문 처리 그대로 "잠김" 문구가 뜬다.
     //  - 판정 담당(호스트, 혼자면 로컬)이 "잠겨 있던 문이 풀리고 열렸다"를 감지하면 한 번:
     //    onFrontDoorOpened 실행 + (설정 시) KSM GameFlowSync.RequestEscapeSuccess() → 엔딩 (2026-10-23 결정: 열면 탈출 성공).
     //    GameFlowSync가 없는 씬(KJH 테스트 씬)이면 로그만 남긴다. GameFlowSync는 Playing 단계일 때만 받아들인다.
@@ -18,10 +20,12 @@ namespace AtticTreasure
         [SerializeField] string doorName = "Door_Front_L";
         [Tooltip("문 이름이 여러 개일 때, 부모 경로에 이 글자가 포함된 것만 고른다 (비우면 이름만으로)")]
         [SerializeField] string doorParentFilter = "Ravenwood_LGH";
-        [Tooltip("이 문을 여는 열쇠 아이템")]
+        [Tooltip("(예전 인벤토리 방식에서 쓰던 열쇠 아이템 — 지금은 쓰지 않음, 프리팹 연결 유지용)")]
         [SerializeField] ItemData keyItem;
-        [Tooltip("열쇠를 쓰면 인벤토리에서 없앤다")]
+        [Tooltip("(예전 인벤토리 방식 설정 — 지금은 쓰지 않음)")]
         [SerializeField] bool consumeKey = false;
+        [Tooltip("빈손으로 현관문을 볼 때 문구")]
+        [SerializeField] string lockedMessage = "잠겨 있다. 현관 열쇠가 필요하다";
         [Tooltip("문이 열리면 GameFlowSync의 탈출 성공(엔딩)을 요청한다")]
         [SerializeField] bool triggerEscape = true;
         [SerializeField] bool logToConsole = true;
@@ -30,6 +34,7 @@ namespace AtticTreasure
         public UnityEvent onFrontDoorOpened;
 
         InteractableDoor door;
+        public InteractableDoor Door { get { return door; } }
         bool armed;   // 잠긴 상태를 한 번이라도 봤다 → 그 뒤 풀리고 열리면 "열쇠로 열었다"
         bool fired;
 
@@ -50,8 +55,9 @@ namespace AtticTreasure
 
         void Apply(InteractableDoor d)
         {
-            d.keyItem = keyItem;
-            d.consumeKey = consumeKey;
+            d.keyItem = null;   // 인벤토리 열쇠로 열리지 않게 (예전 방식 흔적 제거)
+            d.lockedMessage = lockedMessage;
+            if (d.GetComponent<AtticTreasureFrontDoorKeyUse>() == null) d.gameObject.AddComponent<AtticTreasureFrontDoorKeyUse>().Init(d);
         }
 
         static bool HasParentNamed(Transform t, string part)

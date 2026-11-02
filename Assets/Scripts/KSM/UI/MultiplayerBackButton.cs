@@ -35,7 +35,7 @@ namespace CoopDemo
             if (buttonObject != null) buttonObject.SetActive(false);
 
             var menu = FindAnyObjectByType<LGH.MultiplayerMenu>(FindObjectsInactive.Include);
-            if (menu != null) await menu.LeaveRoomAsync();
+            if (menu != null) await menu.LeaveRoomAsync(backToTitle: true);
 
             if (title != null) title.ShowTitle();
             returning = false;

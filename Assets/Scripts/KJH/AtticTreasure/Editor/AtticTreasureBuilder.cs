@@ -59,7 +59,9 @@ namespace AtticTreasure.EditorTools
                 Cube(t, new Vector3(0f, 0.1f, 0f), new Vector3(0.13f, 0.2f, 0.13f), Mat("Gold", new Color(0.83f, 0.66f, 0.2f), 0.75f)));
             var keyVisual = VisualPrefab("AtticTreasure_KeyVisual", forceVisuals, t =>
                 Cube(t, new Vector3(0f, 0.01f, 0f), new Vector3(0.14f, 0.02f, 0.045f), Mat("KeyIron", new Color(0.45f, 0.42f, 0.36f), 0.5f)));
-            var syncPrefab = BuildSyncPrefab(statueItem, keyItem);
+            BuildSyncPrefab(statueItem, keyItem);
+            AtticTreasureCutsceneBuilder.Build();   // 황금상 획득 연출 연결 (2026-10-29)
+            var syncPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(Root + "/AtticTreasureSync.prefab");
 
             foreach (var go in UnityEngine.SceneManagement.SceneManager.GetActiveScene().GetRootGameObjects()
                          .Where(g => g.name == "AtticTreasure_KJH" || g.name == "AtticTreasureSync_KJH").ToList())
@@ -68,14 +70,18 @@ namespace AtticTreasure.EditorTools
             var contents = new GameObject("AtticTreasure_KJH");
             contents.transform.SetPositionAndRotation(box.transform.position, box.transform.rotation);
 
-            // 황금상 (획득 연출 → 인벤토리)
+            // 황금상 (획득 연출 → 왼손)
             var statue = Item(contents.transform, "GoldStatue", StatueLocal, statueVisual);
-            SetPrompt(statue.AddComponent<AtticTreasureStatue>(), "[E] " + statueItem.NameOrFallback + " 집기");
+            var statueC = statue.AddComponent<AtticTreasureStatue>();
+            SetPrompt(statueC, "[E] " + statueItem.NameOrFallback + " 집기");
+            SetHold(statueC, StatueHoldOffset, StatueHoldEuler);
 
-            // 현관 열쇠 (E → 바로 인벤토리)
+            // 현관 열쇠 (E → 바로 왼손)
             var key = Item(contents.transform, "FrontKey", KeyLocal, keyVisual);
             key.transform.localRotation = Quaternion.Euler(0f, 25f, 0f);
-            SetPrompt(key.AddComponent<AtticTreasureKey>(), "[E] " + keyItem.NameOrFallback + " 줍기");
+            var keyC = key.AddComponent<AtticTreasureKey>();
+            SetPrompt(keyC, "[E] " + keyItem.NameOrFallback + " 집기");
+            SetHold(keyC, KeyHoldOffset, KeyHoldEuler);
 
             // 내려놓기용 숨은 자리 (처음엔 숨김). LGH ItemNetworkSync가 있는 씬에서 인벤토리의 물건을 내려놓을 때 다시 꺼내 쓴다
             DropSpot(contents.transform, "GoldStatue_DropSpot", StatueLocal, statueVisual, statueItem);
@@ -104,6 +110,18 @@ namespace AtticTreasure.EditorTools
             var go = Item(parent, name, localPos, visual);
             go.AddComponent<WorldItem>().item = item;
             go.AddComponent<AtticTreasureHiddenAtStart>();
+        }
+
+        // 왼손에 들었을 때 카메라 기준 위치·회전 (2026-10-28 실제 모델 크기로 화면 보고 맞춘 값)
+        public static readonly Vector3 StatueHoldOffset = new Vector3(-0.36f, -0.42f, 0.9f), StatueHoldEuler = new Vector3(0f, 25f, 0f);
+        public static readonly Vector3 KeyHoldOffset = new Vector3(-0.24f, -0.22f, 0.62f), KeyHoldEuler = new Vector3(-35f, -35f, 0f);
+
+        static void SetHold(Object c, Vector3 offset, Vector3 euler)
+        {
+            var so = new SerializedObject(c);
+            so.FindProperty("holdOffset").vector3Value = offset;
+            so.FindProperty("holdEuler").vector3Value = euler;
+            so.ApplyModifiedPropertiesWithoutUndo();
         }
 
         static void SetPrompt(Object c, string text)
@@ -177,7 +195,7 @@ namespace AtticTreasure.EditorTools
                 var go = new GameObject("AtticTreasureSync");
                 go.AddComponent<NetworkObject>();
                 go.AddComponent<AtticTreasureSync>();
-                go.AddComponent<AtticTreasurePlaceholderCutscene>();
+                // 획득 연출은 아래 AtticTreasureCutsceneBuilder가 붙인다
                 existing = PrefabUtility.SaveAsPrefabAsset(go, path);
                 Object.DestroyImmediate(go);
             }

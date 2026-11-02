@@ -488,7 +488,7 @@ SkinnedMeshRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3684313563817164106}
   m_Enabled: 1
-  m_CastShadows: 1
+  m_CastShadows: 0
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
   m_StaticShadowCaster: 0
@@ -502,7 +502,7 @@ SkinnedMeshRenderer:
   m_SmallMeshCulling: 1
   m_ForceMeshLod: -1
   m_MeshLodSelectionBias: 0
-  m_RenderingLayerMask: 1
+  m_RenderingLayerMask: 3
   m_RendererPriority: 0
   m_Materials:
   - {fileID: 2100000, guid: 4a7fab01ed0522f4db0ece3af9217a49, type: 2}
@@ -849,6 +849,22 @@ MonoBehaviour:
   leftForeArm: {fileID: 4152119850080926705}
   rightArm: {fileID: 982422575376390767}
   rightForeArm: {fileID: 7387140100636224341}
+  rightHand: {fileID: 0}
+  leftHand: {fileID: 0}
+  handCandleOffset: {x: 0, y: 0.14, z: 0.1}
+  handCandleUpright: 1
+  remoteCandleLightScale: 0.5
+  remoteCandleLightPos: {x: 0, y: 0.04, z: 0.06}
+  emoteHandOffset: {x: 0, y: -0.15, z: 0.45}
+  emoteHandScale: 2
+  handItemOffset: {x: 0, y: 0.08, z: 0.1}
+  handItemUpright: 1
+  holdPoseBlendSpeed: 8
+  crouchTuckAngle: 62
+  crouchKneeAngle: 105
+  crouchHipsAngle: 10
+  crouchSpineAngle: 14
+  crouchBlendSpeed: 8
   body: {fileID: 2963192867431717810}
   animator: {fileID: 5078303932859019453}
   strideLength: 0.5
@@ -859,6 +875,8 @@ MonoBehaviour:
   fullSpeed: 3.2
   holdArmAngle: -34
   holdForeArmAngle: -26
+  leftHoldArmAngle: -34
+  leftHoldForeArmAngle: -26
   airLegAngle: -28
   airKneeAngle: 46
   airArmAngle: -62

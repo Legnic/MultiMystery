@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 4187447203520359350}
   - component: {fileID: 637063662389499333}
   - component: {fileID: 5521947895048708451}
-  - component: {fileID: 1300955387732845745}
+  - component: {fileID: 7625127000198215041}
   m_Layer: 0
   m_Name: AtticTreasureSync
   m_TagString: Untagged
@@ -76,10 +76,11 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   statueItem: {fileID: 11400000, guid: baf8312a314e677498e56385e409fb7e, type: 2}
   keyItem: {fileID: 11400000, guid: 9b14eb26c4f84644ba4c4a32ac1a4707, type: 2}
-  cutscene: {fileID: 0}
+  cutscene: {fileID: 7625127000198215041}
   cutsceneTimeoutSeconds: 120
+  oneAtATimeMessage: "\uD55C \uBC88\uC5D0 \uD558\uB098\uB9CC \uB4E4 \uC218 \uC788\uB2E4"
   logToConsole: 1
---- !u!114 &1300955387732845745
+--- !u!114 &7625127000198215041
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -88,9 +89,35 @@ MonoBehaviour:
   m_GameObject: {fileID: 6255207477720392789}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bfb376700f2f7b14da4136f673ffef16, type: 3}
+  m_Script: {fileID: 11500000, guid: f48f848bf029fa348abe6ba61527ce89, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::AtticTreasure.AtticTreasurePlaceholderCutscene
-  seconds: 2.5
+  m_EditorClassIdentifier: Assembly-CSharp::AtticTreasure.AtticTreasureGlowCutscene
+  additiveMaterial: {fileID: 2100000, guid: 40320387c1ac65c4b891d4fc89cb73a3, type: 2}
+  zoomSeconds: 4.2
+  gemFlashAt: 4.25
+  gemFlashSeconds: 0.8
+  totalSeconds: 6.2
+  fadeSeconds: 0.5
+  startDistance: 1.15
+  startHeight: 0.65
+  endDistance: 0.66
+  endHeight: 0.72
+  orbitStartDeg: -14
+  orbitEndDeg: 4
+  startFov: 50
+  endFov: 36
+  gemHeight01: 0.87
+  gemForward: 0.085
+  crownHeight01: 0.96
+  crownRadius01: 0.8
+  crownTips: 5
+  goldColor: {r: 1, g: 0.72, b: 0.28, a: 1}
+  gemColor: {r: 1, g: 0.85, b: 1, a: 1}
+  glowLightIntensity: 1.1
+  keyLightIntensity: 0.45
+  moteCount: 40
+  bloomIntensity: 0.9
+  bloomThreshold: 1
+  gemFlashClip: {fileID: 0}
   pickerText: "\uD669\uAE08\uC0C1\uC744 \uC190\uC5D0 \uB123\uC5C8\uB2E4"
   otherText: "\uB3D9\uB8CC\uAC00 \uD669\uAE08\uC0C1\uC744 \uC190\uC5D0 \uB123\uC5C8\uB2E4"

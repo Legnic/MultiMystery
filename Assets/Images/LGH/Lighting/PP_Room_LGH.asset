@@ -64,7 +64,7 @@ MonoBehaviour:
     m_Value: 0.3
   scatter:
     m_OverrideState: 1
-    m_Value: 0.65
+    m_Value: 0.55
   clamp:
     m_OverrideState: 1
     m_Value: 65472
@@ -108,6 +108,7 @@ MonoBehaviour:
   - {fileID: 5253455004042210226}
   - {fileID: 4268125013310783408}
   - {fileID: 3833196191925746432}
+  - {fileID: 0}
 --- !u!114 &3833196191925746432
 MonoBehaviour:
   m_ObjectHideFlags: 3

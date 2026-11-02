@@ -50,7 +50,7 @@ namespace Gim004.EditorTools
             { Gim004PotId.C, Gim004PotId.A, Gim004PotId.F, Gim004PotId.G, Gim004PotId.D, Gim004PotId.E, Gim004PotId.B };
 
         const float SlotSpacing = 0.7f;
-        const float ShelfTopY = 0.78f;
+        const float ShelfTopY = 0.72f; // 실제 모델 Furn_GreenhouseCenterShelf 상판 높이 (2026-10-27)
         const float PotSpacing = 0.85f;   // 받침 벤치 위 화분 간격 (벤치 모델 Furn_GreenhouseBench 2개 = 6m 안에 7개)
 
         // 자리 발판 모델. 없으면 임시 원판(Pad)으로 대신한다. 화분은 발판의 PotMount 높이에 놓인다.
@@ -428,7 +428,7 @@ namespace Gim004.EditorTools
                 float x = (i - 1.5f) * SlotSpacing;
                 var slot = new GameObject("OBJ_SHELF_SLOT_" + (i + 1)).transform;
                 slot.SetParent(shelf, false);
-                slot.localPosition = new Vector3(x, ShelfTopY, 0.02f);
+                slot.localPosition = new Vector3(x, ShelfTopY, 0f); // 뒤쪽 난간 기둥(z 0.233~)과 앞쪽 버튼(z -0.35) 사이에 누름판이 들어가게
                 var col = slot.gameObject.AddComponent<BoxCollider>();
                 col.center = new Vector3(0f, anchorY * 0.5f + 0.06f, 0f);
                 col.size = new Vector3(0.6f, anchorY + 0.12f, 0.6f);

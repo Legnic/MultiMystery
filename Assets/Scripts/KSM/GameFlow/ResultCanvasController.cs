@@ -43,7 +43,7 @@ namespace CoopDemo
             // 순서: 네트워크 세션 정리 -> 로컬 UI 정리 -> 타이틀 표시
             // TitleMenuUI는 TitleRoot에 붙어 있는데 게임 중엔 TitleRoot가 꺼져 있으므로 반드시 Include로 찾아야 한다.
             var menu = FindAnyObjectByType<LGH.MultiplayerMenu>(FindObjectsInactive.Include);
-            if (menu != null) await menu.LeaveRoomAsync();
+            if (menu != null) await menu.LeaveRoomAsync(backToTitle: true);
 
             gameObject.SetActive(false);   // 다음 게임을 새로 시작했을 때 예전 결과창이 잠깐 비치지 않도록 즉시 숨긴다
 

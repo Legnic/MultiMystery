@@ -63,7 +63,7 @@ namespace CoopDemo.EditorTools
             body.sharedMesh = mouth;           // 원본 FBX 메시 + "MouthClose" 블렌드 셰이프
             body.sharedMaterial = mat;
             body.updateWhenOffscreen = true;   // 뼈를 코드로 움직이므로 화면 밖 판정이 틀어져 몸이 사라지는 것을 막는다
-            body.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
+            body.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off; // PlayerContactShadow 사용
 
             var model = inst.AddComponent<CharacterAvatarModel>();
             model.AutoBind();

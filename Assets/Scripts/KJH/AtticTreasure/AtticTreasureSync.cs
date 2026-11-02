@@ -6,46 +6,53 @@ namespace AtticTreasure
 {
     public enum StatueState : byte { InBox, Cutscene, Taken }
 
-    // 다락 별 상자(StarLockBox_LGH) 속 황금상·현관 열쇠의 상태를 담당한다. 판정은 호스트(혼자면 로컬)에서만.
-    // 흐름: 누군가 황금상에 E → 호스트가 "연출 중"으로 바꾸고 두 사람 모두에게 연출 시작을 알림(Rpc Everyone)
-    //       → 집은 사람 컴퓨터의 연출이 끝나면 호스트에게 알림 → 호스트가 그 사람 인벤토리(LGH.PlayerInventory)에 황금상을 넣고 "획득됨".
-    //  - 상태는 NetworkVariable → 늦게 들어온 사람도 황금상이 있는지/없는지 그대로 본다.
-    //  - 연출 도중 집은 사람이 나가면 황금상은 상자로 돌아간다. 연출이 끝났다는 신호가 너무 오래 안 오면 강제로 넣는다.
-    //  - 인벤토리가 가득 차 있으면 황금상은 상자에 남는다.
-    //  - 현관 열쇠는 연출 없이 바로: E → 호스트가 그 사람 인벤토리에 넣고 "주움"으로 표시.
-    //    (LGH WorldItem 줍기를 쓰지 않는 이유: 그 줍기를 처리하는 ItemNetworkSync가 LGH 씬에만 있고
-    //     DoorSync_LGH 프리팹에는 빠져 있어서, KJH·Develop 씬에서는 WorldItem을 주울 수 없다. 2026-10-23 확인)
-    //  - 네트워크 없이 Play하면 같은 흐름을 로컬로 처리한다 (혼자 테스트).
+    // 다락 별 상자(StarLockBox_LGH) 속 황금상·현관 열쇠를 "누가 왼손에 들고 있는지" 담당한다. 판정은 호스트(혼자면 로컬)에서만.
+    // 2026-10-28: 인벤토리에 넣던 방식 → 공용 들기 시스템(HoldableItem)으로 왼손에 드는 방식으로 변경 (인벤토리 시스템 제거 예정).
+    // 흐름:
+    //  - 황금상: 처음 집을 때 E → 호스트가 "연출 중"으로 바꾸고 두 사람 모두에게 연출 시작(Rpc Everyone)
+    //           → 집은 사람 컴퓨터의 연출이 끝나면 호스트에게 알림 → 호스트가 "그 사람이 들고 있음"으로 확정하고 그 사람에게 쥐여 준다.
+    //           한 번 연출을 본 뒤에는(상자에 돌려놨다가 다시 집을 때) 연출 없이 바로 쥐여 준다.
+    //  - 현관 열쇠: E → 호스트가 "그 사람이 들고 있음"으로 확정하고 쥐여 준다.
+    //  - 한 사람은 한 번에 하나만 든다(손이 하나). 황금상을 든 사람은 열쇠를, 열쇠를 든 사람은 황금상을 집을 수 없다
+    //    → 정상 흐름은 한 명이 황금상, 한 명이 현관 열쇠.
+    //  - 상자 자리에 "제자리에 두기"(E)를 하면 상자로 돌아간다. 들고 있던 사람이 나가면 상자로 돌아간다.
+    //  - 현관문: 열쇠를 든 사람이 문을 보고 E → 호스트가 확인 후 잠금 해제 + 양문을 연다 (AtticTreasureFrontDoor가 탈출 성공으로 넘김).
+    //  - 상태는 NetworkVariable → 늦게 들어온 사람도 같은 상태를 본다. 네트워크 없이 Play하면 같은 흐름을 로컬로 처리한다.
     //
     // 사용법: Assets/Prefabs/KJH/AtticTreasure/AtticTreasureSync.prefab을 씬 최상위에 프리팹 인스턴스로 두고
     //  DefaultNetworkPrefabs에 등록한다 (Tools/KJH/AtticTreasure/Build All이 해 준다).
     public class AtticTreasureSync : NetworkBehaviour
     {
         public static AtticTreasureSync Instance { get; private set; }
+        const ulong Nobody = ulong.MaxValue;
 
-        [Tooltip("인벤토리에 넣을 황금상 아이템 (ItemDatabase_LGH 목록에 있어야 한다)")]
+        [Tooltip("(예전 인벤토리 방식에서 쓰던 아이템 정보 — 지금은 쓰지 않음, 프리팹 연결 유지용)")]
         [SerializeField] ItemData statueItem;
-        [Tooltip("인벤토리에 넣을 현관 열쇠 아이템 (ItemDatabase_LGH 목록에 있어야 한다)")]
+        [Tooltip("(예전 인벤토리 방식에서 쓰던 아이템 정보 — 지금은 쓰지 않음, 프리팹 연결 유지용)")]
         [SerializeField] ItemData keyItem;
         [Tooltip("획득 연출. 비우면 임시 연출(AtticTreasurePlaceholderCutscene)")]
         [SerializeField] AtticTreasureCutscene cutscene;
-        [Tooltip("집은 사람의 연출 종료 신호를 기다리는 최대 시간(초). 넘으면 판정 담당이 강제로 인벤토리에 넣는다")]
+        [Tooltip("집은 사람의 연출 종료 신호를 기다리는 최대 시간(초). 넘으면 판정 담당이 강제로 쥐여 준다")]
         [SerializeField] float cutsceneTimeoutSeconds = 120f;
+        [SerializeField] string oneAtATimeMessage = "한 번에 하나만 들 수 있다";
         [SerializeField] bool logToConsole = true;
 
         readonly NetworkVariable<byte> netState = new NetworkVariable<byte>((byte)StatueState.InBox);
-        readonly NetworkVariable<ulong> netPicker = new NetworkVariable<ulong>(ulong.MaxValue);
-        readonly NetworkVariable<bool> netKeyTaken = new NetworkVariable<bool>(false);
+        readonly NetworkVariable<ulong> netPicker = new NetworkVariable<ulong>(Nobody);      // 황금상: 연출 중인 사람 / 들고 있는 사람
+        readonly NetworkVariable<ulong> netKeyHolder = new NetworkVariable<ulong>(Nobody);   // 현관 열쇠를 들고 있는 사람
+        readonly NetworkVariable<bool> netCutsceneDone = new NetworkVariable<bool>(false);
 
         StatueState offlineState = StatueState.InBox;
-        bool offlineKeyTaken;
+        bool offlineKeyHeld, offlineCutsceneDone;
         float deadline;
+
+        AtticTreasureStatue statueObj;
+        AtticTreasureKey keyObj;
+        AtticTreasureFrontDoor frontDoor;
 
         public bool Online { get { return IsSpawned && NetworkManager != null && NetworkManager.IsListening; } }
         public StatueState State { get { return Online ? (StatueState)netState.Value : offlineState; } }
-        public ItemData StatueItem { get { return statueItem; } }
-        public ItemData KeyItem { get { return keyItem; } }
-        public bool KeyTaken { get { return Online ? netKeyTaken.Value : offlineKeyTaken; } }
+        public bool KeyTaken { get { return Online ? netKeyHolder.Value != Nobody : offlineKeyHeld; } }
         // 이 컴퓨터에서 지금 연출이 재생 중인가
         public bool LocalCutscenePlaying { get; private set; }
 
@@ -57,6 +64,13 @@ namespace AtticTreasure
                 cutscene = GetComponent<AtticTreasureCutscene>();
                 if (cutscene == null) cutscene = gameObject.AddComponent<AtticTreasurePlaceholderCutscene>();
             }
+        }
+
+        void Start()
+        {
+            statueObj = FindAnyObjectByType<AtticTreasureStatue>(FindObjectsInactive.Include);
+            keyObj = FindAnyObjectByType<AtticTreasureKey>(FindObjectsInactive.Include);
+            frontDoor = FindAnyObjectByType<AtticTreasureFrontDoor>(FindObjectsInactive.Include);
         }
 
         public override void OnDestroy()
@@ -80,44 +94,102 @@ namespace AtticTreasure
         public void RequestTake()
         {
             if (State != StatueState.InBox) return;
-            if (Online) TakeRpc();
-            else OfflineTake();
+            if (Online) { TakeRpc(); return; }
+            if (offlineKeyHeld) { PlayerHand.Say(oneAtATimeMessage); return; }
+            if (!offlineCutsceneDone) { offlineState = StatueState.Cutscene; PlayCutscene(true); }
+            else { offlineState = StatueState.Taken; GiveLocal(statueObj); }
         }
 
         public void RequestTakeKey()
         {
             if (KeyTaken) return;
             if (Online) { TakeKeyRpc(); return; }
-            var inv = LGH.PlayerInventory.Local;
-            if (inv == null) return;
-            if (inv.AddItem(keyItem)) offlineKeyTaken = true;
-            else PlayerHand.Say("더 이상 들 수 없다");
+            if (offlineState != StatueState.InBox) { PlayerHand.Say(oneAtATimeMessage); return; }
+            offlineKeyHeld = true;
+            GiveLocal(keyObj);
+        }
+
+        public void RequestReturnStatue()
+        {
+            if (Online) ReturnRpc(0);
+            else if (offlineState == StatueState.Taken) offlineState = StatueState.InBox;
+        }
+
+        public void RequestReturnKey()
+        {
+            if (Online) ReturnRpc(1);
+            else offlineKeyHeld = false;
+        }
+
+        // 현관 열쇠를 든 사람이 현관문을 보고 E
+        public void RequestOpenFrontDoor(Vector3 userPosition)
+        {
+            if (frontDoor == null || frontDoor.Door == null) return;
+            if (Online) { OpenFrontDoorRpc(userPosition); return; }
+            if (!offlineKeyHeld) return;
+            var d = frontDoor.Door;
+            d.Unlock();
+            if (!d.IsOpen) d.Interact(userPosition);
+            PlayerHand.Say("현관 열쇠로 문을 열었다");
         }
 
         // ---------------- 판정 담당 ----------------
 
         [Rpc(SendTo.Server)]
-        void TakeKeyRpc(RpcParams p = default)
-        {
-            ulong sender = p.Receive.SenderClientId;
-            if (netKeyTaken.Value) return;
-            var inv = InventoryOf(sender);
-            if (inv == null) return;
-            if (!inv.AddItem(keyItem)) { MessageRpc("더 이상 들 수 없다", RpcTarget.Single(sender, RpcTargetUse.Temp)); return; }
-            netKeyTaken.Value = true;
-            Log("현관 열쇠 → 클라이언트 " + sender + " 인벤토리");
-        }
-
-        [Rpc(SendTo.Server)]
         void TakeRpc(RpcParams p = default)
         {
             ulong sender = p.Receive.SenderClientId;
-            if ((StatueState)netState.Value != StatueState.InBox || InventoryOf(sender) == null) return;
-            netState.Value = (byte)StatueState.Cutscene;
+            if ((StatueState)netState.Value != StatueState.InBox) return;
+            if (netKeyHolder.Value == sender) { MessageRpc(oneAtATimeMessage, RpcTarget.Single(sender, RpcTargetUse.Temp)); return; }
             netPicker.Value = sender;
-            deadline = Time.time + cutsceneTimeoutSeconds;
-            Log("황금상 집음: 클라이언트 " + sender + " → 연출 시작");
-            CutsceneRpc(sender);
+            if (!netCutsceneDone.Value)
+            {
+                netState.Value = (byte)StatueState.Cutscene;
+                deadline = Time.time + cutsceneTimeoutSeconds;
+                Log("황금상 집음: 클라이언트 " + sender + " → 연출 시작");
+                CutsceneRpc(sender);
+            }
+            else
+            {
+                netState.Value = (byte)StatueState.Taken;
+                Log("황금상 다시 집음: 클라이언트 " + sender);
+                GiveRpc(0, RpcTarget.Single(sender, RpcTargetUse.Temp));
+            }
+        }
+
+        [Rpc(SendTo.Server)]
+        void TakeKeyRpc(RpcParams p = default)
+        {
+            ulong sender = p.Receive.SenderClientId;
+            if (netKeyHolder.Value != Nobody) return;
+            if ((StatueState)netState.Value != StatueState.InBox && netPicker.Value == sender)
+            {
+                MessageRpc(oneAtATimeMessage, RpcTarget.Single(sender, RpcTargetUse.Temp));
+                return;
+            }
+            netKeyHolder.Value = sender;
+            Log("현관 열쇠 → 클라이언트 " + sender + " 왼손");
+            GiveRpc(1, RpcTarget.Single(sender, RpcTargetUse.Temp));
+        }
+
+        // which: 0 = 황금상, 1 = 현관 열쇠
+        [Rpc(SendTo.Server)]
+        void ReturnRpc(byte which, RpcParams p = default)
+        {
+            ulong sender = p.Receive.SenderClientId;
+            if (which == 0)
+            {
+                if ((StatueState)netState.Value != StatueState.Taken || netPicker.Value != sender) return;
+                netState.Value = (byte)StatueState.InBox;
+                netPicker.Value = Nobody;
+                Log("황금상 상자로 돌아감");
+            }
+            else
+            {
+                if (netKeyHolder.Value != sender) return;
+                netKeyHolder.Value = Nobody;
+                Log("현관 열쇠 상자로 돌아감");
+            }
         }
 
         [Rpc(SendTo.Everyone)]
@@ -136,37 +208,57 @@ namespace AtticTreasure
         void ServerGive()
         {
             ulong picker = netPicker.Value;
-            var inv = InventoryOf(picker);
-            if (inv != null && inv.AddItem(statueItem))
+            netState.Value = (byte)StatueState.Taken;
+            netCutsceneDone.Value = true;
+            Log("황금상 → 클라이언트 " + picker + " 왼손");
+            GiveRpc(0, RpcTarget.Single(picker, RpcTargetUse.Temp));
+        }
+
+        [Rpc(SendTo.SpecifiedInParams)]
+        void GiveRpc(byte which, RpcParams p)
+        {
+            GiveLocal(which == 0 ? (AtticTreasureBoxItem)statueObj : keyObj);
+        }
+
+        [Rpc(SendTo.Server)]
+        void OpenFrontDoorRpc(Vector3 userPosition, RpcParams p = default)
+        {
+            ulong sender = p.Receive.SenderClientId;
+            if (netKeyHolder.Value != sender || frontDoor == null || frontDoor.Door == null) return;
+            var d = frontDoor.Door;
+            var doors = DoorNetworkSync.Instance;
+            d.Unlock();   // 판정 담당 쪽은 바로 풀어 둬야 아래 문 열기 요청이 "잠김"으로 막히지 않는다
+            if (doors != null && doors.IsSpawned)
             {
-                netState.Value = (byte)StatueState.Taken;
-                Log("황금상 → 클라이언트 " + picker + " 인벤토리");
+                doors.SetLocked(d, false);
+                if (!d.IsOpen) doors.RequestInteract(d, userPosition);
             }
-            else
-            {
-                netState.Value = (byte)StatueState.InBox;
-                netPicker.Value = ulong.MaxValue;
-                MessageRpc("더 이상 들 수 없다", RpcTarget.Single(picker, RpcTargetUse.Temp));
-                Log("황금상: 인벤토리에 넣지 못해 상자로 돌아감");
-            }
+            else if (!d.IsOpen) d.Interact(userPosition);
+            MessageRpc("현관 열쇠로 문을 열었다", RpcTarget.Single(sender, RpcTargetUse.Temp));
+            Log("현관문: 클라이언트 " + sender + "가 열쇠로 열음");
         }
 
         void Update()
         {
             if (Online && IsServer && (StatueState)netState.Value == StatueState.Cutscene && Time.time > deadline)
             {
-                Log("연출 종료 신호가 오지 않아 강제로 인벤토리에 넣음");
+                Log("연출 종료 신호가 오지 않아 강제로 쥐여 줌");
                 ServerGive();
             }
         }
 
         void OnClientDisconnected(ulong clientId)
         {
-            if ((StatueState)netState.Value == StatueState.Cutscene && netPicker.Value == clientId)
+            if ((StatueState)netState.Value != StatueState.InBox && netPicker.Value == clientId)
             {
                 netState.Value = (byte)StatueState.InBox;
-                netPicker.Value = ulong.MaxValue;
-                Log("연출 도중 집은 사람이 나가서 황금상이 상자로 돌아감");
+                netPicker.Value = Nobody;
+                Log("황금상을 든(집던) 사람이 나가서 상자로 돌아감");
+            }
+            if (netKeyHolder.Value == clientId)
+            {
+                netKeyHolder.Value = Nobody;
+                Log("현관 열쇠를 든 사람이 나가서 상자로 돌아감");
             }
         }
 
@@ -176,16 +268,12 @@ namespace AtticTreasure
             PlayerHand.Say(message);
         }
 
-        // ---------------- 네트워크 없이 (혼자 테스트) ----------------
-
-        void OfflineTake()
-        {
-            if (LGH.PlayerInventory.Local == null) return;
-            offlineState = StatueState.Cutscene;
-            PlayCutscene(true);
-        }
-
         // ---------------- 공통 ----------------
+
+        void GiveLocal(AtticTreasureBoxItem item)
+        {
+            if (item != null) item.GiveToLocalHand();
+        }
 
         void PlayCutscene(bool isPicker)
         {
@@ -197,19 +285,11 @@ namespace AtticTreasure
                 if (Online) FinishRpc();
                 else
                 {
-                    var inv = LGH.PlayerInventory.Local;
-                    bool ok = inv != null && inv.AddItem(statueItem);
-                    offlineState = ok ? StatueState.Taken : StatueState.InBox;
-                    if (!ok) PlayerHand.Say("더 이상 들 수 없다");
+                    offlineCutsceneDone = true;
+                    offlineState = StatueState.Taken;
+                    GiveLocal(statueObj);
                 }
             });
-        }
-
-        static LGH.PlayerInventory InventoryOf(ulong client)
-        {
-            foreach (var inv in LGH.PlayerInventory.All)
-                if (inv != null && inv.IsSpawned && inv.OwnerClientId == client) return inv;
-            return null;
         }
 
         void Log(string msg) { if (logToConsole) Debug.Log("[AtticTreasure] " + msg, this); }

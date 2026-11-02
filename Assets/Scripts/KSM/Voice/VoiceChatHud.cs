@@ -3,97 +3,76 @@ using UnityEngine.UI;
 
 namespace CoopDemo
 {
-    // 화면 왼쪽 아래에 음성 채팅 상태를 보여 주는 간단한 HUD.
-    // 음성 서비스가 시작되기 전(타이틀 화면)에는 숨겨져 있다.
+    // 화면 왼쪽 아래 마이크 표시 (플레이 중에만).
+    // 2026-10-28: 예전의 큰 음성 상태 패널(상태 글자·마이크 글자·감도 슬라이더)은 숨기고, 마이크 아이콘 하나만 남겼다.
+    //  - 내 마이크에 소리가 들어오면(말하는 중) 초록 마이크로 바뀜 (2026-10-28: 테두리 빛 → 초록 이미지로 교체)
+    //  - 조용하면 그냥 마이크
+    //  - 음소거면 음소거 마이크(빨간 사선)
+    // 아이콘은 배경이 투명한 전용 이미지(Resources/OptionsDesignTheme의 hudMic/hudMicMuted/hudMicSpeaking)를 쓴다.
+    // 감도·음소거 조절은 ESC 메뉴와 옵션 화면에서 한다. 아래 직렬화 필드들은 VoiceChat 프리팹 연결을 깨지 않게 남겨 둔 것.
     public class VoiceChatHud : MonoBehaviour
     {
         [SerializeField] VoiceChatManager manager;
+        [Tooltip("예전 음성 상태 패널 — 이제 항상 숨긴다")]
         [SerializeField] GameObject content;
         [SerializeField] Text statusText;
         [SerializeField] Text micText;
         [SerializeField] Slider micVolumeSlider;
         [SerializeField] Text micVolumeText;
-        [Tooltip("마이크 켜짐/꺼짐 아이콘 (스프라이트는 Resources/MeetYouUiTheme의 micOn/micMuted)")]
         [SerializeField] Image micIcon;
 
-        static readonly Color k_Idle = new Color(0.85f, 0.85f, 0.85f, 1f);
-        static readonly Color k_Speaking = new Color(0.45f, 1f, 0.55f, 1f);
-        static readonly Color k_Muted = new Color(1f, 0.5f, 0.45f, 1f);
+        // 디자인 이미지(1536x864) 기준 위치·크기. 화면 높이에 맞춰 같은 비율로 커진다.
+        const float DesignH = 864f;
+        const float IconHeight = 64f;        // 마이크 이미지(투명 여백 포함) 높이
+        const float MarginLeft = 32f;        // 왼쪽 여백
+        const float MarginBottom = 18f;      // 아래 여백
 
-        bool m_SliderHooked;
+        float speakGlow;                     // 초록 마이크로 바뀐 정도 0~1 (부드럽게 바꾼다)
 
-        void Start()
+        bool Visible
         {
-            if (micVolumeSlider == null) return;
-            micVolumeSlider.minValue = -50;
-            micVolumeSlider.maxValue = 50;
-            micVolumeSlider.wholeNumbers = true;
+            get
+            {
+                if (manager == null || !manager.Active || LGH.NetworkPlayer.Local == null) return false;
+                // 대기방·도입부·엔딩·결과 화면에서는 그 화면이 화면을 차지하므로 그리지 않는다
+                var flow = GameFlowSync.Instance;
+                if (flow != null && flow.IsSpawned && flow.Stage != GameStage.Playing) return false;
+                return !OptionsMenuController.IsOpen;
+            }
         }
 
         void Update()
         {
-            if (manager == null || content == null) return;
-
-            // 방 만들기(로비) 화면에서는 아직 음성 서비스만 켜져 있을 뿐 실제 플레이어가 없으므로 숨긴다.
-            // 방을 만들거나 참가해서 플레이어가 스폰된 뒤(플레이 화면)에만 보여준다.
-            bool show = manager.Active && LGH.NetworkPlayer.Local != null;
-            if (content.activeSelf != show) content.SetActive(show);
-            if (!show) return;
-
-            // 음성 서비스가 막 준비됐을 때 한 번만 슬라이더를 현재 값으로 맞춘다 (이후엔 사용자가 직접 조작).
-            if (!m_SliderHooked && micVolumeSlider != null)
-            {
-                m_SliderHooked = true;
-                micVolumeSlider.SetValueWithoutNotify(manager.MicVolume);
-                micVolumeSlider.onValueChanged.AddListener(OnMicVolumeSliderChanged);
-                UpdateMicVolumeText(manager.MicVolume);
-            }
-
-            statusText.text = manager.Status
-                + (manager.IsInChannel ? $"   (상대 {manager.RemoteCount}명)" : string.Empty);
-            if (manager.IsInChannel && manager.UsesDistanceVolume && manager.RemoteDistance >= 0f)
-            {
-                statusText.text += $"   거리 {manager.RemoteDistance:F0}m / 음량 {manager.RemoteVolumeAdjust}";
-            }
-
-            if (manager.IsMicMuted)
-            {
-                micText.text = "마이크 꺼짐  [M]";
-                micText.color = k_Muted;
-            }
-            else
-            {
-                micText.text = manager.SelfSpeaking ? "마이크 켜짐 - 말하는 중  [M]" : "마이크 켜짐  [M]";
-                micText.color = manager.SelfSpeaking ? k_Speaking : k_Idle;
-            }
-
-            UpdateMicIcon();
-
-            statusText.color = manager.RemoteSpeaking ? k_Speaking : k_Idle;
-            if (manager.RemoteSpeaking) statusText.text += "   상대가 말하는 중";
+            if (content != null && content.activeSelf) content.SetActive(false);
+            bool speaking = manager != null && manager.Active && !manager.IsMicMuted && manager.SelfSpeaking;
+            speakGlow = Mathf.MoveTowards(speakGlow, speaking ? 1f : 0f, Time.unscaledDeltaTime * 8f);
         }
 
-        // 켜짐/꺼짐에 맞는 아이콘으로 바꾸고, 내가 말하는 중이면 초록빛으로 밝힌다 (꺼짐 아이콘은 빨간 X가 이미 들어 있다)
-        void UpdateMicIcon()
+        void OnGUI()
         {
-            if (micIcon == null) return;
-            var theme = MeetYouGuiSkin.Theme;
-            if (theme == null) return;
-            var sprite = manager.IsMicMuted ? theme.micMuted : theme.micOn;
-            if (sprite != null && micIcon.sprite != sprite) micIcon.sprite = sprite;
-            micIcon.color = (!manager.IsMicMuted && manager.SelfSpeaking) ? new Color(0.7f, 1f, 0.7f, 1f) : Color.white;
-        }
+            if (Event.current.type != EventType.Repaint || !Visible) return;
+            var theme = OptionsDesignTheme.Load();
+            if (theme == null || theme.hudMic == null || theme.hudMicMuted == null) return;
 
-        void OnMicVolumeSliderChanged(float value)
-        {
-            int volume = Mathf.RoundToInt(value);
-            manager.SetMicVolume(volume);
-            UpdateMicVolumeText(volume);
-        }
+            var old = GUI.matrix;
+            float s = Screen.height / DesignH;
+            GUI.matrix = Matrix4x4.Scale(new Vector3(s, s, 1f));
 
-        void UpdateMicVolumeText(int volume)
-        {
-            if (micVolumeText != null) micVolumeText.text = $"마이크 감도 {volume:+#;-#;0}";
+            var icon = manager.IsMicMuted ? theme.hudMicMuted : theme.hudMic;
+            float ih = IconHeight, iw = ih * icon.width / icon.height;
+            var r = new Rect(MarginLeft, DesignH - MarginBottom - ih, iw, ih);
+
+            var prevColor = GUI.color;
+            GUI.color = Color.white;
+            GUI.DrawTexture(r, icon);
+            // 말하는 중: 같은 자리에 초록 마이크를 겹쳐 그린다 (두 이미지는 같은 크기). 말이 끝나면 다시 금색으로 돌아간다.
+            if (!manager.IsMicMuted && speakGlow > 0.01f && theme.hudMicSpeaking != null)
+            {
+                GUI.color = new Color(1f, 1f, 1f, speakGlow);
+                GUI.DrawTexture(r, theme.hudMicSpeaking);
+            }
+            GUI.color = prevColor;
+            GUI.matrix = old;
         }
     }
 }

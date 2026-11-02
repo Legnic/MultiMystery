@@ -20,27 +20,37 @@ namespace CoopDemo
 
         [Header("손에 든 촛불 (상대에게 보이는 쪽)")]
         [Tooltip("오른손 위치 기준, 모델 좌표(오른쪽, 위, 앞)로 얼마나 띄울지 (접시 바닥이 손바닥에 오게)")]
-        public Vector3 handCandleOffset = new Vector3(0.0f, 0.10f, 0.10f);
+        public Vector3 handCandleOffset = new Vector3(0.0f, 0.14f, 0.10f);   // 0.10이면 접시·밀랍 아래가 주먹에 묻힌다 (2026-10-30)
         [Tooltip("모델이 아니라 \"월드\"를 기준으로 촛불을 똑바로 세운다 (팔이 돌아가도 촛불은 기울지 않는다)")]
         public bool handCandleUpright = true;
+        [Tooltip("상대 화면에서 그 사람 양초가 방을 비추는 빛의 밝기 배율 (1인칭 기준 1). 몸·얼굴이 하얗게 타지 않게 낮춘다. 불꽃 모양은 그대로")]
+        [Range(0f, 1f)] public float remoteCandleLightScale = 0.5f;
+        [Tooltip("상대 화면에서 양초 빛의 위치 (불꽃 기준, 모델 좌표 오른쪽·위·앞). 1인칭용 위치는 얼굴 쪽(뒤)이라 몸에 붙어 버리므로 앞으로 뺀다")]
+        public Vector3 remoteCandleLightPos = new Vector3(0f, 0.04f, 0.06f);
 
-        [Header("얼굴 앞 감정표현 손 (EmoteHand, 상대에게 보이는 쪽)")]
-        [Tooltip("머리 위치 기준, 모델 좌표(오른쪽, 위, 앞)로 얼마나 띄울지")]
-        public Vector3 faceItemOffset = new Vector3(0.0f, -0.05f, 0.30f);
-        [Tooltip("감정표현 손이 머리 기울기를 따라갈지(false) 월드 기준으로 세울지(true)")]
-        public bool faceItemUpright = false;
+        [Header("몸 정면 감정표현 손 (EmoteHand, 상대에게 보이는 쪽)")]
+        [Tooltip("기준점 = 몸 중심(가로·앞뒤)과 머리 높이. 거기서 모델 좌표(오른쪽, 위, 앞)로 얼마나 띄울지")]
+        public Vector3 emoteHandOffset = new Vector3(0f, -0.15f, 0.45f);   // 몸 정면 가슴 높이, 몸통 앞면과 약 18cm 간격 (모델 배율 1.5 기준, 2026-10-29 측정)
+        // 주의: 이 두 값은 Avatar_Blue/Orange 프리팹에 저장된 값이 우선한다. 바꿀 때는 프리팹 값도 같이 바꿀 것.
+        [Tooltip("상대 화면에서만 손 크기 배율 (1인칭 크기 기준). 멀리서 봐도 손 모양이 잘 보이게 키운다")]
+        public float emoteHandScale = 2.0f;
 
         [Header("왼손에 든 공용 물건 (인형·배경카드·화분 등, 상대에게 보이는 쪽)")]
         [Tooltip("왼손 위치 기준, 모델 좌표(오른쪽, 위, 앞)로 얼마나 띄울지")]
         public Vector3 handItemOffset = new Vector3(0.0f, 0.08f, 0.10f);
         [Tooltip("손에 든 물건이 손 자체 기울기를 따라갈지(false, 자연스럽게 들린 느낌) 월드 기준으로 세울지(true)")]
-        public bool handItemUpright = false;
+        public bool handItemUpright = true;   // 손 뼈 방향을 따르면 인형이 옆으로 눕는다 — 월드 기준으로 세워서 든다
         [Tooltip("왼손에 물건을 든 자세로 바뀌는 속도(초당)")]
         public float holdPoseBlendSpeed = 8f;
 
         [Header("웅크리기 (상대에게 보이는 쪽)")]
-        [Tooltip("웅크렸을 때 모델 전체를 얼마나 낮출지(m)")]
-        public float crouchDrop = 0.30f;
+        [Tooltip("웅크릴 때 허벅지를 앞으로 드는 각도(도). 클수록 더 깊이 쪼그린다")]
+        public float crouchTuckAngle = 62f;
+        [Tooltip("웅크릴 때 무릎을 굽히는 각도(도)")]
+        public float crouchKneeAngle = 105f;
+        [Tooltip("웅크릴 때 골반/등을 앞으로 숙이는 각도(도)")]
+        public float crouchHipsAngle = 10f;
+        public float crouchSpineAngle = 14f;
         [Tooltip("웅크림 상태 전환 속도(초당)")]
         public float crouchBlendSpeed = 8f;
 
@@ -90,9 +100,12 @@ namespace CoopDemo
 
         Transform handCandleSocket;
         Transform handItemSocket;
-        Transform faceItemSocket;
+        Transform emoteHandSocket;
+        EmoteHandView emoteView;
         bool wantCrouch;
         float crouchAmount;
+        float landCrouchNow;   // 이번 프레임의 착지 굽힘(0~1)
+        float footRest = float.NaN;   // 서 있는 기본 자세에서 발 뼈의 (모델 뿌리 기준) 높이 — 웅크려도 발이 이 높이에 머물게 모델을 내린다
         bool holdingLeftItem;
         float leftHoldAmount;
 
@@ -112,6 +125,12 @@ namespace CoopDemo
             candle.SetParent(handCandleSocket, false);
             candle.localPosition = Vector3.zero;
             candle.localRotation = Quaternion.identity;
+            var flicker = candle.GetComponentInChildren<LGH.CandleFlicker>(true);
+            if (flicker != null)
+            {
+                flicker.intensityScale = remoteCandleLightScale;
+                flicker.SetLightLocalPosition(remoteCandleLightPos);
+            }
             UpdateHandCandle();
         }
 
@@ -148,6 +167,16 @@ namespace CoopDemo
             holdingLeftItem = false;
         }
 
+        // 이 모델이 사라지기 직전(상대가 나감 등) 왼손에 붙여 둔 물건을 떼어 낸다 — 안 그러면 모델과 같이 파괴되어
+        // 그 물건(GIM-002 인형·열쇠, 다락 황금상 등)이 남은 사람 화면에서 영영 사라진다. 제자리 복귀는 HoldableNetworkSync가 한다.
+        public void ReleaseLeftHandItems()
+        {
+            holdingLeftItem = false;
+            if (handItemSocket == null) return;
+            for (int i = handItemSocket.childCount - 1; i >= 0; i--)
+                handItemSocket.GetChild(i).SetParent(null, true);
+        }
+
         void UpdateHandItem()
         {
             if (handItemSocket == null || leftHand == null) return;
@@ -155,30 +184,38 @@ namespace CoopDemo
             handItemSocket.rotation = handItemUpright ? Quaternion.Euler(0f, transform.eulerAngles.y, 0f) : leftHand.rotation;
         }
 
-        // 촛불 잡느라 바쁜 오른손 대신 쓰는 감정표현 손(EmoteHand)을 상대 화면에서 얼굴 앞에 붙인다.
+        // 촛불 잡느라 바쁜 오른손 대신 쓰는 감정표현 손(EmoteHand)을 상대 화면에서 몸 정면 앞에 붙인다.
         // AttachHandCandle과 같은 패턴 - 같은 오브젝트를 그대로 옮겨 붙이므로 모양이 바뀔 때마다 다시 할 필요가 없다.
-        public void AttachFaceItem(Transform item)
+        // 소켓은 "플레이어가 바라보는 방향"(카메라와 같은 Y 방향)으로 세우고, 손의 로컬 회전(1인칭 카메라 기준 Y180)은
+        // 그대로 둔다 → 월드에서 1인칭과 똑같은 방향을 향하므로, 마주 선 상대는 내가 보는 면의 정반대 면을 본다
+        // (브이는 손등, 인사는 손바닥이 상대에게 보임).
+        public void AttachEmoteHand(Transform item)
         {
-            if (item == null || head == null) return;
-            if (faceItemSocket == null)
+            if (item == null || leftHand == null) return;
+            if (emoteHandSocket == null)
             {
-                var go = new GameObject("FaceItemSocket");
-                faceItemSocket = go.transform;
-                faceItemSocket.SetParent(transform, false);
+                var go = new GameObject("EmoteHandSocket");
+                emoteHandSocket = go.transform;
+                emoteHandSocket.SetParent(transform, false);
             }
-            float s = Mathf.Max(0.0001f, transform.lossyScale.x);
-            faceItemSocket.localScale = Vector3.one / s;
-            item.SetParent(faceItemSocket, false);
+            item.SetParent(emoteHandSocket, false);         // 로컬 회전·크기는 1인칭 값 그대로 유지
             item.localPosition = Vector3.zero;
-            item.localRotation = Quaternion.identity;
-            UpdateFaceItem();
+            emoteView = item.GetComponent<EmoteHandView>();
+            UpdateEmoteHand();
         }
 
-        void UpdateFaceItem()
+        void UpdateEmoteHand()
         {
-            if (faceItemSocket == null || head == null) return;
-            faceItemSocket.position = head.position + transform.TransformVector(faceItemOffset);
-            faceItemSocket.rotation = faceItemUpright ? Quaternion.Euler(0f, transform.eulerAngles.y, 0f) : head.rotation;
+            if (emoteHandSocket == null || leftHand == null) return;
+            float s = Mathf.Max(0.0001f, transform.lossyScale.x);
+            emoteHandSocket.localScale = Vector3.one * (emoteHandScale / s);   // 1인칭 크기 × 상대 화면 배율
+            // 걸을 때 흔들리는 팔이 아니라 몸 중심에 고정한다. 높이만 머리 뼈를 따라가서 웅크리면 같이 내려간다.
+            Vector3 basePos = transform.position;
+            basePos.y = (head != null ? head : leftHand).position.y;
+            emoteHandSocket.position = basePos + transform.TransformVector(emoteHandOffset);
+            // 인사·브이는 상대에게 손바닥이 보이게 몸짓별로 Y를 더 돌린다(내 1인칭 방향은 그대로)
+            float extraYaw = emoteView != null ? emoteView.CurrentOtherViewYaw : 0f;
+            emoteHandSocket.rotation = Quaternion.Euler(0f, transform.eulerAngles.y + extraYaw, 0f);
         }
 
         // ---- 바깥에서 부르는 것 ----
@@ -193,6 +230,7 @@ namespace CoopDemo
             if (body == null) body = GetComponentInChildren<SkinnedMeshRenderer>(true);
             AutoBind();
             CaptureRest();
+            CaptureFootRest();
             if (body != null && body.sharedMesh != null) mouthIndex = body.sharedMesh.GetBlendShapeIndex(mouthShapeName);
             if (animator != null) animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
             lastPos = transform.position;
@@ -243,6 +281,19 @@ namespace CoopDemo
             bones = list.ToArray();
         }
 
+        // 발 뼈의 가장 낮은 높이(모델 뿌리 기준). 기본 자세 그대로일 때 한 번만 잰다.
+        float LowestFootLocalY()
+        {
+            if (leftFoot == null && rightFoot == null) return float.NaN;
+            float y = float.MaxValue;
+            if (leftFoot != null) y = Mathf.Min(y, leftFoot.position.y);
+            if (rightFoot != null) y = Mathf.Min(y, rightFoot.position.y);
+            // 모델은 만들어진 뒤에 1.5배 같은 배율이 씌워지므로, 배율로 나눠서 "모델 자체 크기 기준" 값으로 저장/비교한다
+            return (y - transform.position.y) / Mathf.Max(0.0001f, transform.lossyScale.y);
+        }
+
+        void CaptureFootRest() { footRest = LowestFootLocalY(); }
+
         Quaternion BaseOf(Transform t)
         {
             foreach (var b in bones) if (b.t == t) return b.animated ? t.localRotation : b.rest;
@@ -276,12 +327,28 @@ namespace CoopDemo
             crouchAmount = Mathf.MoveTowards(crouchAmount, wantCrouch ? 1f : 0f, crouchBlendSpeed * dt);
             leftHoldAmount = Mathf.MoveTowards(leftHoldAmount, holdingLeftItem ? 1f : 0f, holdPoseBlendSpeed * dt);
             UpdateMotionState(dt);
+            transform.localPosition = Vector3.zero;
             ApplyPose();
-            transform.localPosition = new Vector3(0f, -crouchDrop * crouchAmount, 0f);   // 웅크림: 모델 전체를 낮춘다(루트는 그대로)
+            GroundFeet();
             UpdateHandCandle();   // 뼈를 다 돌린 뒤에 손 위치를 읽는다
             UpdateHandItem();
-            UpdateFaceItem();
+            UpdateEmoteHand();
             UpdateMouth(dt);
+        }
+
+        // 다리를 굽히면 골반은 그대로인 채 발이 위로 끌려 올라와 공중에 뜬다. 그만큼만 모델을 내려서 발을 바닥에 붙인다.
+        // (고정 값으로 내리면 다리가 덜 굽혀졌을 때 발이 바닥 아래로 가라앉는다 — 굽힌 정도에서 바로 계산한다)
+        // 웅크림/착지 굽힘에만 적용한다. 점프 중에는 일부러 발을 들어 올리므로 건드리지 않는다.
+        void GroundFeet()
+        {
+            if (float.IsNaN(footRest)) return;
+            float weight = Mathf.Max(crouchAmount, landCrouchNow) * (1f - airWeight);
+            if (weight <= 0.0001f) return;
+            float lift = (LowestFootLocalY() - footRest) * transform.lossyScale.y;   // 발이 기본 높이보다 얼마나 올라왔나(월드 m)
+            if (lift <= 0f) return;
+            Transform p = transform.parent;
+            float parentScaleY = p != null ? Mathf.Max(0.0001f, p.lossyScale.y) : 1f;
+            transform.localPosition = new Vector3(0f, -lift * weight / parentScaleY, 0f);
         }
 
         void UpdateMotionState(float dt)
@@ -322,12 +389,17 @@ namespace CoopDemo
             float c = Mathf.Cos(phase);
             float ground = 1f - airWeight;
             float landCrouch = landTimer > 0f ? Mathf.Sin(landTimer / landCrouchSeconds * Mathf.PI) : 0f;
-            float crouch = Mathf.Max(landCrouch, crouchAmount);   // 착지 순간의 짧은 굽힘 + 지속적인 웅크림, 둘 다 같은 다리 굽힘 공식을 쓴다
+            landCrouchNow = landCrouch;
+            // 착지 순간의 짧은 굽힘(가볍게)과 지속적인 웅크림(깊게)은 각도만 다르고 같은 공식을 쓴다 — 둘 중 더 굽은 쪽을 따른다
+            float hipsFlex = Mathf.Max(6f * landCrouch, crouchHipsAngle * crouchAmount);
+            float spineFlex = Mathf.Max(8f * landCrouch, crouchSpineAngle * crouchAmount);
+            float thighFlex = Mathf.Max(26f * landCrouch, crouchTuckAngle * crouchAmount);
+            float kneeFlex = Mathf.Max(40f * landCrouch, crouchKneeAngle * crouchAmount);
             float breathe = Mathf.Sin(Time.time * 1.7f) * 1.1f * (1f - amp);
 
             // 몸통: 살짝 앞으로 기울고, 서 있을 땐 숨쉬듯 흔들린다
-            Pose(hips, (swingAxis, lean * 0.4f * amp * ground), (right, crouch * 6f));
-            Pose(spine, (swingAxis, lean * 0.6f * amp * ground + breathe), (right, crouch * 8f));
+            Pose(hips, (swingAxis, lean * 0.4f * amp * ground), (right, hipsFlex));
+            Pose(spine, (swingAxis, lean * 0.6f * amp * ground + breathe), (right, spineFlex));
             Pose(spine1, (swingAxis, lean * 0.3f * amp * ground));
             Pose(spine2);
             Pose(neck);
@@ -344,8 +416,8 @@ namespace CoopDemo
 
             // 다리: 걸을 때 번갈아 앞뒤로, 점프 중엔 웅크려 모은다
             float legAmp = legSwing * amp * ground;
-            float tuck = airLegAngle * airWeight - 26f * crouch;
-            float knee = airKneeAngle * airWeight + 40f * crouch;
+            float tuck = airLegAngle * airWeight - thighFlex;
+            float knee = airKneeAngle * airWeight + kneeFlex;
             float lUp = -s * legAmp;           // 앞으로 나갈 때 음수
             float rUp = s * legAmp;
             float lKnee = Mathf.Max(0f, c) * kneeBend * amp * ground + knee;

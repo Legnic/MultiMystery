@@ -122,15 +122,29 @@ public class HoldableNetworkSync : NetworkBehaviour
     public override void OnNetworkSpawn()
     {
         held.OnListChanged += OnHeldChanged;
+        if (IsServer) NetworkManager.OnClientDisconnectCallback += OnClientDisconnected;
         Resync();
     }
 
     public override void OnNetworkDespawn()
     {
         held.OnListChanged -= OnHeldChanged;
+        if (IsServer && NetworkManager != null) NetworkManager.OnClientDisconnectCallback -= OnClientDisconnected;
+    }
+
+    // 들고 있던 사람이 나가면 그 사람 항목을 지운다 → 남은 사람 화면에서 물건이 원래 자리로 돌아간다 (Release → ForceReturnHome)
+    void OnClientDisconnected(ulong clientId)
+    {
+        for (int i = held.Count - 1; i >= 0; i--)
+            if (held[i].clientId == clientId) held.RemoveAt(i);
     }
 
     void OnHeldChanged(NetworkListEvent<HeldEntry> e) { Resync(); }
+
+    // 누군가(나 포함) 물건을 새로 집은 순간 모든 컴퓨터에서 한 번 불린다 — 집는 소리 같은 연출용. 접속 직후 이미 들려 있던 물건은 알리지 않는다.
+    public static event System.Action<HoldableItem, ulong> ItemTaken;
+    readonly Dictionary<int, ulong> knownHolder = new Dictionary<int, ulong>();
+    bool firstSyncDone;
 
     // 매번 전체를 다시 맞춘다 (목록이 2명짜리라 가벼움) — 이벤트 종류별로 분기하는 것보다 훨씬 덜 깨진다.
     void Resync()
@@ -139,8 +153,18 @@ public class HoldableNetworkSync : NetworkBehaviour
         foreach (var e in held)
         {
             current.Add(e.itemIndex);
+            if (!knownHolder.TryGetValue(e.itemIndex, out ulong who) || who != e.clientId)
+            {
+                knownHolder[e.itemIndex] = e.clientId;
+                if (firstSyncDone && e.itemIndex >= 0 && e.itemIndex < items.Length && items[e.itemIndex] != null)
+                    ItemTaken?.Invoke(items[e.itemIndex], e.clientId);
+            }
             if (e.clientId != MyId) Apply(e.itemIndex, e.clientId);
         }
+        firstSyncDone = true;
+        List<int> gone = null;
+        foreach (var k in knownHolder.Keys) if (!current.Contains(k)) { gone ??= new List<int>(); gone.Add(k); }
+        if (gone != null) foreach (var k in gone) knownHolder.Remove(k);
         List<int> toRelease = null;
         foreach (var idx in attached)
             if (!current.Contains(idx)) { toRelease ??= new List<int>(); toRelease.Add(idx); }
@@ -150,7 +174,14 @@ public class HoldableNetworkSync : NetworkBehaviour
     void Apply(int itemIndex, ulong clientId)
     {
         if (itemIndex < 0 || itemIndex >= items.Length || items[itemIndex] == null) return;
-        var playerObj = NetworkManager.Singleton.SpawnManager.GetPlayerNetworkObject(clientId);
+        // SpawnManager.GetPlayerNetworkObject(다른 사람)은 서버에서만 동작한다 — 게스트에서는 에러를 남기고 null을 돌려줘서
+        // 호스트가 든 물건이 게스트 화면에 영영 안 붙었다(2026-10-28 실제 접속 테스트로 확인). 모든 컴퓨터에 있는 플레이어 목록에서 찾는다.
+        NetworkObject playerObj = null;
+        for (int i = 0; i < LGH.NetworkPlayer.All.Count; i++)
+        {
+            var p = LGH.NetworkPlayer.All[i];
+            if (p != null && p.OwnerClientId == clientId) { playerObj = p.NetworkObject; break; }
+        }
         if (playerObj == null) return;
         var t = items[itemIndex].transform;
         var avatar = playerObj.GetComponentInChildren<CoopDemo.CharacterAvatar>(true);

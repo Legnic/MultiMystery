@@ -363,7 +363,7 @@ namespace PotionCraft.EditorTools
             var mixerModel = AssetDatabase.LoadAssetAtPath<GameObject>(MixerModelPath);
             if (mixerModel != null) Inst(mixerModel, shake, new Vector3(0, 0.4f, 0), Vector3.one * 0.9f).name = "Model";
             else Debug.LogWarning("[PotionCraft] 혼합기 모델이 없다: " + MixerModelPath);
-            var lump = Inst(items.lump, brewer.transform, new Vector3(0, 0.85f, 0), Vector3.one * 1.6f); // 혼합기 깔때기 안에 얹힘
+            var lump = Inst(items.lump, brewer.transform, new Vector3(0, 0.62f, 0), Vector3.one * 1.6f); // 혼합기 깔때기 위에 바로 얹힘 (모델 꼭대기 0.56)
             lump.name = "Lump";
             var bs = brewer.AddComponent<BrewerStation>();
             SetRef(bs, "shakeVisual", shake);

@@ -37,6 +37,8 @@ public class HoldableItem : MonoBehaviour, IWorldInteractable
     public static System.Func<HoldableItem, bool> HeldByOther;
 
     public virtual string DisplayName { get { return displayName; } }
+    // 손에 들었을 때 오른쪽 아래에 보여 줄 짧은 이름 (HeldItemHud). 기본은 DisplayName
+    public virtual string HudName { get { return DisplayName; } }
     public Vector3 HoldOffset { get { return holdOffset; } }
     public Vector3 HoldEuler { get { return holdEuler; } }
     public Where Location { get; private set; }

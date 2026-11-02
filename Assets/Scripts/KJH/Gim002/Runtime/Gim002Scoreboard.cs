@@ -22,6 +22,7 @@ namespace Gim002
         [SerializeField] Material[] symbolMaterials = new Material[0];
 
         Quaternion lidClosed;
+        Vector3[] slotHome;     // 각 칸의 원래 위치 (기호 4개 기준 배치)
         float amount;
         int shownScene = -1;
         bool shownOpen;
@@ -29,6 +30,8 @@ namespace Gim002
         void Awake()
         {
             if (lid != null) lidClosed = lid.localRotation;
+            slotHome = new Vector3[symbolSlots.Length];
+            for (int i = 0; i < symbolSlots.Length; i++) if (symbolSlots[i] != null) slotHome[i] = symbolSlots[i].transform.localPosition;
             Refresh(false, 0);
         }
 
@@ -65,14 +68,27 @@ namespace Gim002
                 symbolText.gameObject.SetActive(open);
             }
 
+            // 기호가 칸 수보다 적으면(예: 3개) 쓰는 칸들의 가운데가 판 전체 칸의 가운데에 오도록 옆으로 민다.
+            // 칸 수만큼 다 쓰면(4개) 이동량이 0이라 원래 배치 그대로.
+            Vector3 shift = Vector3.zero;
+            int used = Mathf.Min(symbols.Length, symbolSlots.Length);
+            if (used > 0 && used < symbolSlots.Length)
+            {
+                Vector3 all = Vector3.zero, first = Vector3.zero;
+                for (int i = 0; i < slotHome.Length; i++) all += slotHome[i];
+                for (int i = 0; i < used; i++) first += slotHome[i];
+                shift = all / slotHome.Length - first / used;
+            }
+
             for (int i = 0; i < symbolSlots.Length; i++)
             {
                 var r = symbolSlots[i];
                 if (r == null) continue;
-                bool used = i < symbols.Length;
-                r.gameObject.SetActive(used);
-                int m = used ? (int)symbols[i] : -1;
-                if (used && m < symbolMaterials.Length && symbolMaterials[m] != null) r.sharedMaterial = symbolMaterials[m];
+                bool on = i < symbols.Length;
+                r.gameObject.SetActive(on);
+                r.transform.localPosition = slotHome[i] + (on ? shift : Vector3.zero);
+                int m = on ? (int)symbols[i] : -1;
+                if (on && m < symbolMaterials.Length && symbolMaterials[m] != null) r.sharedMaterial = symbolMaterials[m];
             }
         }
     }

@@ -11,8 +11,19 @@ namespace CoopDemo
     // 이미지는 "1:1 픽셀"로 그려지는 9-slice라서, 쓰는 크기에 맞게 한 번 줄여서 만든다(UiScale이 화면에 맞게 키워 준다).
     public static class MeetYouGuiSkin
     {
-        public static readonly Color Parchment = new Color(0.93f, 0.86f, 0.68f);
-        public static readonly Color Gold = new Color(0.98f, 0.84f, 0.5f);
+        public static Color Parchment => GuiColor(new Color(0.93f, 0.86f, 0.68f));
+        public static Color Gold => GuiColor(new Color(0.98f, 0.84f, 0.5f));
+
+        // IMGUI(OnGUI) 글자색·GUI.color 틴트 보정.
+        // 이 프로젝트는 Linear 색 공간인데, 빌드(플레이어)에서는 IMGUI 색에 sRGB→Linear 변환이 한 번 더 걸려
+        // 지정한 색보다 어둡고 진하게(노랗게) 나온다 — 에디터 게임 뷰는 지정한 색 그대로 나온다.
+        // (2026-10-28 실측: 크림색 245,230,194 → 빌드 232,201,137 = 정확히 리니어 변환값)
+        // 그래서 빌드에서만 반대로 감마 쪽으로 한 번 올려서 넘긴다. 흰색·검은색과 알파는 그대로다.
+        public static Color GuiColor(Color c)
+        {
+            if (Application.isEditor || QualitySettings.activeColorSpace != ColorSpace.Linear) return c;
+            return c.gamma;
+        }
 
         static GUISkin skin;
         static GUIStyle window, inner;

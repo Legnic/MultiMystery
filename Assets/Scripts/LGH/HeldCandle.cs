@@ -51,10 +51,55 @@ namespace LGH
             renderers = GetComponentsInChildren<Renderer>(true);
         }
 
+        [Header("Wall clearance (first person)")]
+        [Tooltip("The candle (and its light) is kept at least this far from any surface, so it never ends up inside a wall")]
+        public float wallClearance = 0.12f;
+        [Tooltip("Never pull the candle closer to the eye than this fraction of its normal distance")]
+        public float minWallScale = 0.35f;
+        [Tooltip("How fast the candle returns to its normal spot once the wall is gone (fraction per second)")]
+        public float wallReturnSpeed = 6f;
+
+        static readonly RaycastHit[] wallHits = new RaycastHit[16];
+        Vector3 restLocalPos;
+        float wallScale = 1f;
+
         void Awake()
         {
             Capture();
             offlineStart = Time.time;
+            restLocalPos = transform.localPosition;
+        }
+
+        // The candle is held out in front of the camera. Standing closer to a wall than that puts the candle - and its light -
+        // INSIDE the wall: the wall then shadows the light and the whole view goes dark. So each frame, sweep from the eye to the
+        // normal candle spot and, if a surface is in the way, bring the candle back along that line to just in front of it.
+        // Only the local player's own candle (parented to the camera) does this; on other players' screens it rides the avatar's hand.
+        void LateUpdate()
+        {
+            Transform cam = transform.parent;
+            if (cam == null || cam.GetComponent<Camera>() == null) { wallScale = 1f; return; }
+
+            Vector3 origin = cam.position;
+            Vector3 delta = cam.TransformPoint(restLocalPos) - origin;
+            float dist = delta.magnitude;
+            if (dist < 0.01f) return;
+
+            int n = Physics.SphereCastNonAlloc(origin, wallClearance, delta / dist, wallHits, dist, ~0, QueryTriggerInteraction.Ignore);
+            float nearest = dist;
+            Transform root = transform.root;
+            for (int i = 0; i < n; i++)
+            {
+                Collider c = wallHits[i].collider;
+                if (c == null || c.transform.root == root) continue;                    // my own body
+                if (c.GetComponentInParent<NetworkPlayer>() != null) continue;           // the other player
+                if (c.GetComponentInParent<HoldableItem>() != null) continue;            // things carried in the other hand
+                if (wallHits[i].distance < nearest) nearest = wallHits[i].distance;
+            }
+
+            float target = Mathf.Clamp(nearest / dist, minWallScale, 1f);
+            // go in at once (never show the candle inside a wall), ease back out
+            wallScale = target < wallScale ? target : Mathf.MoveTowards(wallScale, target, wallReturnSpeed * Time.deltaTime);
+            transform.localPosition = restLocalPos * wallScale;
         }
 
         public override void OnNetworkSpawn()

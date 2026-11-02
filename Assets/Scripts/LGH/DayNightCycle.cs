@@ -27,6 +27,11 @@ namespace LGH
         public float maxElevation = 52f;
         public float azimuthOffset = 0f;
 
+        [Header("Environment")]
+        [Tooltip("끄면 환경광(Ambient)과 안개 색을 이 스크립트가 매 프레임 덮어쓰지 않는다. " +
+                 "밤으로 고정하고 씬의 Lighting/Fog 설정(KSM 야외 조명)을 그대로 쓸 때 끈다.")]
+        public bool manageEnvironment = true;
+
         [HideInInspector] public float t01;
 
         readonly NetworkVariable<float> syncedT01 = new NetworkVariable<float>(
@@ -150,9 +155,12 @@ namespace LGH
                 sunLight.intensity = intensityVal;
             }
 
-            RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat;
-            RenderSettings.ambientLight = ambientColor.Evaluate(t01);
-            RenderSettings.fogColor = fogColorGradient.Evaluate(t01);
+            if (manageEnvironment)
+            {
+                RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat;
+                RenderSettings.ambientLight = ambientColor.Evaluate(t01);
+                RenderSettings.fogColor = fogColorGradient.Evaluate(t01);
+            }
 
             if (windowGlassRenderer != null)
             {

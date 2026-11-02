@@ -14,6 +14,14 @@ namespace CoopDemo
         public GameObject TitleRoot => titleRoot != null ? titleRoot : gameObject;
         public Behaviour MultiplayerMenu => multiplayerMenu;
 
+        // 방에서 나와 씬을 다시 불러온 경우(RoomSceneReloader) 타이틀을 건너뛰고 방 목록 화면으로 바로 간다
+        void Start()
+        {
+            if (!RoomSceneReloader.OpenLobbyAfterReload) return;
+            RoomSceneReloader.OpenLobbyAfterReload = false;
+            OnStartClicked();
+        }
+
         public void OnStartClicked()
         {
             Debug.Log("[타이틀] 시작 버튼 클릭");

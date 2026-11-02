@@ -88,7 +88,8 @@ public class PlayerHand : MonoBehaviour
         if (Held == null) return;
 
         // 들고 있던 물건이 꺼지거나 파괴되면(예: 열쇠를 써서 사라짐) 손을 비운다
-        if (!Held.isActiveAndEnabled) { Held = null; return; }
+        // (Release로 비워야 HoldableNetworkSync가 "놓았다"를 알 수 있다 — 그냥 null로 두면 서버 목록에 "들고 있음"이 계속 남는다)
+        if (!Held.isActiveAndEnabled) { Release(); return; }
 
         // 내 플레이어(카메라)가 사라졌으면(접속 끊김 등) 들고 있던 물건은 원래 자리로
         Transform cam = ViewCamera();
@@ -96,6 +97,13 @@ public class PlayerHand : MonoBehaviour
 
         // 카메라 기준 오른쪽 아래 앞에 물건을 띄운다
         Held.transform.SetPositionAndRotation(cam.TransformPoint(Held.HoldOffset), cam.rotation * Quaternion.Euler(Held.HoldEuler));
+    }
+
+    // 손에 든 물건 이름을 오른쪽 아래에 (메뉴가 떠 있을 때는 숨김)
+    void OnGUI()
+    {
+        if (Held == null || Cursor.lockState != CursorLockMode.Locked) return;
+        HeldItemHud.Draw(Held.HudName);
     }
 
     // 이 컴퓨터 플레이어의 시점 카메라 (LGH PlayerInteractor가 쓰는 것과 같은 카메라)

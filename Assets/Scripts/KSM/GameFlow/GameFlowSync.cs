@@ -166,6 +166,23 @@ namespace CoopDemo
             stage.Value = GameStage.Intro;
         }
 
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        // 개발자 모드(DevMode)의 "혼자 시작": 로비·도입부를 건너뛰고 바로 Playing으로 간다.
+        // 호스트(서버)에서만, 접속한 플레이어가 한 명 이하일 때만 받아들인다 — 두 명이 있으면 상대의 도입부를 가로채지 않는다.
+        public bool ServerDevSkipToPlaying()
+        {
+            if (!IsServer || (stage.Value != GameStage.Lobby && stage.Value != GameStage.Intro)) return false;
+            if (LGH.NetworkPlayer.All.Count > 1) return false;
+            readyLobby0.Value = false; readyLobby1.Value = false; introCountdownEndAt.Value = -1;
+            introDone0.Value = true; introDone1.Value = true;
+            endingDone0.Value = false; endingDone1.Value = false;
+            clearedAt.Value = -1;
+            playingStartedAt.Value = NetworkManager.ServerTime.Time;
+            stage.Value = GameStage.Playing;
+            return true;
+        }
+#endif
+
         // 최종 기믹(탈출 성공) 쪽에서 호출할 연결 지점. 아직 프로젝트에 "출구" 기믹이 없어서 누가 이 메서드를 부를지는 추후 결정
         // (지금 당장은 DebugEscapeTrigger의 비밀 커맨드가 임시로 이 자리를 대신 채운다 — 진짜 기믹이 생기면 그쪽에서 이 메서드만 부르면 됨).
         // 호스트에서만 의미가 있고, Playing 상태가 아니면 무시한다(중복 호출 방지).

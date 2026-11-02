@@ -1,107 +1,219 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Video;
 
 namespace CoopDemo
 {
-    // 도입부(4컷)/엔딩에서 공용으로 쓰는 "그림+대사" 컷신 재생기. Time.timeScale과 무관하게 돈다(Time.unscaledDeltaTime만 사용).
-    // 끝나면(끝까지 보거나 스킵) GameFlowSync에 본인 완료만 보고하고, 상대를 기다리는 화면으로 바뀐다.
-    // 실제 네트워크 게임을 멈추지 않는다 — 이 스크립트는 로컬 UI 표시와 "다 봤다" 보고만 한다.
+    // 도입부/엔딩 영상을 로컬에서 재생한다. 완료/스킵 후 기존 2인 완료 판정은 GameFlowSync가 담당한다.
     [DisallowMultipleComponent]
     public class IllustratedCutsceneController : MonoBehaviour
     {
-        [System.Serializable]
-        public struct Cut
-        {
-            public Sprite image;
-            [TextArea(2, 4)] public string caption;
-            [Tooltip("이 컷을 최소 이만큼은 보여준다(초, 실시간). 0이면 즉시 다음으로 넘어갈 수 있다.")]
-            public float minSeconds;
-        }
-
         public enum Kind { Intro, Ending }
 
-        [Tooltip("Intro면 양쪽 다 끝났을 때 GameFlowSync가 Playing으로, Ending이면 Result로 전환한다.")]
         public Kind kind = Kind.Intro;
-
-        [Header("컷 목록 (유니티 기본 UI 소스로 임시 제작 가능 — 실제 일러스트는 나중에 교체)")]
-        public Cut[] cuts;
-
-        [Header("UI 참조")]
-        [SerializeField] Image illustration;
-        [SerializeField] Text caption;
-        [SerializeField] Button nextButton;
+        [SerializeField] VideoClip videoClip;
+        [Tooltip("영상의 처음과 마지막에 검정 화면과 디졸브하는 시간(초). 영상 재생 시간을 기준으로 한다.")]
+        [SerializeField, Min(0f)] float dissolveSeconds = 3f;
         [SerializeField] Button skipButton;
-        [SerializeField] GameObject playbackRoot;   // 그림+대사+버튼 묶음
-        [SerializeField] GameObject waitingRoot;    // "상대 플레이어를 기다리는 중..." 패널
+        [SerializeField] GameObject playbackRoot;
+        [SerializeField] GameObject waitingRoot;
         [SerializeField] Text waitingText;
 
-        int index;
+        // 기존 씬의 임시 컷 UI 참조. 영상으로 교체한 뒤에는 표시하지 않는다.
+        [SerializeField, HideInInspector] Image illustration;
+        [SerializeField, HideInInspector] Text caption;
+        [SerializeField, HideInInspector] Button nextButton;
+
+        VideoPlayer player;
+        RawImage videoImage;
+        RenderTexture videoTexture;
+        Coroutine preparation;
         bool localFinished;
-        Coroutine autoAdvance;
 
         void OnEnable()
         {
-            index = 0;
             localFinished = false;
-            if (nextButton != null) nextButton.onClick.AddListener(OnNextClicked);
-            if (skipButton != null) skipButton.onClick.AddListener(OnSkipClicked);
-            ShowCurrentCut();
+            if (illustration != null) illustration.gameObject.SetActive(false);
+            if (caption != null) caption.gameObject.SetActive(false);
+            if (nextButton != null) nextButton.gameObject.SetActive(false);
+            if (waitingRoot != null) waitingRoot.SetActive(false);
+            if (playbackRoot != null) playbackRoot.SetActive(true);
+            if (skipButton != null)
+            {
+                skipButton.gameObject.SetActive(true);
+                skipButton.interactable = true;
+                skipButton.onClick.AddListener(FinishLocal);
+            }
+
+            if (videoClip == null || playbackRoot == null)
+            {
+                Debug.LogError($"[Cutscene] {kind}: 영상 또는 PlaybackRoot가 지정되지 않았습니다.", this);
+                FinishLocal();
+                return;
+            }
+
+            EnsureVideoPlayer();
+            SetVideoOpacity(0f);
+            // 영상 종료 후 대기 화면에서도 뒤의 게임 화면이 비치지 않게 한다.
+            var canvasBackground = transform.Find("Background");
+            if (canvasBackground != null && canvasBackground.TryGetComponent<Image>(out var image))
+                image.color = Color.black;
+            player.loopPointReached += OnVideoEnded;
+            player.errorReceived += OnVideoError;
+            preparation = StartCoroutine(PrepareAndPlay());
+        }
+
+        void EnsureVideoPlayer()
+        {
+            if (player != null) return;
+
+            // 전체 화면 검정 배경 위에 원본 비율을 유지한 영상을 배치한다.
+            var background = new GameObject("VideoBackground", typeof(RectTransform), typeof(Image));
+            background.layer = playbackRoot.layer;
+            var backgroundRect = (RectTransform)background.transform;
+            backgroundRect.SetParent(playbackRoot.transform, false);
+            backgroundRect.anchorMin = Vector2.zero;
+            backgroundRect.anchorMax = Vector2.one;
+            backgroundRect.offsetMin = backgroundRect.offsetMax = Vector2.zero;
+            background.transform.SetAsFirstSibling();
+            background.GetComponent<Image>().color = Color.black;
+
+            var surface = new GameObject("Video", typeof(RectTransform), typeof(RawImage), typeof(AspectRatioFitter));
+            surface.layer = playbackRoot.layer;
+            surface.transform.SetParent(background.transform, false);
+            videoImage = surface.GetComponent<RawImage>();
+            videoImage.raycastTarget = false;
+            videoImage.enabled = false;
+            SetVideoOpacity(0f);
+            var fitter = surface.GetComponent<AspectRatioFitter>();
+            fitter.aspectMode = AspectRatioFitter.AspectMode.FitInParent;
+            fitter.aspectRatio = (float)videoClip.width / Mathf.Max(1f, videoClip.height);
+
+            var audio = surface.AddComponent<AudioSource>();
+            audio.playOnAwake = false;
+            audio.spatialBlend = 0f;
+            player = surface.AddComponent<VideoPlayer>();
+            player.playOnAwake = false;
+            player.isLooping = false;
+            player.waitForFirstFrame = true;
+            player.timeUpdateMode = VideoTimeUpdateMode.UnscaledGameTime;
+            player.source = VideoSource.VideoClip;
+            player.clip = videoClip;
+            player.renderMode = VideoRenderMode.RenderTexture;
+            player.audioOutputMode = VideoAudioOutputMode.AudioSource;
+            if (videoClip.audioTrackCount > 0)
+            {
+                player.controlledAudioTrackCount = 1;
+                player.EnableAudioTrack(0, true);
+                player.SetTargetAudioSource(0, audio);
+            }
+
+            // 영상은 클릭을 가로채지 않고, 스킵 버튼은 항상 그 위에 표시된다.
+            if (skipButton != null) skipButton.transform.SetAsLastSibling();
+        }
+
+        IEnumerator PrepareAndPlay()
+        {
+            // 첫 yield 이후부터 실패 시 코루틴을 안전하게 중단할 수 있다.
+            yield return null;
+            player.Prepare();
+            float deadline = Time.realtimeSinceStartup + 30f;
+            while (!player.isPrepared && !localFinished && Time.realtimeSinceStartup < deadline)
+                yield return null;
+            if (localFinished) yield break;
+            if (!player.isPrepared)
+            {
+                OnVideoError(player, "영상 준비 시간이 초과되었습니다.");
+                yield break;
+            }
+
+            videoTexture = new RenderTexture((int)player.width, (int)player.height, 0, RenderTextureFormat.ARGB32);
+            videoTexture.Create();
+            var previous = RenderTexture.active;
+            RenderTexture.active = videoTexture;
+            GL.Clear(true, true, Color.black);
+            RenderTexture.active = previous;
+            player.targetTexture = videoTexture;
+            videoImage.texture = videoTexture;
+            videoImage.enabled = true;
+            preparation = null;
+            player.Play();
+        }
+
+        void Update()
+        {
+            if (localFinished || player == null || !player.isPrepared || !player.isPlaying) return;
+
+            // 별도 타이머 대신 디코더의 재생 위치를 사용해 버퍼링/프레임 지연에도
+            // 첫 프레임은 검정, 마지막 프레임은 검정으로 맞춘다.
+            double duration = player.length > 0d ? player.length : videoClip.length;
+            float fade = Mathf.Min(dissolveSeconds, (float)(duration * 0.5d));
+            float opacity = 1f;
+            if (fade > 0f)
+            {
+                float fadeIn = Mathf.Clamp01((float)(player.time / fade));
+                float fadeOut = Mathf.Clamp01((float)((duration - player.time) / fade));
+                opacity = Mathf.SmoothStep(0f, 1f, Mathf.Min(fadeIn, fadeOut));
+            }
+            SetVideoOpacity(opacity);
+        }
+
+        void SetVideoOpacity(float opacity)
+        {
+            if (videoImage != null) videoImage.color = new Color(1f, 1f, 1f, opacity);
+        }
+
+        void OnVideoEnded(VideoPlayer source)
+        {
+            SetVideoOpacity(0f);
+            FinishLocal();
+        }
+
+        void OnVideoError(VideoPlayer source, string message)
+        {
+            Debug.LogError($"[Cutscene] {kind} 영상 재생 실패: {message}", this);
+            // 한쪽 기기의 디코딩 실패 때문에 두 플레이어가 영구 대기하지 않도록 완료 처리한다.
+            FinishLocal();
+        }
+
+        public void RefreshWaitingText()
+        {
+            if (localFinished && waitingText != null)
+                waitingText.text = "상대 플레이어를 기다리는 중...";
+        }
+
+        void StopVideo()
+        {
+            SetVideoOpacity(0f);
+            if (preparation != null) { StopCoroutine(preparation); preparation = null; }
+            if (player != null) { player.Stop(); player.targetTexture = null; }
+            if (videoImage != null) { videoImage.texture = null; videoImage.enabled = false; }
+            if (videoTexture != null)
+            {
+                videoTexture.Release();
+                Destroy(videoTexture);
+                videoTexture = null;
+            }
         }
 
         void OnDisable()
         {
-            if (nextButton != null) nextButton.onClick.RemoveListener(OnNextClicked);
-            if (skipButton != null) skipButton.onClick.RemoveListener(OnSkipClicked);
-            if (autoAdvance != null) { StopCoroutine(autoAdvance); autoAdvance = null; }
+            if (skipButton != null) skipButton.onClick.RemoveListener(FinishLocal);
+            if (player != null)
+            {
+                player.loopPointReached -= OnVideoEnded;
+                player.errorReceived -= OnVideoError;
+            }
+            StopVideo();
         }
 
-        // GameFlowUI가 "아직 상대를 기다리는 중"이면 매 프레임 불러서 대기 문구를 갱신한다.
-        public void RefreshWaitingText()
-        {
-            if (!localFinished || waitingText == null) return;
-            waitingText.text = "상대 플레이어를 기다리는 중...";
-        }
-
-        void ShowCurrentCut()
-        {
-            if (playbackRoot != null) playbackRoot.SetActive(true);
-            if (waitingRoot != null) waitingRoot.SetActive(false);
-
-            if (cuts == null || cuts.Length == 0) { FinishLocal(); return; }
-            index = Mathf.Clamp(index, 0, cuts.Length - 1);
-            var cut = cuts[index];
-            if (illustration != null) { illustration.sprite = cut.image; illustration.enabled = cut.image != null; }
-            if (caption != null) caption.text = cut.caption;
-            if (nextButton != null) nextButton.interactable = false;
-
-            if (autoAdvance != null) StopCoroutine(autoAdvance);
-            autoAdvance = StartCoroutine(EnableNextAfter(cut.minSeconds));
-        }
-
-        IEnumerator EnableNextAfter(float seconds)
-        {
-            if (seconds > 0f) yield return new WaitForSecondsRealtime(seconds);
-            if (nextButton != null) nextButton.interactable = true;
-        }
-
-        void OnNextClicked()
-        {
-            if (localFinished) return;
-            index++;
-            if (cuts == null || index >= cuts.Length) FinishLocal();
-            else ShowCurrentCut();
-        }
-
-        void OnSkipClicked() { FinishLocal(); }
-
-        // 버튼 연타·콜백 중복에도 한 번만 보고한다.
+        // 버튼 연타·영상 종료 콜백 중복에도 한 번만 보고한다.
         void FinishLocal()
         {
             if (localFinished) return;
             localFinished = true;
-            if (autoAdvance != null) { StopCoroutine(autoAdvance); autoAdvance = null; }
-
+            StopVideo();
             if (playbackRoot != null) playbackRoot.SetActive(false);
             if (waitingRoot != null) waitingRoot.SetActive(true);
             RefreshWaitingText();
