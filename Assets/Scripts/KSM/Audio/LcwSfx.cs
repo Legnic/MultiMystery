@@ -62,9 +62,10 @@ public static class LcwSfx
     }
 
     // 월드의 한 지점에서 나는 소리 (가까울수록 크게, maxDistance 밖에서는 들리지 않음)
-    public static void Play(AudioClip clip, Vector3 position, float volume = 1f, float maxDistance = 20f, float minDistance = 2f, float pitchRandom = 0.03f)
+    // 돌려주는 AudioSource로 도중에 끊을 수 있다(풀이라 나중에 다른 소리에 재사용되므로 clip을 확인하고 끊을 것).
+    public static AudioSource Play(AudioClip clip, Vector3 position, float volume = 1f, float maxDistance = 20f, float minDistance = 2f, float pitchRandom = 0.03f)
     {
-        if (clip == null) return;
+        if (clip == null) return null;
         var a = Take();
         a.transform.position = position;
         a.clip = clip;
@@ -74,6 +75,7 @@ public static class LcwSfx
         a.maxDistance = maxDistance;
         a.pitch = 1f + Random.Range(-pitchRandom, pitchRandom);
         a.Play();
+        return a;
     }
 
     // 거리와 상관없이 내 귀에 바로 들리는 소리 (내가 한 행동, 화면 연출 등)
