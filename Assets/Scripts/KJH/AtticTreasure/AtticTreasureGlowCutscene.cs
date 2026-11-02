@@ -69,6 +69,8 @@ namespace AtticTreasure
         [Header("문구")]
         [SerializeField] string pickerText = "황금상을 손에 넣었다";
         [SerializeField] string otherText = "동료가 황금상을 손에 넣었다";
+        [Tooltip("문구 색 (예전 값 1, 0.86, 0.5 -> 2026-11-02 더 노랗게)")]
+        [SerializeField] Color captionColor = new Color(1f, 0.85f, 0.25f);
 
         // ---- 실행 상태 ----
         bool playing, picker, flashSoundPlayed;
@@ -570,13 +572,26 @@ namespace AtticTreasure
 
         void DrawCaption(float alpha)
         {
-            if (style == null) style = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold };
+            // 다른 화면이 바꿔 둔 GUI 스킨(어두운 글자색·왼쪽 정렬)이나 화면 배율을 물려받지 않게 직접 정한다
+            GUI.matrix = Matrix4x4.identity;
+            // GUI.skin.label을 복사해 만들면 정렬·글자색 설정이 적용되지 않아 왼쪽 정렬·검은 글자로 나왔다(2026-11-02 실측).
+            // 그래서 복사하지 않고 새 스타일에 필요한 값만 직접 넣는다.
+            if (style == null || style.alignment != TextAnchor.MiddleCenter)
+            {
+                style = new GUIStyle();
+                style.font = GUI.skin.font;
+                style.alignment = TextAnchor.MiddleCenter;
+                style.fontStyle = FontStyle.Bold;
+                style.wordWrap = false;
+                style.clipping = TextClipping.Overflow;
+                style.normal.textColor = Color.white;
+            }
             style.fontSize = Mathf.RoundToInt(Screen.height / 720f * 30f);
             var r = new Rect(0, Screen.height * 0.74f, Screen.width, Screen.height * 0.1f);
             string text = picker ? pickerText : otherText;
             GUI.color = new Color(0f, 0f, 0f, alpha * 0.7f);
             GUI.Label(new Rect(r.x + 2, r.y + 2, r.width, r.height), text, style);
-            GUI.color = new Color(1f, 0.86f, 0.5f, alpha);
+            GUI.color = new Color(captionColor.r, captionColor.g, captionColor.b, alpha);
             GUI.Label(r, text, style);
             GUI.color = Color.white;
         }
