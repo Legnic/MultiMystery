@@ -36,7 +36,9 @@ namespace Gim004
         public void PredictPlace(Gim004ShelfSlot slot)
         {
             pendingUntil = Time.time + pendingTimeout;
-            PlaceAt(slot.Anchor, slot);
+            // 벤치(PotHomes)와 선반 자리는 둘 다 정면이 로컬 -Z라서, 벤치에서의 회전을 그대로 쓰면
+            // 선반 앞에 선 사람에게도 벤치에서 보던 쪽 얼굴이 보인다.
+            PlaceAt(slot.Anchor, slot, HomeLocalRotation);
         }
 
         // 선반 자리가 호출: 내가 빼거나, 교체로 밀려나 처음 자리로 보냈다
@@ -55,7 +57,7 @@ namespace Gim004
             if (slotIndex >= 0)
             {
                 var slot = Gim004ShelfSlot.Find(slotIndex);
-                if (slot != null && !IsPlacedOn(slot.Anchor)) PlaceAt(slot.Anchor, slot);   // 손에 들려 있었다면 PlaceAt이 손을 비운다
+                if (slot != null && !IsPlacedOn(slot.Anchor)) PlaceAt(slot.Anchor, slot, HomeLocalRotation);   // 손에 들려 있었다면 PlaceAt이 손을 비운다
                 return;
             }
 

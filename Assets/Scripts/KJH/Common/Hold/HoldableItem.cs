@@ -175,12 +175,21 @@ public class HoldableItem : MonoBehaviour, IWorldInteractable
     // anchor 위치에 꽂는다. socket은 꽂힌 동안 E 입력을 대신 처리할 자리.
     public void PlaceAt(Transform anchor, IHoldableSocket socket, float seconds = -1f)
     {
+        PlaceAt(anchor, socket, Quaternion.identity, seconds);
+    }
+
+    // anchor 기준 회전(localRotation)을 지정해 꽂는다.
+    public void PlaceAt(Transform anchor, IHoldableSocket socket, Quaternion localRotation, float seconds = -1f)
+    {
         if (Location == Where.Held) PlayerHand.Local.Release();
         Socket = socket;
         transform.SetParent(anchor, true);
         Vector3 scaleInAnchor = transform.localScale;   // 월드 크기 유지
-        MoveTo(Vector3.zero, Quaternion.identity, scaleInAnchor, seconds < 0f ? placeSeconds : seconds, Where.Placed);
+        MoveTo(Vector3.zero, localRotation, scaleInAnchor, seconds < 0f ? placeSeconds : seconds, Where.Placed);
     }
+
+    // 원래 자리(부모 기준)의 회전. 꽂는 자리가 같은 방향 규칙을 쓰면 그대로 넘겨서 놓인 모습을 유지할 수 있다.
+    public Quaternion HomeLocalRotation => homeLocalRot;
 
     // 지금 anchor에 꽂혀 있는가 (이동 중 포함)
     public bool IsPlacedOn(Transform anchor) { return transform.parent == anchor && (Location == Where.Placed || moving != null); }
