@@ -63,7 +63,11 @@ namespace AtticTreasure
         [SerializeField] float bloomIntensity = 0.9f;
         [SerializeField] float bloomThreshold = 1.0f;
 
-        [Header("소리 (비우면 LCW '인형극정답전구켜지기')")]
+        [Header("소리")]
+        [Tooltip("연출이 시작될 때 한 번 재생하는 웅장한 소리. 줌인 동안 커지고 보석이 번쩍이는 순간(4.25초)에 가장 크다. 비우면 Resources/AtticTreasure_Reveal (Assets/Sounds/KJH/Resources)")]
+        [SerializeField] AudioClip revealClip;
+        [SerializeField, Range(0f, 1f)] float revealVolume = 0.9f;
+        [Tooltip("보석이 번쩍이는 순간에 추가로 낼 소리 (비우면 없음 — 웅장한 소리에 이미 들어 있다)")]
         [SerializeField] AudioClip gemFlashClip;
 
         [Header("문구")]
@@ -124,6 +128,7 @@ namespace AtticTreasure
             if (statue == null) { Debug.LogWarning("[AtticTreasure] 황금상을 찾지 못해 연출을 건너뜁니다", this); return; }
 
             MeasureStatue();
+            PlayRevealSound();
             LockPlayer();
             HidePlayers();
             BuildCamera();
@@ -131,6 +136,14 @@ namespace AtticTreasure
         }
 
         // ---------------- 준비 ----------------
+
+        // 보물을 얻는 웅장한 소리: 연출 시간표(줌인 4.2초, 번쩍임 4.25초, 끝 6.2초)에 맞춰 만든 한 덩어리 소리라 시작에 한 번만 튼다.
+        // 각자 자기 화면의 연출에서 틀기 때문에 집은 사람과 동료 모두 듣는다.
+        void PlayRevealSound()
+        {
+            var clip = revealClip != null ? revealClip : Resources.Load<AudioClip>("AtticTreasure_Reveal");
+            if (clip != null) LcwSfx.Play2D(clip, revealVolume);
+        }
 
         // 상자 속 원래 자리를 미리 기억해 둔다 (연출 시점에 진짜 황금상이 이미 손으로 옮겨졌어도 같은 자리에 보이게)
         void Start()
@@ -443,8 +456,7 @@ namespace AtticTreasure
             if (!flashSoundPlayed && t >= gemFlashAt - 0.05f)
             {
                 flashSoundPlayed = true;
-                var clip = gemFlashClip != null ? gemFlashClip : (LcwSfx.Bank != null ? LcwSfx.Bank.puppetBulbOn : null);
-                if (clip != null) LcwSfx.Play2D(clip, 0.9f);
+                if (gemFlashClip != null) LcwSfx.Play2D(gemFlashClip, 0.9f);
             }
 
             // 떠다니는 입자: 황금상 둘레를 나선으로 천천히 올라간다
