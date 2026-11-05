@@ -28,11 +28,12 @@ namespace GimmickDoors.EditorTools
             // 안내 문구가 있는 기믹(GIM-002/003/004/007)은 풀리는 방 이름이 그 기믹의 완료 문구에 들어 있다 → 문 목록을 바꾸면 문구도 같이 고칠 것.
             //
             // 첫 번째 기믹(초상화 액자, GIM-001)이 끝나면 안내 없이 풀리는 문:
-            //   1층 응접실(갤러리↔응접실)·서재·당구실·화장실, 2층 욕실·손님방(욕실↔손님방)·린넨실, 그리고 흡연실·안방
+            //   1층 응접실(갤러리↔응접실)·서재·당구실·화장실, 2층 욕실·손님방(욕실↔손님방)·린넨실, 그리고 흡연실
+            // 안방(Door_Master)은 2026-11-05 요청으로 처음부터 열려 있다(잠그지 않는다 → 이 목록에 넣지 않는다).
             Add(go, DoorGimmick.Gim001_Portrait,
                 Door("Door_Gallery_Parlor"), Door("Door_Study_Parlor"), Door("Door_Billiard_Study"), Door("Door_Billiard"), Door("Door_WC"),
                 Door("Door_Bath"), Door("Door_Bath_Guest1"), Door("Door_Linen"),
-                Door("Door_CorridorE_Smoking"), Door("Door_Master"));
+                Door("Door_CorridorE_Smoking"));
             // 인형극(GIM-002): 약품 재료실(Kitchen) + 식당 쪽 우회문, 식당, 저장고, 세탁실, 약품 조제실(Guest2)
             Add(go, DoorGimmick.Gim002_PuppetShow,
                 Door("Door_Kitchen"), Door("Door_Kitchen_Dining"), Door("Door_Dining"), Door("Door_Pantry"), Door("Door_Laundry"),

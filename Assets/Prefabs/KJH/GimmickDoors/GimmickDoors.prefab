@@ -66,8 +66,6 @@ MonoBehaviour:
     openFrom: {x: 0, y: 0, z: 0}
   - doorName: Door_CorridorE_Smoking
     openFrom: {x: 0, y: 0, z: 0}
-  - doorName: Door_Master
-    openFrom: {x: 0, y: 0, z: 0}
   doorParentFilter: Ravenwood_LGH
   lockedMessage: "\uBB38\uC774 \uC7A0\uACA8 \uC788\uB2E4"
   openOnComplete: 0

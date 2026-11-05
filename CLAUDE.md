@@ -190,14 +190,14 @@ git에 커밋되어 팀원 전원이 같은 내용을 공유합니다. 개인적
 - 우회로 확인 결과(2026-10-23): 서재는 `Door_Library_Guest1`, 주방은 `Door_Kitchen_Dining`으로도 들어갈 수 있어 같은 기믹에 묶어 같이 잠금. 온실 정원 쪽 `Door_GardenConservatory`는 원래 잠겨 있음. 맵에 문이 추가되면 우회로를 다시 확인할 것.
 
 ## 문 잠금 규칙 개편 + 서랍·금고 입력 (2026-11-05, Develop)
-- **시작 상태**: 1층은 초상화 갤러리(`Door_Hall_Gallery`), 2층은 아이방(`Door_Nursery`)만 열려 있고 나머지 문은 전부 잠김(현관·뒷문·정원 온실은 원래 잠김/열쇠). **문은 기믹이 끝나도 저절로 열리지 않고 잠금만 풀린다** — 플레이어가 E로 직접 연다. 모두 `GimmickDoorLink`(상태 기반, 모든 컴퓨터가 매 프레임 맞춤)가 맡는다(`openOnComplete` 기본 꺼짐).
+- **시작 상태**: 1층은 초상화 갤러리(`Door_Hall_Gallery`), 2층은 아이방(`Door_Nursery`)과 안방(`Door_Master`)만 열려 있고 나머지 문은 전부 잠김(현관·뒷문·정원 온실은 원래 잠김/열쇠). **문은 기믹이 끝나도 저절로 열리지 않고 잠금만 풀린다** — 플레이어가 E로 직접 연다. 모두 `GimmickDoorLink`(상태 기반, 모든 컴퓨터가 매 프레임 맞춤)가 맡는다(`openOnComplete` 기본 꺼짐).
 - **풀리는 순서** (표는 `Tools/KJH/GimmickDoors/Build`의 `GimmickDoorsBuilder`가 기준이고, Develop의 `GimmickDoors`는 그 프리팹 인스턴스):
-  - **GIM-001(초상화) 해결 → 안내 없이**: 응접실(`Door_Gallery_Parlor`), 서재(`Door_Study_Parlor`), 당구실(`Door_Billiard_Study`·`Door_Billiard`), 화장실(`Door_WC`), 욕실(`Door_Bath`), 손님방(`Door_Bath_Guest1`, 욕실↔손님방), 린넨실(`Door_Linen`), 흡연실(`Door_CorridorE_Smoking`), 안방(`Door_Master`). (`DoorGimmick.Gim001_Portrait`, 완료 판정 `PortraitPuzzle.Solved`)
+  - **GIM-001(초상화) 해결 → 안내 없이**: 응접실(`Door_Gallery_Parlor`), 서재(`Door_Study_Parlor`), 당구실(`Door_Billiard_Study`·`Door_Billiard`), 화장실(`Door_WC`), 욕실(`Door_Bath`), 손님방(`Door_Bath_Guest1`, 욕실↔손님방), 린넨실(`Door_Linen`), 흡연실(`Door_CorridorE_Smoking`). **안방(`Door_Master`)은 2026-11-05 요청으로 처음부터 열려 있다**(목록에서 뺌, 드레스룸 `Door_Master_Dressing`은 그대로 GIM-007). (`DoorGimmick.Gim001_Portrait`, 완료 판정 `PortraitPuzzle.Solved`)
   - **GIM-002(인형극) 완료**: 약품 재료실(`Door_Kitchen`·`Door_Kitchen_Dining`), 식당(`Door_Dining`), 저장고(`Door_Pantry`), 세탁실(`Door_Laundry`), 약품 조제실(`Door_Guest2`).
   - **GIM-003(약품 제조) 완료**: 서고(`Door_Library`), 손님방↔서고(`Door_Library_Guest1`, 서고 문과 같이), 온실(`Door_Conservatory`).
   - **GIM-004 완료**: 정원 문(`Door_Courtyard_L/R`), 정원 관리실(`Door_MaidRoom`). **GIM-007 완료**: 드레스룸(`Door_Master_Dressing`). **음악실 문**: GIM-002 열쇠를 쓰면(`Gim002KeyTarget`) 잠금만 풀림. **현관문**: 열쇠를 쓰면 지금처럼 바로 열리고 탈출 판정(요청으로 그대로 둠).
 - **방 이름은 게임 속 층별 지도 기준이라 코드 이름과 다르다**: `Kitchen`=약품 재료실, `Guest2`=약품 조제실, `Guest1`=손님방, `Pantry`=저장고, `Gallery`=초상화 갤러리. 안내 문구에도 이 이름을 쓴다.
-- **어느 방 문이 풀렸는지 알리는 문구**는 각 기믹의 완료 문구에 들어 있다: `Gim002Config.msgCompleteFloor1/2`(내 플레이어 높이 `floorSplitY`=2 기준으로 1층은 "약품 재료실", 2층은 "약품 조제실"만 알림 — 식당·저장고·세탁실도 같이 풀리지만 문구에는 넣지 않는다), `PotionCraftSync.completionSubtitle`, `Gim004Config.msgCompleteFloor1/2`, `Gim007Config.msgComplete`, `Gim002KeyTarget.unlockedMessage`(음악실). 문 목록을 바꾸면 문구도 같이 고칠 것. 문을 직접 열어 주는 옛 동작은 `GimmickDoorLink.openOnComplete`, `Gim004Config.openDoorsOnComplete`, `Gim007Config.openDoorsOnComplete`로 되살릴 수 있다(기본 꺼짐).
+- **어느 방 문이 풀렸는지 알리는 문구**는 각 기믹의 완료 문구에 들어 있다: `Gim002Config.msgCompleteFloor1/2`(내 플레이어 높이 `floorSplitY`=2 기준으로 1층은 "약품 재료실", 2층은 "약품 조제실"만 알림 — 식당·저장고·세탁실도 같이 풀리지만 문구에는 넣지 않는다), `PotionCraftSync.completionSubtitleFloor1/2`(1층은 "온실", 2층은 "서고"만 알림, 기준 높이 `floorSplitY`=2), `Gim004Config.msgCompleteFloor1/2`, `Gim007Config.msgComplete`, `Gim002KeyTarget.unlockedMessage`(음악실). 문 목록을 바꾸면 문구도 같이 고칠 것. 문을 직접 열어 주는 옛 동작은 `GimmickDoorLink.openOnComplete`, `Gim004Config.openDoorsOnComplete`, `Gim007Config.openDoorsOnComplete`로 되살릴 수 있다(기본 꺼짐).
 - **Develop의 `GimmickDoors`는 이번에 프리팹 인스턴스로 확인됐다**(Play 중에 확인하면 프리팹 API가 엉뚱한 값을 줄 수 있으니 편집 모드에서 볼 것). 프리팹을 고치면 씬은 그대로 따라간다.
 - **책상 서랍(`Furn_Desk_Set`, 서재·숨은 방·하녀방)이 안 열리던 원인**: 몸체 콜라이더(`Furn_Desk_Body`)가 서랍 앞면보다 2.5cm 앞까지 나와서 서랍을 어느 방향에서 조준해도 몸체가 먼저 맞았다. 몸체 앞면을 서랍 앞면보다 3cm 뒤로 물렸다(씬 값, 3개 책상). 예전(10/26)에 같은 수정을 했는데 커밋 이력에 안 남아 있었다 → **씬에서 이 콜라이더 값이 되돌아가면 서랍이 다시 안 된다.** 검증: 실제 `PlayerInteractor`로 서랍 9개 모두 조준됨.
 - **별 상자(금고) 숫자는 마우스 휠로 바꾼다**: 근접 보기(E)에서 칸 위에 마우스를 두고 휠 위로 +1, 아래로 −1(0에서 내리면 9). 칸을 클릭해도 바뀌지 않고 OPEN 버튼만 클릭한다. `StarLockBox.Apply(part)`에 10~13번(내리기)을 추가했고, 네트워크는 기존 `LockBoxNetworkSync.PressRpc` 그대로다. 휠 한 칸이 ±120으로 올 때와 ±1로 올 때를 모두 한 칸으로 맞춘다(`NormalizedScroll`).
@@ -1183,6 +1183,18 @@ Stage를 Playing으로 강제 → 낮 시간대로 강제) 재현한 뒤, 5개 �
 - **막는 법**: `#if UNITY_EDITOR || DEVELOPMENT_BUILD` 안이라 Development Build를 끄고 빌드하면 코드 자체가 빠진다(KJH `DevGimmickPanel`과 같은 규칙). 수동으로는 `DevMode.Enabled = false`. KJH의 F9 기믹 완료 패널(`KJH/Dev/DevGimmickPanel.cs`)과는 별개다.
 - **다른 파일에 넣은 훅 2개**: `GameFlowSync.ServerDevSkipToPlaying()`(위 조건, `#if` 안), `LGH/MultiplayerMenu.ClearTypedCommand(word)`(입력칸에 포커스가 있을 때 친 글자를 지움 — 한글 상태에서 치면 일치하지 않아 안 지워지니 입력칸 밖에서 칠 것).
 - **검증 한계**: 커맨드 처리·혼자 시작(방 만들기 화면/혼자 있는 대기방/둘이 있는 대기방)·통과(정문 철창, 잠긴 문, 1·2층 창, 난간)·끄면 다시 막힘·벽은 계속 막힘·방 나가면 꺼짐을 Play 모드에서 확인했다. **실제 키보드 입력(D-E-V-E-L-O-P)과 두 컴퓨터 동시 접속은 이 환경에서 확인하지 못했다**(`simulate_key`가 포커스 문제로 입력 시스템까지 안 들어감). 게임 중에 치면 E가 두 번 눌려 근처 물체와 상호작용될 수 있다.
+
+## 밝은 외곽선 — 열쇠·책·쪽지·기록일지 (2026-11-05)
+- 눈에 띄어야 하는 물건에 **밝은 초록 외곽선**(물체 둘레의 단단한 띠 + 바깥으로 옅게 번지는 빛)을 두른다. 대상: 열쇠들(GIM-002 음악실·태엽 열쇠, 다락 현관 열쇠, 이름에 key/열쇠가 든 LGH 바닥 아이템), 인형극 놀이책, 제조법 책·쪽지(`ReadableStation`), 온실 기록일지, LGH `PaperNote`.
+- **열쇠는 집을 수 있을 때만** 켠다(`IInteractable.CanInteract` 기준: GIM-001 해결 전·상자가 닫힌 동안·남이 들고 있는 동안·내 손에 든 동안은 꺼짐). 나머지는 항상 켜지되(제조법 책·쪽지는 받침대 `Stand` 밑 렌더러를 빼고 책·쪽지 종이에만, `OutlineTarget.SetRenderers`) 플레이어 시점에서 열쇠 25m·읽을거리 18m보다 멀면 끈다.
+- 구조(전부 `Assets/Scripts/KSM/Outline/`, 셰이더 `Assets/Shaders/KSM/Outline*.shader`):
+  - `OutlineRendererFeature`(URP RenderGraph 렌더러 피처): 외곽선 켜진 물건만 단색 마스크에 그리고(장면 깊이로 가려진 부분 제외 → 벽 뒤 물건은 안 보임), 후처리 뒤에 가우시안 팽창으로 번지게 해 카메라 화면에 얹는다. 켜진 물건이 없으면 패스를 등록하지 않아 비용이 없다. `PC_Renderer.asset`과 `Mobile_Renderer.asset` **둘 다**에 들어 있다(품질 단계 0이 Mobile). 색·두께·문턱은 피처 Inspector에서 바꾼다(색 `(0.25,1,0.6)`, 두께 8, `debugView`를 켜면 마스크를 그대로 보여 준다).
+  - `OutlineTarget`(물건에 붙는 컴포넌트): 켜지면 자기 렌더러에 **렌더링 레이어 5(값 32, URP 이름 "Light Layer 5")** 비트만 얹고 꺼지면 뺀다(원래 레이어·조명은 그대로). 이 비트를 가진 렌더러만 마스크에 그려지므로 이 비트를 다른 용도로 쓰지 말 것.
+  - `OutlineAutoApply`: 게임이 시작되고 씬이 불러와질 때마다 종류별로 찾아 `OutlineTarget`을 붙인다(다른 팀원의 프리팹·씬을 안 고치고, 머지로 값이 덮여도 항상 적용). **새 종류를 추가하려면 `Apply()`에 한 줄**(`AddAll<타입>(모드, 거리)`).
+- **함정 — 이 Unity(6000.6)는 에디터에서 `CreateInstance`로 만든 ScriptableObject의 생성자·필드 초기값을 건너뛴다.** 그 결과 (1) URP가 읽는 `ScriptableRendererFeature.supportedRenderingFeatures`가 null이라 **매 프레임 NullReferenceException + 화면 전체 검정**, (2) `m_Active`가 false, (3) `List` 필드가 null, (4) 직렬화 값(색 알파·두께)이 0으로 저장된다. 그래서 피처는 `Create()`에서 내부 속성을 리플렉션으로 채우고 목록을 만들며, 값은 에셋에 명시적으로 저장했다. **새 ScriptableRendererFeature를 만들면 같은 처리를 할 것.** 또 렌더러 피처를 코드로 에셋에 추가할 때 `AssetDatabase.FindAssets("t:UniversalRenderPipelineAsset")`이 `Packages/` 안의 기본 에셋까지 잡으니 `Assets/` 밖 경로는 건너뛸 것(한 번 잘못 넣었다 되돌림).
+- 높은음자리표 열쇠(음악실 열쇠, `Key_Behind_E3`)를 **1.5배**로 키웠다(씬 루트 `localScale` 1.5, 조준 콜라이더도 같이 커짐; 들었을 때도 1.5배). `Gim002Builder.HookKey`는 크기를 건드리지 않아 Build All을 다시 돌려도 유지된다.
+- MSAA를 켜면(현재 PC·모바일 모두 꺼짐) 마스크와 깊이의 샘플 수가 달라져서 이 방식은 외곽선을 그리지 않는다. 깊이 바이어스(Offset)는 쓰지 않는다.
+- 검증(에디터 Play, 호스트 1개): 놀이책·제조법 쪽지(받침대 포함)·음악실 열쇠에 외곽선이 그려지는 것, 열쇠는 GIM-001 해결 전 꺼져 있다가 해결 후 켜지고 현관 열쇠는 상자가 닫혀 있어 꺼져 있는 것, 플레이어가 멀면 꺼지는 것, 콘솔 에러 0. **실제 플레이로 확인 필요**: 두 컴퓨터 동시(상대가 열쇠를 들면 내 화면에서 꺼지는지), 빌드에서의 모습, 외곽선이 시야를 어지럽히지 않는 정도(거리·두께 조절).
 
 ## 병합 충돌 재발 방지 — UnityYAMLMerge 설정 (2026-10-27)
 `LGH`·`KJH` 브랜치를 Develop에 머지하는 과정에서, 충돌을 실제로 해결하지 않고 **Git 충돌 마커(`<<<<<<<`/`=======`/`>>>>>>>`)가 그대로 박힌 채 커밋**된 적이 있었다(이미 원격에 푸시까지 된 뒤 발견). 영향받은 파일이 40개가 넘었음 — 컴파일이 깨지는 .cs 파일들, GUID가 마커째로 깨진 .meta 파일, `Develop.unity`를 포함한 씬·프리팹 YAML까지. 아마 머지 도구(VS/Rider/디폴트 Git)가 충돌을 띄웠는데 실제로 고르지 않고 그대로 스테이징·커밋한 것으로 보인다.

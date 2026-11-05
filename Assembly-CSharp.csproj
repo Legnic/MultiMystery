@@ -70,6 +70,7 @@
     <Compile Include="Assets\Scripts\KJH\Clue\ParchmentRoller.cs" />
     <Compile Include="Assets\Scripts\KSM\GameFlow\RoomSceneReloader.cs" />
     <Compile Include="Assets\Scripts\KJH\HeldCandle\CandleFlameMotion.cs" />
+    <Compile Include="Assets\Scripts\KSM\Outline\OutlineAutoApply.cs" />
     <Compile Include="Assets\Scripts\KJH\Photo\InteractionController.cs" />
     <Compile Include="Assets\Scripts\LGH\ItemDatabase.cs" />
     <Compile Include="Assets\Scripts\LGH\CandlePickup.cs" />
@@ -87,6 +88,7 @@
     <Compile Include="Assets\Scripts\KJH\Puzzle\PortraitPuzzleScene.cs" />
     <Compile Include="Assets\Scripts\KJH\Dumbwaiter\DumbwaiterWindow.cs" />
     <Compile Include="Assets\Scripts\KJH\Dumbwaiter\DumbwaiterNetworkSync.cs" />
+    <Compile Include="Assets\Scripts\KSM\Outline\OutlineTarget.cs" />
     <Compile Include="Assets\Scripts\KSM\Avatar\PlayerContactShadow.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim002\Runtime\Gim002KeyItem.cs" />
     <Compile Include="Assets\Scripts\KJH\AtticTreasure\AtticTreasureCutscene.cs" />
@@ -158,6 +160,7 @@
     <Compile Include="Assets\Scripts\KSM\UI\MultiplayerBackButton.cs" />
     <Compile Include="Assets\Scripts\KJH\Photo\InteractionPromptUI.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim004\Runtime\LocalGim004Net.cs" />
+    <Compile Include="Assets\Scripts\KSM\Outline\OutlineRendererFeature.cs" />
     <Compile Include="Assets\Scripts\KSM\UI\MeetYouUiTheme.cs" />
     <Compile Include="Assets\Scripts\LGH\CandleFlicker.cs" />
     <Compile Include="Assets\Scripts\LGH\DoorNetworkSync.cs" />
@@ -328,6 +331,7 @@
     <None Include="Assets\TextMesh Pro\Shaders\SDFFunctions.hlsl" />
     <None Include="Assets\Objects\LGH\Backup\FirstPersonController.cs.txt" />
     <None Include="Assets\Images\KJH\Materials\HeldCandle\KJH_CandleFlameAdditive.shader" />
+    <None Include="Assets\Shaders\KSM\OutlineMask.shader" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Surface.shader" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_Bitmap-Custom-Atlas.shader" />
     <None Include="Assets\Objects\LGH\Backup\PlayerInteractor_beforePistol.cs.txt" />
@@ -362,6 +366,7 @@
     <None Include="Assets\TutorialInfo\StyleSheets\ReadmeEditorDark.uss" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile SSD SpaceWarp.shader" />
     <None Include="Assets\Objects\LGH\Backup\PlayerInteractor_beforeSelfRay.cs.txt" />
+    <None Include="Assets\Shaders\KSM\OutlineComposite.shader" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_Sprite.shader" />
   </ItemGroup>
   <ItemGroup>

@@ -33,7 +33,7 @@ namespace GimmickDoors
     //    네트워크 게임이면 LGH 문 동기화(DoorNetworkSync)에 요청 → 모두에게 같은 각도로 열린다.
     //  - 씬에 해당 기믹이 없으면(아직 Develop에 안 들어옴 등) 기본적으로 잠그지 않는다 → 영원히 못 여는 문이 생기지 않게.
     //  - 어느 문이 어느 기믹에 묶여 있는지는 Tools/KJH/GimmickDoors/Build(GimmickDoorsBuilder)의 표가 기준이다.
-    //  - 어느 방의 문이 풀렸는지 알리는 완료 문구는 각 기믹 쪽(Gim002Config.msgCompleteFloor1/2,PotionCraftSync.completionSubtitle,
+    //  - 어느 방의 문이 풀렸는지 알리는 완료 문구는 각 기믹 쪽(Gim002Config.msgCompleteFloor1/2,PotionCraftSync.completionSubtitleFloor1/2,
     //    Gim004Config.msgCompleteFloor1/2, Gim007Config.msgComplete)이 띄운다. 여기서는 띄우지 않는다.
     //    문 목록을 바꾸면 그 문구의 방 이름도 같이 고칠 것. 첫 번째 기믹(GIM-001)으로 풀리는 문은 안내 문구가 없다.
     public class GimmickDoorLink : MonoBehaviour

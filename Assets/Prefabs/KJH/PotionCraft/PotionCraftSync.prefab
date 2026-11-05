@@ -77,7 +77,9 @@ MonoBehaviour:
   recipeTable: {fileID: 11400000, guid: 10a82cd069babb24f9c11051adb0334d, type: 2}
   bookData: {fileID: 11400000, guid: f8626cfe6faf4d34e9d12b25a03189ca, type: 2}
   finalRecipe: {fileID: 11400000, guid: b3cc11e13ce8ed54480c837d47c10612, type: 2}
-  completionSubtitle: "\uC81C\uC791\uC5D0 \uC131\uACF5\uD558\uC600\uB2E4. \uC11C\uACE0\uC640 \uC628\uC2E4\uC758 \uBB38\uC774 \uC7A0\uAE08 \uD574\uC81C\uB418\uC5C8\uB2E4."
+  completionSubtitleFloor1: "\uC81C\uC791\uC5D0 \uC131\uACF5\uD558\uC600\uB2E4. \uC628\uC2E4\uC758 \uBB38\uC774 \uC7A0\uAE08 \uD574\uC81C\uB418\uC5C8\uB2E4."
+  completionSubtitleFloor2: "\uC81C\uC791\uC5D0 \uC131\uACF5\uD558\uC600\uB2E4. \uC11C\uACE0\uC758 \uBB38\uC774 \uC7A0\uAE08 \uD574\uC81C\uB418\uC5C8\uB2E4."
+  floorSplitY: 2
   subtitleSeconds: 5
   OnGimmickCompleted:
     m_PersistentCalls:

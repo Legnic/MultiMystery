@@ -160,17 +160,20 @@ namespace LGH
             var v = UiScale.Apply();
             if (hintStyle == null)
             {
-                hintStyle = new GUIStyle(GUI.skin.label) { fontSize = 15, alignment = TextAnchor.MiddleCenter };
+                // 줄이 길어지면 줄바꿈되므로 글자 높이를 직접 재서 막대·상자 크기를 맞춘다 (고정 높이면 위아래가 잘린다)
+                hintStyle = new GUIStyle(GUI.skin.label) { fontSize = 15, alignment = TextAnchor.MiddleCenter, wordWrap = true, clipping = TextClipping.Overflow };
                 hintStyle.normal.textColor = new Color(0.85f, 0.8f, 0.7f);
-                tipStyle = new GUIStyle(GUI.skin.label) { fontSize = 17, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleLeft };
+                tipStyle = new GUIStyle(GUI.skin.label) { fontSize = 17, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleLeft, wordWrap = false, clipping = TextClipping.Overflow };
                 tipStyle.normal.textColor = new Color(1f, 0.88f, 0.6f);
             }
             var old = GUI.color;
-            GUI.color = new Color(0f, 0f, 0f, 0.55f);
-            GUI.DrawTexture(new Rect(0, v.y - 46f, v.x, 46f), Texture2D.whiteTexture);
-            GUI.color = old;
             string hint = IsOpen ? "상자가 열렸다" : "칸 위에서 마우스 휠을 돌리면 숫자가 바뀝니다 (위 +1 / 아래 -1) · OPEN 버튼을 클릭해 열기 · 우클릭 / E / Esc 물러나기";
-            GUI.Label(new Rect(0, v.y - 42f, v.x, 38f), hint, hintStyle);
+            float hintW = v.x - 40f;
+            float hintH = Mathf.Max(30f, hintStyle.CalcHeight(new GUIContent(hint), hintW)) + 16f;
+            GUI.color = new Color(0f, 0f, 0f, 0.55f);
+            GUI.DrawTexture(new Rect(0, v.y - hintH, v.x, hintH), Texture2D.whiteTexture);
+            GUI.color = old;
+            GUI.Label(new Rect(20f, v.y - hintH + 8f, hintW, hintH - 16f), hint, hintStyle);
 
             if (hovered >= 0 && !IsOpen && Mouse.current != null)
             {
@@ -178,10 +181,14 @@ namespace LGH
                 float s = UiScale.Factor;
                 var p = new Vector2(mp.x / s, (Screen.height - mp.y) / s);
                 string tip = hovered < 4 ? QuadNames[hovered] + " 칸  (지금 " + Digit(hovered) + ") · 휠로 변경" : "OPEN";
+                Vector2 tipSize = tipStyle.CalcSize(new GUIContent(tip));
+                float tw = tipSize.x + 16f, th = tipSize.y + 8f;
+                float tx = Mathf.Min(p.x + 14f, v.x - tw - 4f);
+                float ty = Mathf.Min(p.y + 10f, v.y - hintH - th - 4f);
                 GUI.color = new Color(0f, 0f, 0f, 0.6f);
-                GUI.DrawTexture(new Rect(p.x + 14f, p.y + 10f, 130f, 26f), Texture2D.whiteTexture);
+                GUI.DrawTexture(new Rect(tx, ty, tw, th), Texture2D.whiteTexture);
                 GUI.color = old;
-                GUI.Label(new Rect(p.x + 20f, p.y + 10f, 126f, 26f), tip, tipStyle);
+                GUI.Label(new Rect(tx + 8f, ty + 4f, tipSize.x, tipSize.y), tip, tipStyle);
             }
         }
     }

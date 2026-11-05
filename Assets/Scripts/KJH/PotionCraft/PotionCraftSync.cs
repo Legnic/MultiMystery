@@ -21,8 +21,12 @@ namespace PotionCraft
         [SerializeField] private FinalRecipeData finalRecipe;
 
         [Header("완료")]
-        // 풀리는 문의 방 이름(층별 지도 기준)을 알린다. GimmickDoors의 GIM-003 문 목록을 바꾸면 같이 고칠 것.
-        [SerializeField] private string completionSubtitle = "제작에 성공하였다. 서고와 온실의 문이 잠금 해제되었다.";
+        // 풀리는 문의 방 이름(층별 지도 기준)을 층별로 나눠 알린다(내 플레이어가 1층이면 온실, 2층이면 서고).
+        // GimmickDoors의 GIM-003 문 목록을 바꾸면 같이 고칠 것.
+        [SerializeField] private string completionSubtitleFloor1 = "제작에 성공하였다. 온실의 문이 잠금 해제되었다.";
+        [SerializeField] private string completionSubtitleFloor2 = "제작에 성공하였다. 서고의 문이 잠금 해제되었다.";
+        [Tooltip("내 플레이어 발 높이가 이 값보다 낮으면 1층으로 본다 (2층 바닥 y=3.9)")]
+        [SerializeField] private float floorSplitY = 2f;
         [Tooltip("완료 자막이 떠 있는 시간(초).")]
         [SerializeField] private float subtitleSeconds = 5f;
         [Tooltip("기믹이 완료될 때 호스트(혼자 플레이면 로컬)에서 한 번 실행된다. 열릴 문 등은 나중에 여기에 연결한다.")]
@@ -171,7 +175,11 @@ namespace PotionCraft
 
         private void ShowSubtitle()
         {
-            if (LGH.PlayerInteractor.Active != null) LGH.PlayerInteractor.Active.ShowMessage(completionSubtitle, subtitleSeconds);
+            var pi = LGH.PlayerInteractor.Active;
+            if (pi == null) return;
+            var cc = pi.GetComponentInParent<CharacterController>();
+            var body = cc != null ? cc.transform : pi.transform;
+            pi.ShowMessage(body.position.y < floorSplitY ? completionSubtitleFloor1 : completionSubtitleFloor2, subtitleSeconds);
         }
 
         private void Reply(string msg, ulong client)
