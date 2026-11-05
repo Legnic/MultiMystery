@@ -401,15 +401,41 @@ namespace CoopDemo
             }
             else
             {
-                // 문장마다 한 줄씩 (줄바꿈 자동 접기 없이 3줄)
+                // 그래픽 품질 줄 (배경 이미지에는 없는 네 번째 줄이라 줄 이름·구분선을 직접 그린다)
+                if (baked) DrawRowLine(t, 3);   // 배경 이미지에는 줄 3개(0~2)만 있다
+                // 배경 이미지의 다른 줄 이름(큰 글씨)과 비슷하게 보이도록 글자를 키워서 그린다
+                int prevSize = dLabel.fontSize;
+                dLabel.fontSize = prevSize + 6;
+                RowLabel(3, "그래픽 품질");
+                dLabel.fontSize = prevSize;
+                DrawQualityChooser(DRowY[3]);
+
+                // 문장마다 한 줄씩 (줄바꿈 자동 접기 없이 3줄, 패널 테두리 안에 들어오게 줄 수를 맞춘다)
                 var prevWrap = dSmall.wordWrap;
                 dSmall.wordWrap = false;
-                GUI.Label(new Rect(DLabelX, DRowLineY[2] + 18f, DLineX1 - DLabelX, 100f),
-                    "밝기는 보기 편하게만 보정합니다.\n" +
-                    "어두운 곳의 단서는 원래 보이도록 만들어져 있습니다.\n" +
-                    "해상도를 바꾸면 15초 안에 [유지하기]를 눌러야 그대로 남습니다.", dSmall);
+                GUI.Label(new Rect(DLabelX, DRowLineY[3] + 4f, DLineX1 - DLabelX, 100f),
+                    "밝기는 보기 편하게만 보정합니다. 단서는 어두워도 원래 보입니다.\n" +
+                    "해상도를 바꾸면 15초 안에 [유지하기]를 눌러야 그대로 남습니다.\n" +
+                    "그래픽 품질을 낮추면 그림자가 줄어 저사양 PC에서 부드러워집니다.", dSmall);
                 dSmall.wordWrap = prevWrap;
             }
+        }
+
+        // 자동 → 낮음 → 높음 순서로 좌우 화살표로 고른다 (해상도 줄과 같은 모양)
+        static readonly int[] QualityChoices = { GraphicsQuality.Auto, GraphicsQuality.Low, GraphicsQuality.High };
+
+        void DrawQualityChooser(float cy)
+        {
+            int idx = System.Array.IndexOf(QualityChoices, staged.graphicsQuality);
+            if (idx < 0) idx = 0;
+            var left = new Rect(DCtrlX0, cy - 21f, 52f, 42f);
+            var right = new Rect(DCtrlX1 - 52f, cy - 21f, 52f, 42f);
+            bool canLeft = idx > 0, canRight = idx < QualityChoices.Length - 1;
+            ArrowLabel(left, "◀", canLeft);
+            ArrowLabel(right, "▶", canRight);
+            if (canLeft && GUI.Button(left, GUIContent.none, dHit)) { staged.graphicsQuality = QualityChoices[idx - 1]; PlayerOptions.Preview(staged); }
+            if (canRight && GUI.Button(right, GUIContent.none, dHit)) { staged.graphicsQuality = QualityChoices[idx + 1]; PlayerOptions.Preview(staged); }
+            GUI.Label(new Rect(left.xMax, cy - 20f, right.x - left.xMax, 40f), GraphicsQuality.Label(QualityChoices[idx]), dBodyCenter);
         }
 
         // ---------------- 조작 탭 (조작 + 조준점) ----------------

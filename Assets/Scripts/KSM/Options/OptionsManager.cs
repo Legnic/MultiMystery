@@ -120,6 +120,8 @@ namespace CoopDemo
                 colorAdjustments.postExposure.value = baseExposure + d.brightness;
             }
 
+            GraphicsQuality.Apply(GraphicsQuality.Resolve(d.graphicsQuality));
+
             Screen.fullScreenMode = d.fullscreen ? FullScreenMode.FullScreenWindow : FullScreenMode.Windowed;
             if (d.resolutionWidth > 0 && d.resolutionHeight > 0 &&
                 (Screen.width != d.resolutionWidth || Screen.height != d.resolutionHeight))

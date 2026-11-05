@@ -83,6 +83,7 @@
     <Compile Include="Assets\Scripts\KJH\PotionCraft\Editor\PotionCraftBuilder.cs" />
     <Compile Include="Assets\Scripts\KSM\Lighting\Editor\NightExteriorBuilder.cs" />
     <Compile Include="Assets\Scripts\KJH\ObjectEcho\Editor\ObjectEchoSetupMenu.cs" />
+    <Compile Include="Assets\Scripts\KSM\Lighting\Editor\OcclusionCullingBuilder.cs" />
     <Compile Include="Assets\Scripts\KJH\AtticTreasure\Editor\AtticTreasureBuilder.cs" />
     <Compile Include="Assets\Scripts\KJH\Title\Editor\TitleHallwayBuilder.cs" />
     <Compile Include="Assets\Scripts\KJH\Common\Editor\GameUIGroups.cs" />

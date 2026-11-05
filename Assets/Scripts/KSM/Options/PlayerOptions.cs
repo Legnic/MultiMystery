@@ -22,6 +22,7 @@ namespace CoopDemo
         [Range(0.5f, 2.5f)] public float crosshairSize;   // 기준 픽셀 크기(32px)에 곱하는 배율
         public Color crosshairColor;
         public int crosshairIndex;   // LGH.PlayerInteractor.crosshairOptions / OptionsMenuController.crosshairTextures의 인덱스
+        public int graphicsQuality;  // GraphicsQuality: -1 자동, 0 낮음, 1 높음
 
         public static PlayerOptionsData Default()
         {
@@ -43,6 +44,7 @@ namespace CoopDemo
                 crosshairSize = 1f,
                 crosshairColor = Color.white,
                 crosshairIndex = 1,   // 배열 순서상 Crosshair_04 (심플한 십자형) — 처음 고른 기본 모양
+                graphicsQuality = GraphicsQuality.Auto,
             };
         }
     }

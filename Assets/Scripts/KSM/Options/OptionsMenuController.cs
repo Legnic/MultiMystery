@@ -409,6 +409,16 @@ namespace CoopDemo
             GUI.enabled = true;
             GUILayout.EndHorizontal();
 
+            GUILayout.Space(14);
+            GUILayout.Label("그래픽 품질 (낮추면 그림자가 줄어 저사양 PC에서 부드러워집니다)", label);
+            int q = staged.graphicsQuality;
+            GUILayout.BeginHorizontal();
+            if (GUILayout.Toggle(q == GraphicsQuality.Auto, " " + (q == GraphicsQuality.Auto ? GraphicsQuality.Label(GraphicsQuality.Auto) : "자동"), toggleStyle, GUILayout.Height(28)) && q != GraphicsQuality.Auto) q = GraphicsQuality.Auto;
+            if (GUILayout.Toggle(q == GraphicsQuality.Low, " 낮음", toggleStyle, GUILayout.Height(28)) && q != GraphicsQuality.Low) q = GraphicsQuality.Low;
+            if (GUILayout.Toggle(q == GraphicsQuality.High, " 높음", toggleStyle, GUILayout.Height(28)) && q != GraphicsQuality.High) q = GraphicsQuality.High;
+            GUILayout.EndHorizontal();
+            if (q != staged.graphicsQuality) { staged.graphicsQuality = q; PlayerOptions.Preview(staged); }
+
             if (resolutionPending)
             {
                 int left = Mathf.CeilToInt(resolutionRevertAt - Time.unscaledTime);

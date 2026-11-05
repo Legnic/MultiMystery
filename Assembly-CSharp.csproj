@@ -104,6 +104,7 @@
     <Compile Include="Assets\Scripts\LGH\HeldCandle.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim004\Runtime\Gim004Journal.cs" />
     <Compile Include="Assets\Scripts\KJH\PotionCraft\FinalRecipeData.cs" />
+    <Compile Include="Assets\Scripts\KSM\Lighting\IndoorShadowDistance.cs" />
     <Compile Include="Assets\Scripts\KJH\Dumbwaiter\IWorldInteractable.cs" />
     <Compile Include="Assets\Scripts\LGH\Telescope.cs" />
     <Compile Include="Assets\Scripts\LGH\PlayerInteractor.cs" />
@@ -190,6 +191,7 @@
     <Compile Include="Assets\Scripts\KJH\Dumbwaiter\IWorldSecondaryInteractable.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim005\Runtime\LocalGim005Net.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim002\Runtime\Gim002IndicatorLamp.cs" />
+    <Compile Include="Assets\Scripts\KSM\Options\GraphicsQuality.cs" />
     <Compile Include="Assets\Scripts\KJH\Gim002\Runtime\Gim002PianoKey.cs" />
     <Compile Include="Assets\Scripts\KJH\Photo\PhotoCaptureSystem.cs" />
     <Compile Include="Assets\Scripts\KJH\PotionCraft\PotionCraftSync.cs" />

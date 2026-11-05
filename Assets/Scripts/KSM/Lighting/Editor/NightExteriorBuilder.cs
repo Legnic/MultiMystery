@@ -155,7 +155,9 @@ namespace CoopDemo.EditorTools
             moon.renderingLayerMask = (int)MoonLayer;
             moonData.renderingLayers = MoonLayer;
             moonData.customShadowLayers = true;
-            moonData.shadowRenderingLayers = AllLayers;
+            // 최적화(2026-11-05): 방향광 그림자는 달빛 레이어(비트 1)를 가진 것(외관 쉘·지붕·야외 물건·플레이어)만 드리운다.
+            // 실내 가구·실내 벽은 이 빛을 받지 않으므로(받는 쪽은 비트 1 필요) 그림자 맵에 그릴 필요가 없다 → 그림자 캐스터 3,600개 → 약 290개.
+            moonData.shadowRenderingLayers = MoonLayer;
             EditorUtility.SetDirty(moon); EditorUtility.SetDirty(moonData);
             int layered = 0;
             var layerRoots = new System.Collections.Generic.List<Transform>(outdoorRoots);

@@ -3042,8 +3042,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::LGH.PistolLoader
   ShowTopMostFoldoutHeaderGroup: 1
   pistol: {fileID: 11400000, guid: 05e893f3f6ac5b94d9ab1cb6c47b55d1, type: 2}
-  viewModel: {fileID: 7630848119032855043, guid: 48d7174a0a1ce94459e8d209ea4504da, type: 3}
-  viewModelMaterial: {fileID: 2100000, guid: bbd04de35a30ad74db39d1338f43972c, type: 2}
+  viewModel: {fileID: 0}
+  viewModelMaterial: {fileID: 0}
   ramrodMaterial: {fileID: 2100000, guid: 854cdc14dd4706842b4276e4af686fac, type: 2}
   loadSeconds: 90
   hearDistance: 14
