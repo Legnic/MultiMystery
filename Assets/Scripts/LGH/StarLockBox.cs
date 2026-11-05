@@ -5,7 +5,8 @@ namespace LGH
 {
     // Star chest on the study desk. Its lock looks like the telescope eyepiece: a round face cut into
     // four quadrants (I-IV) by the same red cross, with a number in each quadrant.
-    // Press E on a quadrant to turn its number up (0-9), then press the button beside it.
+    // Press E to look at the lock closely, then turn a quadrant's number (0-9) with the mouse wheel (up = +1, down = -1),
+    // then click the OPEN button. (Before 2026-11-05 you clicked the quadrant to count up.)
     // It opens when every number matches how many stars that quadrant shows in the library telescope.
     // In a network game the host decides and everyone sees the same numbers / open lid (LockBoxNetworkSync).
     public partial class StarLockBox : MonoBehaviour, IRoomResettable, IWorldInteractable
@@ -53,7 +54,8 @@ namespace LGH
             SetReveal(false);
         }
 
-        // ---- called by the player (StarLockPart): part 0-3 = quadrant I-IV, 4 = button ----
+        // ---- called by the player: part 0-3 = quadrant I-IV number up, 10-13 = quadrant I-IV number down (mouse wheel), 4 = button ----
+        public const int DownOffset = 10;
         public void Press(int part)
         {
             var sync = LockBoxNetworkSync.Instance;
@@ -66,6 +68,7 @@ namespace LGH
         {
             if (IsOpen) return 0;
             if (part >= 0 && part < 4) { digits[part] = (digits[part] + 1) % 10; Refresh(); PlayDial(); return 3; }
+            if (part >= DownOffset && part < DownOffset + 4) { int q = part - DownOffset; digits[q] = (digits[q] + 9) % 10; Refresh(); PlayDial(); return 3; }
             if (part != 4) return 0;
             var c = Code;
             for (int i = 0; i < 4; i++) if (digits[i] != c[i]) return 1;

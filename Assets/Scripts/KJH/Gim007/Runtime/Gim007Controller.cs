@@ -190,9 +190,13 @@ namespace Gim007
                     SetLocked(d, true, config.msgDoorLocked);
                     continue;
                 }
-                if (!d.IsOpen) OpenLeaf(d, b.target.openFrom);
-                if (d.partner != null && !d.partner.IsOpen) OpenLeaf(d.partner, b.target.openFrom);
-                if (config.keepDoorOpenAfterComplete) SetLocked(d, true, config.msgDoorHeldOpen);
+                // 기본은 잠금만 푼다 (저절로 열리지 않음). 열고 싶으면 설정의 openDoorsOnComplete.
+                if (config.openDoorsOnComplete)
+                {
+                    if (!d.IsOpen) OpenLeaf(d, b.target.openFrom);
+                    if (d.partner != null && !d.partner.IsOpen) OpenLeaf(d.partner, b.target.openFrom);
+                }
+                if (config.openDoorsOnComplete && config.keepDoorOpenAfterComplete) SetLocked(d, true, config.msgDoorHeldOpen);
                 else if (d.locked) d.Unlock();
             }
         }

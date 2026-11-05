@@ -33,6 +33,7 @@ MonoBehaviour:
     openFrom: {x: 34.5, y: 3.9, z: -12.25}
     lockedMessage: "\uC815\uC6D0 \uAD00\uB9AC\uC2E4 \uBB38\uC774 \uC7A0\uACA8 \uC788\uB2E4"
   doorParentFilter: Ravenwood_LGH
+  openDoorsOnComplete: 0
   lockEntryUntilPotionCraft: 0
   entryDoors:
   - doorName: Door_Conservatory
@@ -46,7 +47,7 @@ MonoBehaviour:
     lockedMessage: "\uC11C\uACE0 \uBB38\uC774 \uC7A0\uACA8 \uC788\uB2E4"
   floorSplitY: 2
   potName: "\uD654\uBD84"
-  msgCompleteFloor1: "\uC815\uC6D0\uBB38\uC774 \uC5F4\uB838\uC2B5\uB2C8\uB2E4."
-  msgCompleteFloor2: "\uC815\uC6D0 \uAD00\uB9AC\uC2E4 \uBB38\uC774 \uC5F4\uB838\uC2B5\uB2C8\uB2E4."
+  msgCompleteFloor1: "\uC815\uC6D0\uC73C\uB85C \uD1B5\uD558\uB294 \uBB38\uC758 \uC7A0\uAE08\uC774 \uD574\uC81C\uB418\uC5C8\uB2E4."
+  msgCompleteFloor2: "\uC815\uC6D0 \uAD00\uB9AC\uC2E4 \uBB38\uC758 \uC7A0\uAE08\uC774 \uD574\uC81C\uB418\uC5C8\uB2E4."
   msgShelfLocked: "\uD654\uBD84\uC774 \uC120\uBC18\uC5D0 \uB2E8\uB2E8\uD788 \uACE0\uC815\uB418\uC5B4 \uC788\uB2E4"
   msgJudging: ...

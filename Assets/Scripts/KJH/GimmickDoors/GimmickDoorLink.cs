@@ -12,6 +12,7 @@ namespace GimmickDoors
     {
         Gim002_PuppetShow,     // GIM-002 인형극 (Gim002Controller 상태가 Complete)
         Gim003_PotionCraft,    // GIM-003 약품 제조 (PotionCraftSync.Completed)
+        Gim001_Portrait,       // GIM-001 초상화 액자 (PortraitPuzzle.Solved). 값은 맨 끝에 추가해서 기존 프리팹의 번호가 안 바뀌게 했다
     }
 
     [Serializable]
@@ -27,11 +28,14 @@ namespace GimmickDoors
     //  - LGH 맵 프리팹(Ravenwood_LGH)을 고치지 않도록 문을 "이름으로" 찾는다 → KJH·Develop 둘 다 같은 이름이라 그대로 동작.
     //  - 잠금은 상태 기반: 모든 컴퓨터가 매 프레임 "기믹 완료 여부"를 보고 잠금을 맞춘다
     //    → 늦게 들어온 사람, 방 초기화(RoomResetter) 뒤에도 같게 적용된다. 완료 후에는 잠금을 풀기만 하고 자유롭게 여닫을 수 있다.
-    //  - 문을 실제로 여는 건 "이번 실행 중에 완료되는 순간을 본" 판정 담당(호스트, 혼자면 로컬) 한 곳에서 한 번:
+    //  - 2026-11-05: 완료돼도 문이 저절로 열리지 않는다. 잠금만 풀리고 플레이어가 직접 연다(openOnComplete 기본 꺼짐).
+    //    켜면 예전처럼 "이번 실행 중에 완료되는 순간을 본" 판정 담당(호스트, 혼자면 로컬) 한 곳에서 한 번 열어 준다:
     //    네트워크 게임이면 LGH 문 동기화(DoorNetworkSync)에 요청 → 모두에게 같은 각도로 열린다.
-    //    (늦게 들어온 사람은 DoorNetworkSync가 보내 주는 현재 문 상태를 그대로 받는다)
     //  - 씬에 해당 기믹이 없으면(아직 Develop에 안 들어옴 등) 기본적으로 잠그지 않는다 → 영원히 못 여는 문이 생기지 않게.
-    //  - 완료 문구는 각 기믹 쪽(Gim002Config.msgComplete, PotionCraftSync.completionSubtitle)이 띄운다. 여기서는 띄우지 않는다.
+    //  - 어느 문이 어느 기믹에 묶여 있는지는 Tools/KJH/GimmickDoors/Build(GimmickDoorsBuilder)의 표가 기준이다.
+    //  - 어느 방의 문이 풀렸는지 알리는 완료 문구는 각 기믹 쪽(Gim002Config.msgComplete, PotionCraftSync.completionSubtitle,
+    //    Gim004Config.msgCompleteFloor1/2, Gim007Config.msgComplete)이 띄운다. 여기서는 띄우지 않는다.
+    //    문 목록을 바꾸면 그 문구의 방 이름도 같이 고칠 것. 첫 번째 기믹(GIM-001)으로 풀리는 문은 안내 문구가 없다.
     public class GimmickDoorLink : MonoBehaviour
     {
         [SerializeField] DoorGimmick gimmick;
@@ -40,8 +44,8 @@ namespace GimmickDoors
         [SerializeField] string doorParentFilter = "Ravenwood_LGH";
         [Tooltip("잠겨 있을 때 문을 열려고 하면 뜨는 문구")]
         [SerializeField] string lockedMessage = "문이 잠겨 있다";
-        [Tooltip("완료되는 순간 문을 자동으로 연다 (끄면 잠금만 풀린다)")]
-        [SerializeField] bool openOnComplete = true;
+        [Tooltip("완료되는 순간 문을 자동으로 연다 (기본 꺼짐: 잠금만 풀리고 플레이어가 직접 연다)")]
+        [SerializeField] bool openOnComplete = false;
         [Tooltip("씬에 해당 기믹이 없을 때도 문을 잠근다 (기본 꺼짐: 기믹이 없는 씬에서 문이 영원히 잠기지 않게)")]
         [SerializeField] bool lockWhenGimmickMissing = false;
         [SerializeField] bool logToConsole = true;
@@ -94,6 +98,9 @@ namespace GimmickDoors
                 case DoorGimmick.Gim003_PotionCraft:
                     var g3 = PotionCraft.PotionCraftSync.Instance;
                     return g3 == null ? (bool?)null : g3.Completed;
+                case DoorGimmick.Gim001_Portrait:
+                    var g1 = PortraitPuzzle.Instance;
+                    return g1 == null ? (bool?)null : g1.Solved;
             }
             return null;
         }

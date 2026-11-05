@@ -48,6 +48,8 @@ namespace Gim004
         };
         [Tooltip("문 이름이 여러 개일 때, 부모 경로에 이 글자가 포함된 것만 고른다 (비우면 이름만으로)")]
         public string doorParentFilter = "Ravenwood_LGH";
+        [Tooltip("완료되는 순간 문을 자동으로 연다 (기본 꺼짐: 2026-11-05부터 잠금만 풀리고 플레이어가 직접 연다)")]
+        public bool openDoorsOnComplete = false;
 
         [Header("선행 기믹 GIM-003 연결 (기본 꺼짐)")]
         [Tooltip("켜면 약품 제조 퍼즐(PotionCraftSync)이 끝나기 전까지 아래 문(온실 문·서고 문)을 잠근다")]
@@ -65,8 +67,9 @@ namespace Gim004
 
         [Header("화면 문구")]
         public string potName = "화분";
-        public string msgCompleteFloor1 = "정원문이 열렸습니다.";
-        public string msgCompleteFloor2 = "정원 관리실 문이 열렸습니다.";
+        // 어느 문의 잠금이 풀렸는지 방 이름(층별 지도 기준)으로 알린다. completeDoors를 바꾸면 같이 고칠 것.
+        public string msgCompleteFloor1 = "정원으로 통하는 문의 잠금이 해제되었다.";
+        public string msgCompleteFloor2 = "정원 관리실 문의 잠금이 해제되었다.";
         public string msgShelfLocked = "화분이 선반에 단단히 고정되어 있다";
         public string msgJudging = "...";
     }

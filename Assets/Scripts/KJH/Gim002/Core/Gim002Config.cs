@@ -34,7 +34,8 @@ namespace Gim002
         public string msgWrongSlotDoll = "인형은 무대 바닥의 꽂이에 세워야 한다";
         public string msgWrongSlotBg = "배경카드는 무대 뒤쪽 슬롯에 꽂아야 한다";
         public string msgWrongKey = "문양이 맞지 않는다";
-        public string msgComplete = "인형극이 끝났다. 어디선가 박수 소리가 들린 것 같다";
+        // 풀리는 문의 방 이름(층별 지도 기준)을 알린다. GimmickDoors의 GIM-002 문 목록을 바꾸면 같이 고칠 것.
+        public string msgComplete = "인형극이 끝났다. 약품 재료실, 식당, 저장고, 세탁실, 약품 조제실의 문이 잠금 해제되었다.";
 
         public string DollName(DollId d) { int i = (int)d; return i < dollNames.Length ? dollNames[i] : d.ToString(); }
         public string BackgroundName(BackgroundId b) { int i = (int)b; return i < backgroundNames.Length ? backgroundNames[i] : b.ToString(); }

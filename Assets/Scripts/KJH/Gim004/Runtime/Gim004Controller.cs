@@ -130,7 +130,7 @@ namespace Gim004
                 Completed?.Invoke();
                 if (net.IsAuthority)
                 {
-                    OpenCompleteDoors();
+                    if (config.openDoorsOnComplete) OpenCompleteDoors();   // 기본은 잠금만 풀린다 (위 ApplyDoorLocks)
                     onCompleteAuthority?.Invoke();
                 }
             }

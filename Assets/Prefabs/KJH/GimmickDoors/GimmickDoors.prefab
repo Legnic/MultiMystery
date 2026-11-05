@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 3391448204880663464}
   - component: {fileID: 7835446789744019067}
   - component: {fileID: 8562086206091241579}
+  - component: {fileID: 5233535328109698915}
   m_Layer: 0
   m_Name: GimmickDoors
   m_TagString: Untagged
@@ -45,17 +46,31 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 60a087b378b8ae14e8cc87df5e6572a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GimmickDoors.GimmickDoorLink
-  gimmick: 0
+  gimmick: 2
   doors:
-  - doorName: Door_Kitchen
-    openFrom: {x: 34.5, y: 0, z: -4.25}
-  - doorName: Door_Kitchen_Dining
-    openFrom: {x: 28, y: 0, z: 2.5}
-  - doorName: Door_Guest2
-    openFrom: {x: 34.5, y: 3.9, z: -3.25}
+  - doorName: Door_Gallery_Parlor
+    openFrom: {x: 0, y: 0, z: 0}
+  - doorName: Door_Study_Parlor
+    openFrom: {x: 0, y: 0, z: 0}
+  - doorName: Door_Billiard_Study
+    openFrom: {x: 0, y: 0, z: 0}
+  - doorName: Door_Billiard
+    openFrom: {x: 0, y: 0, z: 0}
+  - doorName: Door_WC
+    openFrom: {x: 0, y: 0, z: 0}
+  - doorName: Door_Bath
+    openFrom: {x: 0, y: 0, z: 0}
+  - doorName: Door_Bath_Guest1
+    openFrom: {x: 0, y: 0, z: 0}
+  - doorName: Door_Linen
+    openFrom: {x: 0, y: 0, z: 0}
+  - doorName: Door_CorridorE_Smoking
+    openFrom: {x: 0, y: 0, z: 0}
+  - doorName: Door_Master
+    openFrom: {x: 0, y: 0, z: 0}
   doorParentFilter: Ravenwood_LGH
   lockedMessage: "\uBB38\uC774 \uC7A0\uACA8 \uC788\uB2E4"
-  openOnComplete: 1
+  openOnComplete: 0
   lockWhenGimmickMissing: 0
   logToConsole: 1
   onOpenedAuthority:
@@ -73,17 +88,51 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 60a087b378b8ae14e8cc87df5e6572a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GimmickDoors.GimmickDoorLink
+  gimmick: 0
+  doors:
+  - doorName: Door_Kitchen
+    openFrom: {x: 0, y: 0, z: 0}
+  - doorName: Door_Kitchen_Dining
+    openFrom: {x: 0, y: 0, z: 0}
+  - doorName: Door_Dining
+    openFrom: {x: 0, y: 0, z: 0}
+  - doorName: Door_Pantry
+    openFrom: {x: 0, y: 0, z: 0}
+  - doorName: Door_Laundry
+    openFrom: {x: 0, y: 0, z: 0}
+  - doorName: Door_Guest2
+    openFrom: {x: 0, y: 0, z: 0}
+  doorParentFilter: Ravenwood_LGH
+  lockedMessage: "\uBB38\uC774 \uC7A0\uACA8 \uC788\uB2E4"
+  openOnComplete: 0
+  lockWhenGimmickMissing: 0
+  logToConsole: 1
+  onOpenedAuthority:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!114 &5233535328109698915
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3572876029474250445}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 60a087b378b8ae14e8cc87df5e6572a6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GimmickDoors.GimmickDoorLink
   gimmick: 1
   doors:
   - doorName: Door_Library
-    openFrom: {x: 53.5, y: 3.9, z: 1.5}
+    openFrom: {x: 0, y: 0, z: 0}
   - doorName: Door_Library_Guest1
-    openFrom: {x: 63, y: 3.9, z: 9.5}
+    openFrom: {x: 0, y: 0, z: 0}
   - doorName: Door_Conservatory
-    openFrom: {x: 53.5, y: 0, z: -12.85}
+    openFrom: {x: 0, y: 0, z: 0}
   doorParentFilter: Ravenwood_LGH
   lockedMessage: "\uBB38\uC774 \uC7A0\uACA8 \uC788\uB2E4"
-  openOnComplete: 1
+  openOnComplete: 0
   lockWhenGimmickMissing: 0
   logToConsole: 1
   onOpenedAuthority:

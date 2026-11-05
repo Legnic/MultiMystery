@@ -30,8 +30,10 @@ namespace Gim007
         public string doorParentFilter = "Ravenwood_LGH";
         [Tooltip("완료 전 문을 열려고 할 때 뜨는 문구")]
         public string msgDoorLocked = "문이 꿈쩍도 하지 않는다. 옆 바닥의 발판과 이어진 장치가 있는 것 같다";
-        [Tooltip("완료 후 문을 '열린 채로' 고정한다 (닫을 수 없음, 명세서: 열린 상태로 유지)")]
-        public bool keepDoorOpenAfterComplete = true;
+        [Tooltip("완료되는 순간 문을 자동으로 연다 (기본 꺼짐: 2026-11-05부터 잠금만 풀리고 플레이어가 직접 연다)")]
+        public bool openDoorsOnComplete = false;
+        [Tooltip("완료 후 문을 '열린 채로' 고정한다 (닫을 수 없음, 명세서: 열린 상태로 유지). 문을 여는 옵션(openDoorsOnComplete)과 같이 쓴다")]
+        public bool keepDoorOpenAfterComplete = false;
         [Tooltip("완료 후 열린 문을 닫으려 할 때 뜨는 문구")]
         public string msgDoorHeldOpen = "발판에 눌린 장치가 문을 붙잡고 있다";
 
@@ -51,7 +53,7 @@ namespace Gim007
         public string msgResting = "숨을 고르는 중…";
         public string msgPartnerLeft = "상대가 손을 놓았다";
         public string msgPlateRattle = "발판이 덜컥거리다 만다… 무게가 부족하다";
-        public string msgComplete = "철컥— 발판이 내려앉고 드레스룸 문이 열렸다";
+        public string msgComplete = "철컥— 발판이 내려앉고 드레스룸 문의 잠금이 해제되었다";
         public string msgLocked = "서랍장이 발판 위에 단단히 자리 잡았다";
 
         [Header("연출")]

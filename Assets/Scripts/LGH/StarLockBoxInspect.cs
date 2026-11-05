@@ -4,7 +4,7 @@ using UnityEngine.InputSystem;
 namespace LGH
 {
     // Close-up view of the star chest. Press E on the chest: the camera moves in front of the lock,
-    // the mouse is freed and you click the quadrants to turn their numbers, then click the OPEN button.
+    // the mouse is freed and you point at a quadrant and turn the mouse wheel to change its number, then click the OPEN button.
     // Right click / E / Q / Esc steps back again.
     public partial class StarLockBox
     {
@@ -32,7 +32,11 @@ namespace LGH
         float camFov, viewT, closeAt = -1f;
         int inspectFrame;
         int hovered = -1;
+        float wheelAcc;
         GUIStyle hintStyle, tipStyle;
+
+        // 휠 한 칸이 1이 되게 맞춘다. 입력 시스템은 윈도우에서 한 칸을 ±120으로 주기도 하고 ±1로 주기도 해서, 큰 값이면 120으로 나눈다.
+        static float NormalizedScroll(float y) { return Mathf.Abs(y) >= 20f ? y / 120f : y; }
 
         // IWorldInteractable (the chest body) - StarLockPart calls the same thing
         public bool CanInteract { get { return Inspecting == null || Inspecting == this; } }
@@ -121,10 +125,15 @@ namespace LGH
                     var part = h.collider.GetComponent<StarLockPart>();
                     if (part != null && part.box == this && h.distance < best) { best = h.distance; hovered = part.index; }
                 }
-                if (hovered >= 0 && mouse.leftButton.wasPressedThisFrame && !IsOpen)
+                // 숫자는 마우스 휠로 바꾼다 (위로 +1, 아래로 -1). 칸을 클릭하는 것으로는 바뀌지 않고, OPEN 버튼만 클릭한다.
+                if (hovered >= 0 && hovered < 4 && !IsOpen)
                 {
-                    Press(hovered);
+                    wheelAcc += NormalizedScroll(mouse.scroll.ReadValue().y);
+                    while (wheelAcc >= 1f) { Press(hovered); wheelAcc -= 1f; }
+                    while (wheelAcc <= -1f) { Press(DownOffset + hovered); wheelAcc += 1f; }
                 }
+                else wheelAcc = 0f;
+                if (hovered == 4 && mouse.leftButton.wasPressedThisFrame && !IsOpen) Press(hovered);
             }
             if (IsOpen && closeAt < 0f) closeAt = Time.time + 2.2f;   // let them watch the lid, then step back
         }
@@ -160,7 +169,7 @@ namespace LGH
             GUI.color = new Color(0f, 0f, 0f, 0.55f);
             GUI.DrawTexture(new Rect(0, v.y - 46f, v.x, 46f), Texture2D.whiteTexture);
             GUI.color = old;
-            string hint = IsOpen ? "상자가 열렸다" : "칸을 클릭하면 숫자가 올라갑니다 · OPEN 버튼을 클릭해 열기 · 우클릭 / E / Esc 물러나기";
+            string hint = IsOpen ? "상자가 열렸다" : "칸 위에서 마우스 휠을 돌리면 숫자가 바뀝니다 (위 +1 / 아래 -1) · OPEN 버튼을 클릭해 열기 · 우클릭 / E / Esc 물러나기";
             GUI.Label(new Rect(0, v.y - 42f, v.x, 38f), hint, hintStyle);
 
             if (hovered >= 0 && !IsOpen && Mouse.current != null)
@@ -168,7 +177,7 @@ namespace LGH
                 Vector2 mp = Mouse.current.position.ReadValue();
                 float s = UiScale.Factor;
                 var p = new Vector2(mp.x / s, (Screen.height - mp.y) / s);
-                string tip = hovered < 4 ? QuadNames[hovered] + " 칸  (지금 " + Digit(hovered) + ")" : "OPEN";
+                string tip = hovered < 4 ? QuadNames[hovered] + " 칸  (지금 " + Digit(hovered) + ") · 휠로 변경" : "OPEN";
                 GUI.color = new Color(0f, 0f, 0f, 0.6f);
                 GUI.DrawTexture(new Rect(p.x + 14f, p.y + 10f, 130f, 26f), Texture2D.whiteTexture);
                 GUI.color = old;

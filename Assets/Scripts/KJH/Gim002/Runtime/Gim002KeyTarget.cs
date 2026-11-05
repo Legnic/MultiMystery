@@ -5,7 +5,7 @@ using UnityEngine;
 namespace Gim002
 {
     // 열쇠 사용처. 두 종류:
-    //  - MusicDoor   : 1층 음악실 문 (높은음자리표 명판). 열쇠를 쓰면 문이 풀리면서 열리고 → "음악실 문 열림"(2층 '반주자' 표시등 ON)
+    //  - MusicDoor   : 1층 음악실 문 (높은음자리표 명판). 열쇠를 쓰면 문의 잠금이 풀리고(저절로 열리지는 않는다) → "음악실 문 열림"(2층 '반주자' 표시등 ON)
     //  - StageWindup : 2층 무대 측면 태엽 구멍 (나비 테두리). 열쇠를 쓰면 → "무대 작동"(무대 조명, 1층 '무대' 표시등 ON)
     // 열쇠를 들고 바라보며 E → 문양이 맞으면 열쇠가 사라지고 판정 담당에게 알린다. 맞지 않으면 "문양이 맞지 않는다".
     //
@@ -27,8 +27,10 @@ namespace Gim002
         [SerializeField] string idlePrompt = "태엽 구멍 (테두리에 나비 문양)";
         [Tooltip("열쇠를 사용할 때 소리 (비우면 임시 소리)")]
         [SerializeField] AudioClip useClip;
+        [Tooltip("MusicDoor의 잠금이 풀렸을 때 두 사람에게 띄우는 문구 (어느 방 문인지 알린다)")]
+        [SerializeField] string unlockedMessage = "음악실 문의 잠금이 해제되었다";
 
-        bool waitingToOpen;   // 내가 방금 열쇠를 써서, 문이 풀리면 바로 열어 줘야 함
+        bool waitingToOpen;   // (예전: 열쇠를 쓴 사람이 문을 바로 열던 용도. 지금은 잠금만 풀리므로 쓰지 않는다)
 
         static Gim002Controller C { get { return Gim002Controller.Instance; } }
 
@@ -76,27 +78,16 @@ namespace Gim002
         {
             if (kind != TargetKind.MusicDoor || door == null) return;
             ApplyDoorLock();
-            // 내가 열쇠를 써서 판정 담당이 "문 열림"을 확정했으면 문을 실제로 연다
-            if (waitingToOpen && now.musicDoorOpened)
-            {
-                waitingToOpen = false;
-                OpenDoor();
-            }
+            // 2026-11-05: 열쇠를 쓰면 잠금만 풀린다. 문은 저절로 열리지 않고 플레이어가 직접 연다.
+            // 어느 방의 문이 풀렸는지 두 사람 모두에게 알린다(상태가 바뀌는 순간 각자 자기 화면에).
+            waitingToOpen = false;
+            if (!prev.musicDoorOpened && now.musicDoorOpened) PlayerHand.Say(unlockedMessage, 3.5f);
         }
 
         // 음악실 문 잠금 = 아직 열쇠를 안 썼음
         void ApplyDoorLock()
         {
             if (Done) door.Unlock(); else door.Lock();
-        }
-
-        void OpenDoor()
-        {
-            Transform player = LGH.PlayerInteractor.Active != null ? LGH.PlayerInteractor.Active.transform : transform;
-            var sync = DoorNetworkSync.Instance;
-            // 네트워크 게임이면 호스트에게 문 열기 요청 (모두에게 같은 각도로 열림), 아니면 직접 연다
-            if (sync != null && sync.IsSpawned) sync.RequestInteract(door, player.position);
-            else if (!door.IsOpen) door.Interact(player.position);
         }
 
         // ---------------- IWorldInteractable ----------------

@@ -21,7 +21,8 @@ namespace PotionCraft
         [SerializeField] private FinalRecipeData finalRecipe;
 
         [Header("완료")]
-        [SerializeField] private string completionSubtitle = "제작에 성공하였다, 어딘가의 문이 열린것같다";
+        // 풀리는 문의 방 이름(층별 지도 기준)을 알린다. GimmickDoors의 GIM-003 문 목록을 바꾸면 같이 고칠 것.
+        [SerializeField] private string completionSubtitle = "제작에 성공하였다. 서고와 온실의 문이 잠금 해제되었다.";
         [Tooltip("완료 자막이 떠 있는 시간(초).")]
         [SerializeField] private float subtitleSeconds = 5f;
         [Tooltip("기믹이 완료될 때 호스트(혼자 플레이면 로컬)에서 한 번 실행된다. 열릴 문 등은 나중에 여기에 연결한다.")]
