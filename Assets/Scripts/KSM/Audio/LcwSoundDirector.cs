@@ -232,6 +232,8 @@ public partial class LcwSoundDirector : MonoBehaviour
     }
 
     // ---------------------------------------------------------------- 발소리 (나와 상대 둘 다, 움직인 거리로 한 걸음씩)
+    const float TouchGap = 0.04f;               // 발과 지면 사이가 이 안이면 닿은 것
+    const float MaxNearVerticalSpeed = 3.8f;    // 살짝 떠 있는데 이보다 빠르게 오르내리면 점프 이륙·착지로 본다(점프는 약 4.5~4.9m/s)
     class Walker { public Vector3 last; public float distance; public bool init; }
     readonly Dictionary<NetworkPlayer, Walker> walkers = new Dictionary<NetworkPlayer, Walker>();
 
@@ -247,13 +249,20 @@ public partial class LcwSoundDirector : MonoBehaviour
             if (!w.init) { w.last = pos; w.init = true; continue; }
             Vector3 delta = pos - w.last;
             w.last = pos;
-            delta.y = 0f;
             float dt = Mathf.Max(Time.deltaTime, 1e-4f);
+            float verticalSpeed = delta.y / dt;
+            delta.y = 0f;
             float speed = delta.magnitude / dt;
             if (quiet || speed < 0.3f || speed > 12f) { if (speed > 12f) w.distance = 0f; continue; }   // 순간이동/스폰은 걸음이 아니다
 
-            // 땅에 닿아 있을 때만 (점프 중에는 소리 없음)
-            if (!Physics.Raycast(pos + Vector3.up * 0.3f, Vector3.down, 0.7f, ~0, QueryTriggerInteraction.Ignore)) continue;
+            // 땅에 닿아 있을 때만 (점프 중에는 소리 없음).
+            // 예전에는 발끝 0.4m 아래까지 레이를 쏴서, 점프 직후·착지 직전(지면에서 0.4m 안)에도 "닿음"으로 봐서 공중 발소리가 났다.
+            // 지금은 발밑 짧은 레이(0.2m)로 지면과의 간격을 재서: 닿아 있으면(4cm 이내) 항상 걸음으로 치고,
+            // 살짝 떠 있으면(4~20cm) 점프의 이륙·착지처럼 빠르게 오르내릴 때만 뺀다(걷기·계단 내려가기는 그보다 느려서 소리가 난다).
+            // 수직 속도만으로 막으면 가파른 계단을 오를 때(약 2.5m/s)도 막히므로 꼭 간격과 함께 본다.
+            if (!Physics.Raycast(pos + Vector3.up * 0.05f, Vector3.down, out var groundHit, 0.25f, ~0, QueryTriggerInteraction.Ignore)) continue;
+            float groundGap = groundHit.distance - 0.05f;
+            if (groundGap > TouchGap && Mathf.Abs(verticalSpeed) > MaxNearVerticalSpeed) continue;
 
             bool local = p == NetworkPlayer.Local;
             var movement = local ? p.GetComponent<FirstPersonController>() : null;

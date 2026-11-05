@@ -102,6 +102,9 @@ namespace LGH
         void UpdateFootsteps()
         {
             if (bank.footstep == null) return;
+            // 발소리는 KSM의 LcwSoundDirector가 나와 상대 모두 맡는다(접지 검사 포함, 걸음 간격 1.3m).
+            // 여기서도 내면 같은 소리가 겹쳐 두 번 울리고, 이쪽은 접지 검사가 없어서 점프 중에도 났다(2026-11-05).
+            if (LcwSoundDirector.Instance != null) return;
             foreach (var f in fpcs)
             {
                 if (f == null || !f.gameObject.activeInHierarchy) continue;
