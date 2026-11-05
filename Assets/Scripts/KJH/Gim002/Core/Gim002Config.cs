@@ -34,8 +34,12 @@ namespace Gim002
         public string msgWrongSlotDoll = "인형은 무대 바닥의 꽂이에 세워야 한다";
         public string msgWrongSlotBg = "배경카드는 무대 뒤쪽 슬롯에 꽂아야 한다";
         public string msgWrongKey = "문양이 맞지 않는다";
-        // 풀리는 문의 방 이름(층별 지도 기준)을 알린다. GimmickDoors의 GIM-002 문 목록을 바꾸면 같이 고칠 것.
-        public string msgComplete = "인형극이 끝났다. 약품 재료실, 식당, 저장고, 세탁실, 약품 조제실의 문이 잠금 해제되었다.";
+        // 완료 문구는 층별로 나눠 띄운다(내 플레이어가 1층이면 Floor1, 2층이면 Floor2). 그 층에서 풀린 대표 방 이름(층별 지도 기준)만 알린다.
+        // 실제로 풀리는 문은 GimmickDoors의 GIM-002 목록이 정한다(식당·저장고·세탁실도 같이 풀리지만 문구에는 넣지 않는다).
+        public string msgCompleteFloor1 = "인형극이 끝났다. 약품 재료실의 문이 잠금 해제되었다.";
+        public string msgCompleteFloor2 = "인형극이 끝났다. 약품 조제실의 문이 잠금 해제되었다.";
+        [Tooltip("내 플레이어 발 높이가 이 값보다 낮으면 1층으로 본다 (2층 바닥 y=3.9)")]
+        public float floorSplitY = 2f;
 
         public string DollName(DollId d) { int i = (int)d; return i < dollNames.Length ? dollNames[i] : d.ToString(); }
         public string BackgroundName(BackgroundId b) { int i = (int)b; return i < backgroundNames.Length ? backgroundNames[i] : b.ToString(); }

@@ -127,8 +127,21 @@ namespace Gim002
             EventReceived?.Invoke(e, value);
             if (e == Gim002NetEvent.Complete)
             {
-                PlayerHand.Say(config.msgComplete, 5f);
+                PlayerHand.Say(LocalOnFloor1 ? config.msgCompleteFloor1 : config.msgCompleteFloor2, 5f);
                 if (net.IsAuthority) onCompleteAuthority?.Invoke();
+            }
+        }
+
+        // 이 컴퓨터 플레이어가 1층에 있는가 (플레이어가 없으면 1층으로 본다 — 에디터 단독 테스트용)
+        public bool LocalOnFloor1
+        {
+            get
+            {
+                var pi = LGH.PlayerInteractor.Active;
+                if (pi == null) return true;
+                var cc = pi.GetComponentInParent<CharacterController>();
+                var p = cc != null ? cc.transform : pi.transform;
+                return p.position.y < config.floorSplitY;
             }
         }
 
