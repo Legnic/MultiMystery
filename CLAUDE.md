@@ -1212,6 +1212,10 @@ Stage를 Playing으로 강제 → 낮 시간대로 강제) 재현한 뒤, 5개 �
 - **하지 않은 것**: 텍스처 예산(2번, 허락 안 됨 — 텍스처 VRAM 2.1GB가 저사양에서 가장 큰 위험으로 남아 있음), 읽기 가능 메시 끄기(4번 — 실제로 줄어드는 게 1MB 남짓이라 되돌림), 가구·책 LOD(6번 — 오클루전 뒤 남은 가구 비용이 1층 현관 홀 기준 삼각형 약 110만으로 크지 않고, 베이크된 라이트맵에서 LOD마다 라이트맵 UV가 필요해 비용 대비 효과가 낮음), IL2CPP(8번 — 이 PC에 C++ 빌드 도구가 없어 불가).
 - **빌드 리포트(Development, 2026-11-05)**: 성공, 1.51GB, 빌드 13분. 텍스처 1,079MB(960개)·메시 148MB·셰이더 23MB. 폴더별로는 `VARCO 3D/KWJ` 904MB가 압도적. 그 밖에 `Hand_VSign_Rigged.fbx` 16MB, `Char_Orange_Albedo.png`(안 압축) 16MB, 층별 지도 18MB, 메뉴 이미지 수십 MB, 미사용으로 보이는 `com.unity.ai.inference` 컴퓨트 셰이더 9MB.
 
+## 옵션 — 해상도 미리보기 + 전체 음량 70% 기준 (2026-11-05)
+- **해상도는 고르는 즉시 미리보기**(`OptionsMenuController.TryChangeResolution` → `PlayerOptions.Preview` → `OptionsManager.Apply`가 `Screen.SetResolution`). 예전의 "15초 안에 유지하기" 확인과 화살표 잠금(`resolutionPending`)은 쓰지 않는다(필드·그 분기 코드는 남아 있지만 항상 false). **[적용 및 저장]을 누르지 않고 옵션을 닫으면**(닫기·취소·ESC 모두) 열었을 때(또는 마지막으로 저장한) 해상도로 자동 복귀한다(`RestoreResolutionIfUnsaved`, 기준은 `baseResolutionWidth/Height`, 저장은 `SaveStaged()` 한 곳). 해상도 외 값(밝기 등)의 "닫기 = 미리보기 값 유지" 동작은 그대로다.
+- **전체 음량**: 슬라이더 70% = 지금까지의 소리 크기(`AudioListener.volume` 1.0), 100% = 약 1.43배. 기본값 70%. `OptionsManager.Apply`가 `masterVolume / PlayerOptionsData.MasterVolumeReference(0.7)`를 넣는다(Unity는 1을 넘겨도 그만큼 커짐 — 사인파 출력 RMS 0.153→0.217로 측정). **예전 저장값은 자동 변환**: 저장 형식에 `optionsVersion`(현재 2)을 넣고, 버전이 없는 예전 값은 `masterVolume × 0.7`로 옮겨 소리 크기가 그대로이게 했다(100%→70%). 상대방 음성(`voiceVolume`)은 이번에 바꾸지 않았다. 100% 근처에서 큰 소리가 겹치면 출력이 깎여 찌그러질 수 있다.
+
 ## 병합 충돌 재발 방지 — UnityYAMLMerge 설정 (2026-10-27)
 `LGH`·`KJH` 브랜치를 Develop에 머지하는 과정에서, 충돌을 실제로 해결하지 않고 **Git 충돌 마커(`<<<<<<<`/`=======`/`>>>>>>>`)가 그대로 박힌 채 커밋**된 적이 있었다(이미 원격에 푸시까지 된 뒤 발견). 영향받은 파일이 40개가 넘었음 — 컴파일이 깨지는 .cs 파일들, GUID가 마커째로 깨진 .meta 파일, `Develop.unity`를 포함한 씬·프리팹 YAML까지. 아마 머지 도구(VS/Rider/디폴트 Git)가 충돌을 띄웠는데 실제로 고르지 않고 그대로 스테이징·커밋한 것으로 보인다.
 

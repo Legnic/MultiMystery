@@ -149,7 +149,7 @@ namespace CoopDemo
             if (DesignButton(DBtnSave, true))
             {
                 openDropdown = -1;
-                PlayerOptions.Save(staged);
+                SaveStaged();
                 toastUntil = Time.unscaledTime + 2f;
             }
             if (DesignButton(DBtnClose, true)) { openDropdown = -1; Close(false); }
@@ -410,12 +410,10 @@ namespace CoopDemo
                 dLabel.fontSize = prevSize;
                 DrawQualityChooser(DRowY[3]);
 
-                // 문장마다 한 줄씩 (줄바꿈 자동 접기 없이 3줄, 패널 테두리 안에 들어오게 줄 수를 맞춘다)
+                // 안내 문구는 그래픽 품질 한 줄만 둔다 (밝기·해상도 안내는 뺐다)
                 var prevWrap = dSmall.wordWrap;
                 dSmall.wordWrap = false;
                 GUI.Label(new Rect(DLabelX, DRowLineY[3] + 4f, DLineX1 - DLabelX, 100f),
-                    "밝기는 보기 편하게만 보정합니다. 단서는 어두워도 원래 보입니다.\n" +
-                    "해상도를 바꾸면 15초 안에 [유지하기]를 눌러야 그대로 남습니다.\n" +
                     "그래픽 품질을 낮추면 그림자가 줄어 저사양 PC에서 부드러워집니다.", dSmall);
                 dSmall.wordWrap = prevWrap;
             }

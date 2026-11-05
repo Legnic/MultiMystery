@@ -23,13 +23,20 @@ namespace CoopDemo
         public Color crosshairColor;
         public int crosshairIndex;   // LGH.PlayerInteractor.crosshairOptions / OptionsMenuController.crosshairTextures의 인덱스
         public int graphicsQuality;  // GraphicsQuality: -1 자동, 0 낮음, 1 높음
+        public int optionsVersion;   // 저장 형식 버전. 2부터 전체 음량 70%가 예전 100%(=그대로의 소리 크기)와 같다 (아래 MasterVolumeReference)
+
+        public const int CurrentVersion = 2;
+
+        // 전체 음량 슬라이더에서 "예전 최대 소리 크기"가 되는 값. 슬라이더 70% = AudioListener.volume 1.0(지금까지의 소리 크기),
+        // 100% = 약 1.43배로 더 크게. 기본값은 70%.
+        public const float MasterVolumeReference = 0.7f;
 
         public static PlayerOptionsData Default()
         {
             var r = Screen.currentResolution;
             return new PlayerOptionsData
             {
-                masterVolume = 1f,
+                masterVolume = MasterVolumeReference,
                 bgmVolume = 1f,
                 sfxVolume = 1f,
                 voiceVolume = 1f,
@@ -45,6 +52,7 @@ namespace CoopDemo
                 crosshairColor = Color.white,
                 crosshairIndex = 1,   // 배열 순서상 Crosshair_04 (심플한 십자형) — 처음 고른 기본 모양
                 graphicsQuality = GraphicsQuality.Auto,
+                optionsVersion = CurrentVersion,
             };
         }
     }
@@ -79,17 +87,25 @@ namespace CoopDemo
         // (예: crosshairSize가 0이 되면 조준점이 아예 안 보이는 등 "없는 필드=0"이 진짜 문제가 됐던 적이 있음).
         static PlayerOptionsData LoadFromDisk()
         {
-            object d = PlayerOptionsData.Default();
-            if (PlayerPrefs.HasKey(Key))
+            if (!PlayerPrefs.HasKey(Key)) return PlayerOptionsData.Default();
+            // 버전 필드가 없는 예전 저장값을 알아보려고 0에서 시작해 덮어쓴다 (새 저장값에는 2가 들어 있다)
+            var start = PlayerOptionsData.Default();
+            start.optionsVersion = 0;
+            object d = start;
+            try { JsonUtility.FromJsonOverwrite(PlayerPrefs.GetString(Key), d); }
+            catch (Exception e)
             {
-                try { JsonUtility.FromJsonOverwrite(PlayerPrefs.GetString(Key), d); }
-                catch (Exception e)
-                {
-                    Debug.LogWarning("[PlayerOptions] 저장된 설정을 읽지 못해 기본값을 사용합니다: " + e.Message);
-                    d = PlayerOptionsData.Default();
-                }
+                Debug.LogWarning("[PlayerOptions] 저장된 설정을 읽지 못해 기본값을 사용합니다: " + e.Message);
+                return PlayerOptionsData.Default();
             }
-            return (PlayerOptionsData)d;
+            var data = (PlayerOptionsData)d;
+            if (data.optionsVersion < 2)
+            {
+                // 예전에는 슬라이더 100%가 지금의 70%와 같은 소리 크기였다 → 같은 소리 크기가 되도록 옮긴다 (예: 100% → 70%)
+                data.masterVolume = Mathf.Clamp01(data.masterVolume * PlayerOptionsData.MasterVolumeReference);
+                data.optionsVersion = PlayerOptionsData.CurrentVersion;
+            }
+            return data;
         }
 
         // 슬라이더를 움직이는 동안 호출 — 미리보기만 하고 디스크에는 쓰지 않는다.

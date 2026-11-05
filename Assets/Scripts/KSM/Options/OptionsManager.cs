@@ -98,7 +98,8 @@ namespace CoopDemo
         void Apply(PlayerOptionsData d)
         {
             // 전체 음량: 믹서 라우팅 여부와 상관없이 이 컴퓨터에서 나가는 모든 소리에 적용된다.
-            AudioListener.volume = d.masterVolume;
+            // 슬라이더 70% = 지금까지의 소리 크기(1.0), 100% = 약 1.43배 (AudioListener.volume은 1을 넘겨도 그만큼 커진다 — 2026-11-05 측정)
+            AudioListener.volume = d.masterVolume / PlayerOptionsData.MasterVolumeReference;
 
             if (mixer != null)
             {

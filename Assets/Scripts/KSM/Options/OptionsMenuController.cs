@@ -76,6 +76,8 @@ namespace CoopDemo
             if (VoiceChatManager.Instance != null && VoiceChatManager.Instance.IsReady)
                 Instance.staged.micMuted = VoiceChatManager.Instance.IsMicMuted;
             Instance.resolutionPending = false;
+            Instance.baseResolutionWidth = Instance.staged.resolutionWidth;
+            Instance.baseResolutionHeight = Instance.staged.resolutionHeight;
             Instance.openDropdown = -1;
             IsOpen = true;
             Instance.LockLocalPlayer(true);
@@ -90,6 +92,7 @@ namespace CoopDemo
             if (Instance == null) return;
             Instance.resolutionPending = false;
             if (revert) PlayerOptions.RevertToSaved();   // OptionsManager.Apply()가 해상도까지 포함해서 되돌려준다.
+            Instance.RestoreResolutionIfUnsaved();       // 저장하지 않은 해상도 미리보기는 닫을 때 이전 해상도로 되돌린다
             IsOpen = false;
             Instance.LockLocalPlayer(false);
             Instance.SetBackgroundUiBlocked(false);
@@ -261,7 +264,7 @@ namespace CoopDemo
             if (GUILayout.Button("기본값", button, GUILayout.Height(40))) ApplyPreview(PlayerOptionsData.Default());
             if (GUILayout.Button("취소", button, GUILayout.Height(40))) Close(true);
             GUILayout.FlexibleSpace();
-            if (GUILayout.Button("적용 및 저장", button, GUILayout.Height(40), GUILayout.Width(150))) PlayerOptions.Save(staged);
+            if (GUILayout.Button("적용 및 저장", button, GUILayout.Height(40), GUILayout.Width(150))) SaveStaged();
             if (GUILayout.Button("닫기", button, GUILayout.Height(40), GUILayout.Width(100))) Close(false);
             GUILayout.EndHorizontal();
 
@@ -393,7 +396,6 @@ namespace CoopDemo
             GUILayout.Space(10);
             float v = Slider("화면 밝기", staged.brightness, -1f, 1f);
             if (!Mathf.Approximately(v, staged.brightness)) { staged.brightness = v; PlayerOptions.Preview(staged); }
-            GUILayout.Label("어두운 곳에서도 단서는 원래 보이도록 만들어져 있습니다 — 이 슬라이더는 보기 편하게 밝기만 보정합니다.", small);
 
             GUILayout.Space(14);
             GUILayout.Label("해상도", label);
@@ -454,15 +456,33 @@ namespace CoopDemo
             return best;
         }
 
+        // 해상도는 고르는 즉시 미리보기로 적용하고(OptionsManager.Apply가 Screen.SetResolution을 부른다) 화살표는 계속 누를 수 있다.
+        // [적용 및 저장]을 누르지 않고 옵션을 닫으면 열었을 때(또는 마지막으로 저장한) 해상도로 자동으로 돌아간다 → RestoreResolutionIfUnsaved.
+        // (예전의 "15초 안에 유지하기" 확인 방식은 쓰지 않는다. resolutionPending은 항상 false.)
         void TryChangeResolution((int w, int h) target)
         {
-            resolutionPrevWidth = staged.resolutionWidth;
-            resolutionPrevHeight = staged.resolutionHeight;
             staged.resolutionWidth = target.w;
             staged.resolutionHeight = target.h;
-            Screen.SetResolution(target.w, target.h, staged.fullscreen ? FullScreenMode.FullScreenWindow : FullScreenMode.Windowed);
-            resolutionPending = true;
-            resolutionRevertAt = Time.unscaledTime + ResolutionConfirmSeconds;
+            PlayerOptions.Preview(staged);
+        }
+
+        // 옵션을 열 때 / 저장할 때의 해상도. 저장 없이 닫으면 여기로 되돌린다.
+        int baseResolutionWidth, baseResolutionHeight;
+
+        void SaveStaged()
+        {
+            PlayerOptions.Save(staged);
+            baseResolutionWidth = staged.resolutionWidth;
+            baseResolutionHeight = staged.resolutionHeight;
+        }
+
+        void RestoreResolutionIfUnsaved()
+        {
+            var cur = PlayerOptions.Current;
+            if (baseResolutionWidth <= 0 || (cur.resolutionWidth == baseResolutionWidth && cur.resolutionHeight == baseResolutionHeight)) return;
+            cur.resolutionWidth = baseResolutionWidth;
+            cur.resolutionHeight = baseResolutionHeight;
+            PlayerOptions.Preview(cur);
         }
 
         void ConfirmResolution()
